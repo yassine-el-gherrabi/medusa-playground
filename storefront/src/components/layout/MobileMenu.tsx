@@ -1,7 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
+import Logo from "./Logo"
 
 type Category = {
   id: string
@@ -18,6 +20,28 @@ type Collection = {
   created_at?: string
 }
 
+// Chevron icon with rotation animation
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1}
+      stroke="currentColor"
+      className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${
+        open ? "rotate-180" : ""
+      }`}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m19.5 8.25-7.5 7.5-7.5-7.5"
+      />
+    </svg>
+  )
+}
+
 export default function MobileMenu({
   categories,
   collections,
@@ -29,257 +53,364 @@ export default function MobileMenu({
   isOpen: boolean
   onClose: () => void
 }) {
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  const [expandedSection, setExpandedSection] = useState<string | null>(null)
 
-  const toggleExpand = (id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
+  // Reset accordion when menu closes
+  useEffect(() => {
+    if (!isOpen) {
+      const t = setTimeout(() => setExpandedSection(null), 300)
+      return () => clearTimeout(t)
+    }
+  }, [isOpen])
+
+  // Lock body scroll when open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [isOpen])
 
   // Sort collections newest first
   const sorted = [...collections].sort(
-    (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+    (a, b) =>
+      new Date(b.created_at || 0).getTime() -
+      new Date(a.created_at || 0).getTime()
   )
   const latestCollection = sorted[0]
 
+  const vetements = categories.find((c) => c.handle === "vetements")
   const accessoires = categories.find((c) => c.handle === "accessoires")
   const iceForGirls = categories.find((c) => c.handle === "ice-for-girls")
   const chaussures = categories.find((c) => c.handle === "chaussures")
 
-  return (
-    <>
-      {/* Backdrop */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
-          onClick={onClose}
-        />
-      )}
+  // Toggle accordion — only one open at a time
+  const toggle = (section: string) => {
+    setExpandedSection((prev) => (prev === section ? null : section))
+  }
 
-      {/* Panel */}
-      <div
-        className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white z-50 overflow-y-auto transform transition-transform duration-300 lg:hidden ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <span className="font-bold text-lg tracking-widest uppercase text-foreground">Ice Industry</span>
-          <button onClick={onClose} className="p-2 hover:opacity-70 text-foreground" aria-label="Fermer">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+  return (
+    <div
+      className={`fixed inset-0 z-50 bg-white lg:hidden ${
+        isOpen
+          ? "pointer-events-auto visible"
+          : "pointer-events-none invisible"
+      }`}
+    >
+      <div className="h-full flex flex-col">
+        {/* Header: Close + Logo */}
+        <div className="flex items-center px-6 h-14 flex-shrink-0 relative">
+          <button
+            onClick={onClose}
+            className="p-2 -ml-2 hover:opacity-70 text-foreground"
+            aria-label="Fermer"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18 18 6M6 6l12 12"
+              />
             </svg>
           </button>
+          <Link
+            href="/"
+            onClick={onClose}
+            className="absolute left-1/2 -translate-x-1/2 text-foreground"
+          >
+            <Logo className="h-24 w-auto" variant="black" />
+          </Link>
         </div>
 
-        <nav className="py-2">
-          {/* 1. Nouvelle collection */}
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Mini-hero: Latest collection */}
           {latestCollection && (
             <Link
               href={`/collections/${latestCollection.handle}`}
-              className="block px-4 py-3 border-b border-border text-sm font-medium uppercase tracking-wide text-foreground hover:bg-muted"
               onClick={onClose}
+              className="block mx-6 mt-4 mb-6"
             >
-              Nouvelle collection
+              <div className="relative aspect-[5/2] overflow-hidden bg-muted">
+                {latestCollection.metadata?.hero_image ? (
+                  <Image
+                    src={latestCollection.metadata.hero_image}
+                    alt={latestCollection.title}
+                    fill
+                    className="object-cover"
+                    sizes="100vw"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-muted" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-5 right-5">
+                  <p className="text-xs uppercase tracking-widest text-white/70 mb-1">
+                    Nouvelle collection
+                  </p>
+                  <p className="text-sm font-semibold text-white uppercase tracking-wide">
+                    {latestCollection.title}
+                  </p>
+                  <span className="text-xs text-white/80 mt-1 inline-block">
+                    Découvrir &rarr;
+                  </span>
+                </div>
+              </div>
             </Link>
           )}
 
-          {/* 2. Vetements / Collections (expandable) */}
-          <div className="border-b border-border">
-            <div className="flex items-center justify-between">
-              <Link
-                href="/voir-tout"
-                className="flex-1 px-4 py-3 text-sm font-medium uppercase tracking-wide text-foreground hover:bg-muted"
-                onClick={onClose}
-              >
-                Vetements
-              </Link>
-              {collections.length > 0 && (
-                <button
-                  onClick={() => toggleExpand("collections")}
-                  className="px-4 py-3 hover:bg-muted text-foreground"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className={`w-4 h-4 transition-transform ${
-                      expandedIds.has("collections") ? "rotate-180" : ""
-                    }`}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                  </svg>
-                </button>
-              )}
-            </div>
-            {expandedIds.has("collections") && (
-              <div className="bg-muted">
-                {sorted.map((c) => (
-                  <Link
-                    key={c.id}
-                    href={`/collections/${c.handle}`}
-                    className="block pl-8 pr-4 py-2 text-sm text-muted-foreground hover:text-foreground"
-                    onClick={onClose}
-                  >
-                    {c.title}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* 3. Accessoires (expandable) */}
-          {accessoires && (
+          {/* Navigation — Accordion sections */}
+          <nav className="px-6">
+            {/* ─── Collections (accordion) — first, follows hero ─── */}
             <div className="border-b border-border">
-              <div className="flex items-center justify-between">
+              <button
+                onClick={() => toggle("collections")}
+                className="w-full flex items-center justify-between py-4 text-sm font-medium uppercase tracking-wide text-foreground"
+              >
+                <span>Collections</span>
+                <Chevron open={expandedSection === "collections"} />
+              </button>
+              <div
+                className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                  expandedSection === "collections"
+                    ? "grid-rows-[1fr]"
+                    : "grid-rows-[0fr]"
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <div className="pb-4 space-y-3">
+                    {sorted.map((c) => (
+                      <Link
+                        key={c.id}
+                        href={`/collections/${c.handle}`}
+                        onClick={onClose}
+                        className="block text-[13px] text-foreground/60 hover:text-foreground transition-colors pl-2"
+                      >
+                        {c.title}
+                      </Link>
+                    ))}
+                    <div className="pt-1 pl-2">
+                      <Link
+                        href="/collections"
+                        onClick={onClose}
+                        className="text-xs font-medium text-foreground uppercase tracking-[0.12em] hover:opacity-60 transition-opacity"
+                      >
+                        Tout voir
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ─── Vêtements (accordion) ─── */}
+            {vetements &&
+            vetements.category_children &&
+            vetements.category_children.length > 0 ? (
+              <div className="border-b border-border">
+                <button
+                  onClick={() => toggle("vetements")}
+                  className="w-full flex items-center justify-between py-4 text-sm font-medium uppercase tracking-wide text-foreground"
+                >
+                  <span>Vêtements</span>
+                  <Chevron open={expandedSection === "vetements"} />
+                </button>
+                <div
+                  className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                    expandedSection === "vetements"
+                      ? "grid-rows-[1fr]"
+                      : "grid-rows-[0fr]"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <div className="pb-4 space-y-3">
+                      {vetements.category_children.map((child) => (
+                        <Link
+                          key={child.id}
+                          href={`/categories/${child.handle}`}
+                          onClick={onClose}
+                          className="block text-[13px] text-foreground/60 hover:text-foreground transition-colors pl-2"
+                        >
+                          {child.name}
+                        </Link>
+                      ))}
+                      <div className="pt-1 pl-2">
+                        <Link
+                          href={`/categories/${vetements.handle}`}
+                          onClick={onClose}
+                          className="text-[13px] font-medium text-foreground uppercase tracking-[0.12em] hover:opacity-60 transition-opacity"
+                        >
+                          Tout voir
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : vetements ? (
+              <div className="border-b border-border">
                 <Link
-                  href="/accessoires"
-                  className="flex-1 px-4 py-3 text-sm font-medium uppercase tracking-wide text-foreground hover:bg-muted"
+                  href={`/categories/${vetements.handle}`}
                   onClick={onClose}
+                  className="block py-4 text-sm font-medium uppercase tracking-wide text-foreground"
+                >
+                  Vêtements
+                </Link>
+              </div>
+            ) : null}
+
+            {/* ─── Accessoires (accordion) ─── */}
+            {accessoires &&
+            accessoires.category_children &&
+            accessoires.category_children.length > 0 ? (
+              <div className="border-b border-border">
+                <button
+                  onClick={() => toggle("accessoires")}
+                  className="w-full flex items-center justify-between py-4 text-sm font-medium uppercase tracking-wide text-foreground"
+                >
+                  <span>Accessoires</span>
+                  <Chevron open={expandedSection === "accessoires"} />
+                </button>
+                <div
+                  className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                    expandedSection === "accessoires"
+                      ? "grid-rows-[1fr]"
+                      : "grid-rows-[0fr]"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <div className="pb-4 space-y-3">
+                      {accessoires.category_children.map((child) => (
+                        <Link
+                          key={child.id}
+                          href={`/categories/${child.handle}`}
+                          onClick={onClose}
+                          className="block text-[13px] text-foreground/60 hover:text-foreground transition-colors pl-2"
+                        >
+                          {child.name}
+                        </Link>
+                      ))}
+                      <div className="pt-1 pl-2">
+                        <Link
+                          href={`/categories/${accessoires.handle}`}
+                          onClick={onClose}
+                          className="text-[13px] font-medium text-foreground uppercase tracking-[0.12em] hover:opacity-60 transition-opacity"
+                        >
+                          Tout voir
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : accessoires ? (
+              <div className="border-b border-border">
+                <Link
+                  href={`/categories/${accessoires.handle}`}
+                  onClick={onClose}
+                  className="block py-4 text-sm font-medium uppercase tracking-wide text-foreground"
                 >
                   Accessoires
                 </Link>
-                {accessoires.category_children && accessoires.category_children.length > 0 && (
-                  <button
-                    onClick={() => toggleExpand("accessoires")}
-                    className="px-4 py-3 hover:bg-muted text-foreground"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className={`w-4 h-4 transition-transform ${
-                        expandedIds.has("accessoires") ? "rotate-180" : ""
-                      }`}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                    </svg>
-                  </button>
-                )}
               </div>
-              {expandedIds.has("accessoires") && accessoires.category_children && (
-                <div className="bg-muted">
-                  {accessoires.category_children.map((child) => (
-                    <Link
-                      key={child.id}
-                      href={`/categories/${child.handle}`}
-                      className="block pl-8 pr-4 py-2 text-sm text-muted-foreground hover:text-foreground"
-                      onClick={onClose}
-                    >
-                      {child.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+            ) : null}
 
-          {/* 4. Chaussures (expandable) */}
-          {chaussures && (
-            <div className="border-b border-border">
-              <div className="flex items-center justify-between">
+            {/* ─── Chaussures (direct link) ─── */}
+            {chaussures && (
+              <div className="border-b border-border py-4">
                 <Link
-                  href="/categories/chaussures"
-                  className="flex-1 px-4 py-3 text-sm font-medium uppercase tracking-wide text-foreground hover:bg-muted"
+                  href={`/categories/${chaussures.handle}`}
                   onClick={onClose}
+                  className="text-sm font-medium uppercase tracking-wide text-foreground hover:opacity-60 transition-opacity"
                 >
                   Chaussures
                 </Link>
-                {chaussures.category_children && chaussures.category_children.length > 0 && (
-                  <button
-                    onClick={() => toggleExpand("chaussures")}
-                    className="px-4 py-3 hover:bg-muted text-foreground"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className={`w-4 h-4 transition-transform ${
-                        expandedIds.has("chaussures") ? "rotate-180" : ""
-                      }`}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                    </svg>
-                  </button>
-                )}
               </div>
-              {expandedIds.has("chaussures") && chaussures.category_children && (
-                <div className="bg-muted">
-                  {chaussures.category_children.map((child) => (
-                    <Link
-                      key={child.id}
-                      href={`/categories/${child.handle}`}
-                      className="block pl-8 pr-4 py-2 text-sm text-muted-foreground hover:text-foreground"
-                      onClick={onClose}
-                    >
-                      {child.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
+            )}
+
+            {/* ─── Ice for Girls (direct link) ─── */}
+            {iceForGirls && (
+              <div className="border-b border-border py-4">
+                <Link
+                  href={`/categories/${iceForGirls.handle}`}
+                  onClick={onClose}
+                  className="text-sm font-medium uppercase tracking-wide text-foreground hover:opacity-60 transition-opacity"
+                >
+                  Ice for Girls
+                </Link>
+              </div>
+            )}
+
+            {/* ─── Voir tout (direct link) — last, no border-b ─── */}
+            <div className="py-4">
+              <Link
+                href="/boutique"
+                onClick={onClose}
+                className="text-sm font-medium uppercase tracking-wide text-foreground hover:opacity-60 transition-opacity"
+              >
+                Voir tout
+              </Link>
             </div>
-          )}
+          </nav>
+        </div>
 
-          {/* 5. Ice for Girls */}
-          {iceForGirls && (
+        {/* Footer: Account + Service client + Social */}
+        <div className="flex-shrink-0 border-t border-border px-6 py-5 space-y-4">
+          <div className="flex justify-center gap-8">
             <Link
-              href="/ice-for-girls"
-              className="block px-4 py-3 border-b border-border text-sm font-medium uppercase tracking-wide text-foreground hover:bg-muted"
+              href="/account"
               onClick={onClose}
+              className="text-xs text-muted-foreground hover:text-foreground uppercase tracking-widest transition-colors"
             >
-              Ice for Girls
+              Mon compte
             </Link>
-          )}
-
-          {/* 6. Voir tout */}
-          <Link
-            href="/voir-tout"
-            className="block px-4 py-3 border-b border-border text-sm font-medium uppercase tracking-wide text-foreground hover:bg-muted"
-            onClick={onClose}
-          >
-            Voir tout
-          </Link>
-
-          {/* Separator */}
-          <div className="h-px bg-border my-2" />
-
-          {/* 7. FAQ */}
-          <Link
-            href="/faq"
-            className="block px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted"
-            onClick={onClose}
-          >
-            FAQ
-          </Link>
-
-          {/* 8. Contact */}
-          <Link
-            href="/contact"
-            className="block px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted"
-            onClick={onClose}
-          >
-            Contact
-          </Link>
-
-          {/* 9. Mon compte */}
-          <Link
-            href="/account"
-            className="block px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted"
-            onClick={onClose}
-          >
-            Mon compte
-          </Link>
-        </nav>
+            <Link
+              href="/contact"
+              onClick={onClose}
+              className="text-xs text-muted-foreground hover:text-foreground uppercase tracking-widest transition-colors"
+            >
+              Service client
+            </Link>
+          </div>
+          <div className="flex justify-center gap-5">
+            <a
+              href="https://www.instagram.com/ice_industry_"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] text-muted-foreground hover:text-foreground uppercase tracking-wide transition-colors"
+            >
+              Instagram
+            </a>
+            <a
+              href="https://www.tiktok.com/@ice_industry"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] text-muted-foreground hover:text-foreground uppercase tracking-wide transition-colors"
+            >
+              TikTok
+            </a>
+            <a
+              href="https://www.snapchat.com/@ice_industry"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] text-muted-foreground hover:text-foreground uppercase tracking-wide transition-colors"
+            >
+              Snapchat
+            </a>
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   )
 }

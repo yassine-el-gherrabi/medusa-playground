@@ -1,21 +1,24 @@
 "use client"
 
-import Link from "next/link"
 import { useCart } from "@/providers/cart"
 
 export default function CartIcon() {
-  const { cart } = useCart()
+  const { cart, openDrawer } = useCart()
   const count = cart?.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0
 
   return (
-    <Link href="/cart" className="relative p-2 hover:opacity-70 transition-opacity">
+    <button
+      onClick={openDrawer}
+      className="relative p-2 hover:opacity-70 transition-opacity"
+      aria-label={`Panier${count > 0 ? ` (${count} articles)` : ""}`}
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
-        strokeWidth={1.5}
+        strokeWidth={1}
         stroke="currentColor"
-        className="w-6 h-6"
+        className="w-5 h-5"
       >
         <path
           strokeLinecap="round"
@@ -24,10 +27,10 @@ export default function CartIcon() {
         />
       </svg>
       {count > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 bg-foreground text-background text-xs rounded-full w-5 h-5 flex items-center justify-center">
+        <span aria-live="polite" className="absolute -top-0.5 -right-0.5 bg-foreground text-background text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
           {count}
         </span>
       )}
-    </Link>
+    </button>
   )
 }

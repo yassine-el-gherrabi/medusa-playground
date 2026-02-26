@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useCallback } from "react"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -18,152 +19,344 @@ type Collection = {
   created_at?: string
 }
 
+type HoveredItem = {
+  image: string
+  title: string
+  href: string
+}
+
+// Fallback images for categories (dev placeholders — replace with real editorial shots)
+const CATEGORY_IMAGES: Record<string, string> = {
+  vetements:
+    "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80",
+  accessoires:
+    "https://images.unsplash.com/photo-1611923134239-b9be5816e23c?w=800&q=80",
+  chaussures:
+    "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
+  "ice-for-girls":
+    "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80",
+}
+
+const MAX_COLLECTIONS = 5
+
 export default function MegaMenu({
   categories,
   collections,
   isOpen,
-  activeSection,
   onClose,
 }: {
   categories: Category[]
   collections: Collection[]
   isOpen: boolean
-  activeSection: string | null
   onClose: () => void
 }) {
-  if (!isOpen || !activeSection) return null
-
+  // Sort collections by date (newest first)
   const sorted = [...collections].sort(
-    (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+    (a, b) =>
+      new Date(b.created_at || 0).getTime() -
+      new Date(a.created_at || 0).getTime()
   )
-  const latest = sorted[0]
-  const older = sorted.slice(1)
 
+  const visible = sorted.slice(0, MAX_COLLECTIONS)
+  const latest = sorted[0] || null
+
+  // Find categories
+  const vetements = categories.find((c) => c.handle === "vetements")
   const accessoires = categories.find((c) => c.handle === "accessoires")
   const chaussures = categories.find((c) => c.handle === "chaussures")
+  const iceForGirls = categories.find((c) => c.handle === "ice-for-girls")
+
+  // Default items for each image
+  const defaultCollectionItem: HoveredItem = latest
+    ? {
+        image:
+          latest.metadata?.hero_image ||
+          "https://images.unsplash.com/photo-1523398002811-999ca8dec234?w=800&q=80",
+        title: latest.title,
+        href: `/collections/${latest.handle}`,
+      }
+    : {
+        image:
+          "https://images.unsplash.com/photo-1523398002811-999ca8dec234?w=800&q=80",
+        title: "Collections",
+        href: "/collections",
+      }
+
+  const defaultCategoryItem: HoveredItem = {
+    image: CATEGORY_IMAGES["vetements"] || "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80",
+    title: "Vêtements",
+    href: "/categories/vetements",
+  }
+
+  // Two independent hover states
+  const [hoveredCollection, setHoveredCollection] = useState<HoveredItem>(defaultCollectionItem)
+  const [hoveredCategory, setHoveredCategory] = useState<HoveredItem>(defaultCategoryItem)
+
+  // Reset both states when menu re-opens
+  const resetHover = useCallback(() => {
+    setHoveredCollection(defaultCollectionItem)
+    setHoveredCategory(defaultCategoryItem)
+  }, [defaultCollectionItem.image, defaultCollectionItem.title, defaultCollectionItem.href])
+
+  // Hover handler for collections → updates left image
+  const hoverCollection = (c: Collection) => {
+    setHoveredCollection({
+      image:
+        c.metadata?.hero_image || defaultCollectionItem.image,
+      title: c.title,
+      href: `/collections/${c.handle}`,
+    })
+  }
+
+  // Hover handlers for categories → updates right image
+  const hoverCategory = (handle: string, name: string) => {
+    setHoveredCategory({
+      image: CATEGORY_IMAGES[handle] || defaultCategoryItem.image,
+      title: name,
+      href: `/categories/${handle}`,
+    })
+  }
 
   return (
-    <div className="absolute top-full left-0 w-full bg-white border-t border-border z-50 hidden lg:block">
-      <div className="max-w-7xl mx-auto p-8">
-        {/* Vetements section */}
-        {activeSection === "vetements" && (
-          <div className="grid grid-cols-4 gap-8">
-            {/* Left: Latest capsule visual */}
-            <div className="col-span-1">
-              {latest && (
-                <Link href={`/collections/${latest.handle}`} onClick={onClose} className="group block">
-                  <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-muted mb-3">
-                    {latest.metadata?.hero_image && (
-                      <Image
-                        src={latest.metadata.hero_image}
-                        alt={latest.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <p className="text-xs uppercase tracking-widest text-white/70 mb-1">Nouvelle capsule</p>
-                      <p className="text-lg font-bold text-white">{latest.title}</p>
-                    </div>
-                  </div>
-                  <span className="text-sm font-medium text-foreground hover:underline">
-                    Decouvrir &rarr;
-                  </span>
-                </Link>
-              )}
-            </div>
+    <div
+      className={`hidden lg:block overflow-hidden ${
+        isOpen ? "" : "max-h-0"
+      }`}
+      onMouseEnter={resetHover}
+    >
+      <div className="bg-white border-t border-border relative">
+        {/* X close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 z-10 p-1.5 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Fermer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18 18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
 
-            {/* Center: Collections */}
-            <div className="col-span-2">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Collections</p>
-              <ul className="space-y-2">
-                {older.map((c) => (
+        {/* Content — 4-column: Collections + Boutique + 2 reactive images */}
+        <div className="px-6 lg:px-10 py-10">
+          <div className="grid grid-cols-[180px_220px_1fr_1fr] gap-6">
+            {/* ─── Column 1: Collections ─── */}
+            <div>
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-5">
+                Collections
+              </p>
+              <ul className="space-y-2.5">
+                {visible.map((c) => (
                   <li key={c.id}>
                     <Link
                       href={`/collections/${c.handle}`}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors block py-1"
                       onClick={onClose}
+                      onMouseEnter={() => hoverCollection(c)}
+                      className="text-xs text-foreground/70 hover:text-foreground transition-colors"
                     >
                       {c.title}
                     </Link>
                   </li>
                 ))}
-                <li>
+                <li className="pt-2">
                   <Link
-                    href="/voir-tout"
-                    className="text-sm font-medium text-foreground hover:underline block pt-2"
+                    href="/collections"
                     onClick={onClose}
+                    className="text-[11px] font-medium text-foreground uppercase tracking-[0.15em] hover:opacity-60 transition-opacity"
                   >
-                    VOIR TOUT &rarr;
+                    Tout voir
                   </Link>
                 </li>
               </ul>
             </div>
-          </div>
-        )}
 
-        {/* Accessoires section */}
-        {activeSection === "accessoires" && accessoires && (
-          <div className="grid grid-cols-4 gap-8">
-            <div className="col-span-2">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Accessoires</p>
-              <ul className="space-y-2">
-                {accessoires.category_children?.map((child) => (
-                  <li key={child.id}>
-                    <Link
-                      href={`/categories/${child.handle}`}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors block py-1"
-                      onClick={onClose}
-                    >
-                      {child.name}
-                    </Link>
-                  </li>
-                ))}
-                <li>
-                  <Link
-                    href="/accessoires"
-                    className="text-sm font-medium text-foreground hover:underline block pt-2"
-                    onClick={onClose}
-                  >
-                    Tous les accessoires &rarr;
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-        )}
+            {/* ─── Column 2: Boutique categories ─── */}
+            <div>
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-5">
+                Boutique
+              </p>
 
-        {/* Chaussures section */}
-        {activeSection === "chaussures" && chaussures && (
-          <div className="grid grid-cols-4 gap-8">
-            <div className="col-span-2">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Chaussures</p>
-              <ul className="space-y-2">
-                {chaussures.category_children?.map((child) => (
-                  <li key={child.id}>
-                    <Link
-                      href={`/categories/${child.handle}`}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors block py-1"
-                      onClick={onClose}
-                    >
-                      {child.name}
-                    </Link>
-                  </li>
-                ))}
-                <li>
+              {vetements && (
+                <div className="mb-5">
                   <Link
-                    href="/categories/chaussures"
-                    className="text-sm font-medium text-foreground hover:underline block pt-2"
+                    href={`/categories/${vetements.handle}`}
                     onClick={onClose}
+                    onMouseEnter={() => hoverCategory(vetements.handle, "Vêtements")}
+                    className="text-[11px] font-medium text-foreground uppercase tracking-[0.15em] hover:opacity-60 transition-opacity"
                   >
-                    Toutes les chaussures &rarr;
+                    Vêtements
                   </Link>
-                </li>
-              </ul>
+                  {vetements.category_children &&
+                    vetements.category_children.length > 0 && (
+                      <ul className="mt-2 space-y-1.5">
+                        {vetements.category_children.map((sub) => (
+                          <li key={sub.id}>
+                            <Link
+                              href={`/categories/${sub.handle}`}
+                              className="text-xs text-foreground/60 hover:text-foreground transition-colors"
+                              onClick={onClose}
+                              onMouseEnter={() =>
+                                hoverCategory(vetements.handle, sub.name)
+                              }
+                            >
+                              {sub.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                </div>
+              )}
+
+              {accessoires && (
+                <div className="mb-5">
+                  <Link
+                    href={`/categories/${accessoires.handle}`}
+                    onClick={onClose}
+                    onMouseEnter={() => hoverCategory(accessoires.handle, "Accessoires")}
+                    className="text-[11px] font-medium text-foreground uppercase tracking-[0.15em] hover:opacity-60 transition-opacity"
+                  >
+                    Accessoires
+                  </Link>
+                  {accessoires.category_children &&
+                    accessoires.category_children.length > 0 && (
+                      <ul className="mt-2 space-y-1.5">
+                        {accessoires.category_children.map((sub) => (
+                          <li key={sub.id}>
+                            <Link
+                              href={`/categories/${sub.handle}`}
+                              className="text-xs text-foreground/60 hover:text-foreground transition-colors"
+                              onClick={onClose}
+                              onMouseEnter={() =>
+                                hoverCategory(accessoires.handle, sub.name)
+                              }
+                            >
+                              {sub.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                </div>
+              )}
+
+              {chaussures && (
+                <div className="mb-3">
+                  <Link
+                    href={`/categories/${chaussures.handle}`}
+                    onClick={onClose}
+                    onMouseEnter={() => hoverCategory(chaussures.handle, "Chaussures")}
+                    className="text-[11px] font-medium text-foreground uppercase tracking-[0.15em] hover:opacity-60 transition-opacity"
+                  >
+                    Chaussures
+                  </Link>
+                </div>
+              )}
+
+              {iceForGirls && (
+                <div className="mb-3">
+                  <Link
+                    href={`/categories/${iceForGirls.handle}`}
+                    onClick={onClose}
+                    onMouseEnter={() => hoverCategory(iceForGirls.handle, "Ice for Girls")}
+                    className="text-[11px] font-medium text-foreground uppercase tracking-[0.15em] hover:opacity-60 transition-opacity"
+                  >
+                    Ice for Girls
+                  </Link>
+                </div>
+              )}
+
+              <div className="pt-2">
+                <Link
+                  href="/boutique"
+                  onClick={onClose}
+                  onMouseEnter={() =>
+                    setHoveredCategory({
+                      image: "/images/hero-ice2.webp",
+                      title: "Boutique",
+                      href: "/boutique",
+                    })
+                  }
+                  className="text-[11px] font-medium text-foreground uppercase tracking-[0.15em] hover:opacity-60 transition-opacity"
+                >
+                  Tout voir
+                </Link>
+              </div>
             </div>
+
+            {/* ─── Column 3: COLLECTIONS IMAGE ─── */}
+            <Link
+              href={hoveredCollection.href}
+              onClick={onClose}
+              className="group block"
+            >
+              <div className="relative h-[420px] overflow-hidden bg-muted">
+                <div
+                  key={hoveredCollection.image}
+                  className="absolute inset-0 animate-fade-in-image"
+                >
+                  <Image
+                    src={hoveredCollection.image}
+                    alt={hoveredCollection.title}
+                    fill
+                    className="object-cover"
+                    sizes="30vw"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6">
+                  <p className="text-sm font-semibold text-white uppercase tracking-wide">
+                    {hoveredCollection.title}
+                  </p>
+                  <span className="text-xs text-white/80 mt-2 inline-block group-hover:text-white transition-colors">
+                    Découvrir &rarr;
+                  </span>
+                </div>
+              </div>
+            </Link>
+
+            {/* ─── Column 4: BOUTIQUE IMAGE ─── */}
+            <Link
+              href={hoveredCategory.href}
+              onClick={onClose}
+              className="group block"
+            >
+              <div className="relative h-[420px] overflow-hidden bg-muted">
+                <div
+                  key={hoveredCategory.image}
+                  className="absolute inset-0 animate-fade-in-image"
+                >
+                  <Image
+                    src={hoveredCategory.image}
+                    alt={hoveredCategory.title}
+                    fill
+                    className="object-cover"
+                    sizes="30vw"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6">
+                  <p className="text-sm font-semibold text-white uppercase tracking-wide">
+                    {hoveredCategory.title}
+                  </p>
+                  <span className="text-xs text-white/80 mt-2 inline-block group-hover:text-white transition-colors">
+                    Découvrir &rarr;
+                  </span>
+                </div>
+              </div>
+            </Link>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )

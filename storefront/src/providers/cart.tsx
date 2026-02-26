@@ -13,6 +13,9 @@ type CartContextType = {
   removeItem: (itemId: string) => Promise<void>
   updateItem: (itemId: string, quantity: number) => Promise<void>
   refreshCart: () => Promise<void>
+  isDrawerOpen: boolean
+  openDrawer: () => void
+  closeDrawer: () => void
 }
 
 const CartContext = createContext<CartContextType>({
@@ -22,12 +25,19 @@ const CartContext = createContext<CartContextType>({
   removeItem: async () => {},
   updateItem: async () => {},
   refreshCart: async () => {},
+  isDrawerOpen: false,
+  openDrawer: () => {},
+  closeDrawer: () => {},
 })
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const { region } = useRegion()
   const [cart, setCart] = useState<Cart | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+
+  const openDrawer = useCallback(() => setIsDrawerOpen(true), [])
+  const closeDrawer = useCallback(() => setIsDrawerOpen(false), [])
 
   const refreshCart = useCallback(async () => {
     const cartId = localStorage.getItem("cart_id")
@@ -76,6 +86,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       quantity,
     })
     setCart(cart)
+    setIsDrawerOpen(true)
   }, [])
 
   const removeItem = useCallback(async (itemId: string) => {
@@ -95,7 +106,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <CartContext.Provider value={{ cart, loading, addItem, removeItem, updateItem, refreshCart }}>
+    <CartContext.Provider value={{ cart, loading, addItem, removeItem, updateItem, refreshCart, isDrawerOpen, openDrawer, closeDrawer }}>
       {children}
     </CartContext.Provider>
   )
