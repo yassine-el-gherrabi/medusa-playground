@@ -97,7 +97,7 @@ export default function ShippingOptions({
                 {isPickup && (
                   <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
                     <p>Boutique Ice Industry — 13001 Marseille</p>
-                    <p>Pret sous 24h</p>
+                    <p>Prêt sous 24h</p>
                   </div>
                 )}
               </div>
@@ -106,7 +106,7 @@ export default function ShippingOptions({
                   ? option.amount === 0
                     ? "Gratuit"
                     : formatPrice(option.amount, currencyCode)
-                  : "Calcule"}
+                  : "Calculé"}
               </span>
             </label>
           )

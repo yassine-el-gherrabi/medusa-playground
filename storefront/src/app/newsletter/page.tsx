@@ -4,10 +4,10 @@ import { useState } from "react"
 import { sdk } from "@/lib/sdk"
 
 const BENEFITS = [
-  "Acces anticipe aux nouvelles collections et drops exclusifs",
-  "Offres et promotions reservees aux abonnes",
-  "Invitations aux evenements en boutique",
-  "Coulisses et actualites de la marque",
+  "Accès anticipé aux nouvelles collections et drops exclusifs",
+  "Offres et promotions réservées aux abonnés",
+  "Invitations aux événements en boutique",
+  "Coulisses et actualités de la marque",
 ]
 
 export default function NewsletterPage() {
@@ -31,9 +31,9 @@ export default function NewsletterPage() {
       setEmail("")
     } catch (err: any) {
       if (err?.status === 409) {
-        setError("Cette adresse email est deja inscrite.")
+        setError("Cette adresse email est déjà inscrite.")
       } else {
-        setError("Une erreur est survenue. Veuillez reessayer.")
+        setError("Une erreur est survenue. Veuillez réessayer.")
       }
     } finally {
       setLoading(false)
@@ -44,7 +44,7 @@ export default function NewsletterPage() {
     <div className="animate-fade-in">
       <section className="py-16 md:py-24 text-center px-4">
         <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground mb-3">
-          Restez informe
+          Restez informé
         </p>
         <h1 className="text-3xl md:text-4xl font-bold mb-4">Newsletter</h1>
         <p className="text-lg text-muted-foreground max-w-md mx-auto">
@@ -75,7 +75,7 @@ export default function NewsletterPage() {
         {/* Form */}
         {success ? (
           <div className="bg-green-50 border border-green-200 text-green-600 text-sm rounded-md px-4 py-3 text-center">
-            Merci ! Vous etes maintenant inscrit a notre newsletter.
+            Merci ! Vous êtes maintenant inscrit à notre newsletter.
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">

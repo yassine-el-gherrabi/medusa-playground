@@ -8,9 +8,9 @@ import { Skeleton } from "@/components/ui/Skeleton"
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "En attente",
-  completed: "Terminee",
-  archived: "Archivee",
-  canceled: "Annulee",
+  completed: "Terminée",
+  archived: "Archivée",
+  canceled: "Annulée",
   requires_action: "Action requise",
 }
 
@@ -48,7 +48,7 @@ export default function OrdersPage() {
             href="/voir-tout"
             className="inline-block px-6 py-2 border border-border text-sm hover:bg-muted transition-colors"
           >
-            Decouvrir nos produits
+            Découvrir nos produits
           </Link>
         </div>
       ) : (

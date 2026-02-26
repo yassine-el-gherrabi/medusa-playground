@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 const LEGAL_LINKS = [
-  { href: "/legal/confidentialite", label: "Politique de confidentialite" },
+  { href: "/legal/confidentialite", label: "Politique de confidentialité" },
   { href: "/legal/cgv", label: "CGV" },
   { href: "/legal/cookies", label: "Politique de cookies" },
   { href: "/legal/nous-rejoindre", label: "Nous rejoindre" },
@@ -21,7 +21,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <nav className="space-y-1">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-3 px-3">
-            Legal
+            Légal
           </p>
           {LEGAL_LINKS.map((link) => (
             <Link

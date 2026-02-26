@@ -110,19 +110,19 @@ export default function ShoesSection() {
           {/* Text content */}
           <div className="flex flex-col justify-center">
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
-              Selection
+              Sélection
             </p>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tight mb-6">
               Chaussures
             </h2>
             <p className="text-base text-muted-foreground mb-10 max-w-sm leading-relaxed">
-              Nike, Jordan, New Balance. Editions exclusives et modeles selectionnes par Ice Industry.
+              Nike, Jordan, New Balance. Éditions exclusives et modèles sélectionnés par Ice Industry.
             </p>
             <Link
               href="/categories/chaussures"
               className="inline-block bg-black text-white px-10 py-4 text-xs font-medium uppercase tracking-[0.25em] hover:bg-black/90 transition-colors self-start"
             >
-              Decouvrir la selection
+              Découvrir la sélection
             </Link>
           </div>
         </div>

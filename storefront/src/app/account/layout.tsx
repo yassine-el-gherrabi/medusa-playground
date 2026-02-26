@@ -79,7 +79,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
             }}
             className="block w-full text-left px-4 py-3 text-sm text-muted-foreground hover:text-red-400 transition-colors rounded-md"
           >
-            Deconnexion
+            Déconnexion
           </button>
         </nav>
 

@@ -7,22 +7,22 @@ const SECTIONS: { title: string; items: AccordionItemData[] }[] = [
       {
         title: "Comment passer une commande ?",
         content:
-          "Parcourez notre catalogue, selectionnez vos articles et ajoutez-les au panier. Renseignez vos informations de livraison et procedez au paiement securise par carte bancaire.",
+          "Parcourez notre catalogue, sélectionnez vos articles et ajoutez-les au panier. Renseignez vos informations de livraison et procédez au paiement sécurisé par carte bancaire.",
       },
       {
-        title: "Quels sont les delais de livraison ?",
+        title: "Quels sont les délais de livraison ?",
         content:
-          "La livraison standard est effectuee sous 3 a 5 jours ouvrables. La livraison express sous 1 a 2 jours ouvrables. Le retrait en boutique est disponible sous 24h.",
+          "La livraison standard est effectuée sous 3 à 5 jours ouvrables. La livraison express sous 1 à 2 jours ouvrables. Le retrait en boutique est disponible sous 24h.",
       },
       {
-        title: "Combien coute la livraison ?",
+        title: "Combien coûte la livraison ?",
         content:
           "Livraison standard : 5,90 EUR. Livraison express : 9,90 EUR. Retrait en boutique (Click & Collect) : Gratuit.",
       },
       {
         title: "Puis-je suivre ma commande ?",
         content:
-          "Oui, un email de confirmation avec un numero de suivi vous est envoye des l'expedition de votre commande. Vous pouvez egalement suivre vos commandes depuis votre espace client.",
+          "Oui, un email de confirmation avec un numéro de suivi vous est envoyé dès l'expédition de votre commande. Vous pouvez également suivre vos commandes depuis votre espace client.",
       },
     ],
   },
@@ -32,22 +32,22 @@ const SECTIONS: { title: string; items: AccordionItemData[] }[] = [
       {
         title: "Comment retourner un article ?",
         content:
-          "Vous disposez de 14 jours apres reception pour retourner un article dans son etat d'origine. Rendez-vous dans votre espace client ou contactez-nous par email pour initier un retour.",
+          "Vous disposez de 14 jours après réception pour retourner un article dans son état d'origine. Rendez-vous dans votre espace client ou contactez-nous par email pour initier un retour.",
       },
       {
         title: "Comment choisir ma taille ?",
         content:
-          "Consultez notre guide des tailles disponible sur chaque page produit. En cas de doute, n'hesitez pas a nous contacter ou a passer en boutique pour essayer.",
+          "Consultez notre guide des tailles disponible sur chaque page produit. En cas de doute, n'hésitez pas à nous contacter ou à passer en boutique pour essayer.",
       },
       {
         title: "Quels modes de paiement acceptez-vous ?",
         content:
-          "Nous acceptons les cartes Visa, Mastercard et American Express. Tous les paiements sont securises via Stripe.",
+          "Nous acceptons les cartes Visa, Mastercard et American Express. Tous les paiements sont sécurisés via Stripe.",
       },
       {
         title: "Comment vous contacter ?",
         content:
-          "Par email a contact@iceindustry.fr ou directement en boutique du mardi au samedi, de 10h30 a 19h00.",
+          "Par email à contact@iceindustry.fr ou directement en boutique du mardi au samedi, de 10h30 à 19h00.",
       },
     ],
   },
@@ -55,8 +55,8 @@ const SECTIONS: { title: string; items: AccordionItemData[] }[] = [
     title: "Boutique",
     items: [
       {
-        title: "Ou se trouve votre boutique ?",
-        content: "Notre boutique est situee a Marseille (13001). Retrouvez toutes les informations sur notre page Boutique.",
+        title: "Où se trouve votre boutique ?",
+        content: "Notre boutique est située à Marseille (13001). Retrouvez toutes les informations sur notre page Boutique.",
       },
       {
         title: "Proposez-vous le Click & Collect ?",
@@ -64,9 +64,9 @@ const SECTIONS: { title: string; items: AccordionItemData[] }[] = [
           "Oui ! Commandez en ligne et retirez votre commande en boutique sous 24h. Le retrait est gratuit.",
       },
       {
-        title: "Y a-t-il des exclusivites boutique ?",
+        title: "Y a-t-il des exclusivités boutique ?",
         content:
-          "Oui, certaines pieces et coloris sont disponibles uniquement en boutique. Suivez-nous sur Instagram pour etre informe des drops exclusifs.",
+          "Oui, certaines pièces et coloris sont disponibles uniquement en boutique. Suivez-nous sur Instagram pour être informé des drops exclusifs.",
       },
     ],
   },
@@ -79,7 +79,7 @@ export default function FAQPage() {
         <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground mb-3">
           Aide
         </p>
-        <h1 className="text-3xl md:text-4xl font-bold">Questions frequentes</h1>
+        <h1 className="text-3xl md:text-4xl font-bold">Questions fréquentes</h1>
       </section>
 
       <div className="max-w-3xl mx-auto px-4 pb-20 space-y-12">

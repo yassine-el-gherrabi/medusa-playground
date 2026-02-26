@@ -16,7 +16,7 @@ const DEMO_COLLECTION: Collection = {
   title: "Capsule Hiver",
   handle: "voir-tout",
   metadata: {
-    description: "Des pieces pensees pour la rue, inspirees par Marseille. Decouvrez la nouvelle capsule Ice Industry.",
+    description: "Des pièces pensées pour la rue, inspirées par Marseille. Découvrez la nouvelle capsule Ice Industry.",
   },
 }
 
@@ -41,7 +41,7 @@ export default function NewCollectionSection({ collection }: { collection: Colle
 
   const data = collection || DEMO_COLLECTION
   const heroImage = data.metadata?.hero_image || FALLBACK_IMAGE
-  const description = data.metadata?.description || "Decouvrez notre derniere collection. Des pieces pensees pour la rue, inspirees par Marseille."
+  const description = data.metadata?.description || "Découvrez notre dernière collection. Des pièces pensées pour la rue, inspirées par Marseille."
 
   return (
     <section
@@ -79,7 +79,7 @@ export default function NewCollectionSection({ collection }: { collection: Colle
           href={`/collections/${data.handle}`}
           className="inline-block bg-white text-black px-10 py-4 text-xs font-medium uppercase tracking-[0.25em] hover:bg-white/90 transition-colors"
         >
-          Decouvrir la collection
+          Découvrir la collection
         </Link>
       </div>
     </section>

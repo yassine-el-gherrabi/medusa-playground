@@ -56,7 +56,7 @@ export default function AccountProfilePage() {
 
       {success && (
         <div className="bg-green-50 border border-green-200 text-green-600 text-sm rounded-md px-4 py-3 mb-6">
-          Profil mis a jour avec succes.
+          Profil mis à jour avec succès.
         </div>
       )}
 
@@ -64,7 +64,7 @@ export default function AccountProfilePage() {
         <form onSubmit={handleSave} className="space-y-4 max-w-md">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Prenom</label>
+              <label className="block text-sm font-medium mb-1">Prénom</label>
               <input
                 type="text"
                 value={firstName}
@@ -84,7 +84,7 @@ export default function AccountProfilePage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Telephone</label>
+            <label className="block text-sm font-medium mb-1">Téléphone</label>
             <input
               type="tel"
               value={phone}
@@ -124,7 +124,7 @@ export default function AccountProfilePage() {
         <div className="space-y-4 max-w-md">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">Prenom</p>
+              <p className="text-xs text-muted-foreground mb-1">Prénom</p>
               <p className="text-sm">{customer.first_name || "—"}</p>
             </div>
             <div>
@@ -137,7 +137,7 @@ export default function AccountProfilePage() {
             <p className="text-sm">{customer.email}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Telephone</p>
+            <p className="text-xs text-muted-foreground mb-1">Téléphone</p>
             <p className="text-sm">{customer.phone || "—"}</p>
           </div>
         </div>

@@ -8,15 +8,15 @@ const cards = [
   {
     title: "Notre Boutique",
     subtitle: "Marseille",
-    description: "Retrouvez-nous au coeur de Marseille. Decouvrez l'univers Ice Industry en personne.",
+    description: "Retrouvez-nous au cœur de Marseille. Découvrez l'univers Ice Industry en personne.",
     href: "/boutique",
-    cta: "Decouvrir la boutique",
+    cta: "Découvrir la boutique",
     image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80",
   },
   {
     title: "Newsletter",
     subtitle: "Ne rate aucun drop",
-    description: "Acces anticipe aux collections, offres exclusives et coulisses de la marque.",
+    description: "Accès anticipé aux collections, offres exclusives et coulisses de la marque.",
     href: "/newsletter",
     cta: "S'inscrire",
     image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80",

@@ -39,7 +39,7 @@ export default function ContactPage() {
           <div className="md:col-span-2">
             {submitted ? (
               <div className="bg-green-50 border border-green-200 text-green-600 text-sm rounded-md px-4 py-3">
-                Merci pour votre message ! Nous vous repondrons dans les meilleurs delais.
+                Merci pour votre message ! Nous vous répondrons dans les meilleurs délais.
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -117,11 +117,11 @@ export default function ContactPage() {
               <p className="text-sm text-muted-foreground">
                 Mar - Sam : 10h30 - 19h00
                 <br />
-                Dim - Lun : Ferme
+                Dim - Lun : Fermé
               </p>
             </div>
             <div>
-              <h3 className="text-sm font-medium mb-2">Reseaux sociaux</h3>
+              <h3 className="text-sm font-medium mb-2">Réseaux sociaux</h3>
               <div className="flex gap-4">
                 <a
                   href="https://instagram.com/iceindustry"

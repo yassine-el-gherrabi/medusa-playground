@@ -25,7 +25,7 @@ export default function RegisterPage() {
       await register({ first_name: firstName, last_name: lastName, email, password })
       router.push("/account")
     } catch (err: any) {
-      setError(err?.message || "Impossible de creer le compte. Veuillez reessayer.")
+      setError(err?.message || "Impossible de créer le compte. Veuillez réessayer.")
     } finally {
       setLoading(false)
     }
@@ -36,9 +36,9 @@ export default function RegisterPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-20 animate-fade-in">
-      <h1 className="text-2xl font-bold text-center mb-2">Creer un compte</h1>
+      <h1 className="text-2xl font-bold text-center mb-2">Créer un compte</h1>
       <p className="text-muted-foreground text-center text-sm mb-8">
-        Rejoignez la communaute Ice Industry.
+        Rejoignez la communauté Ice Industry.
       </p>
 
       {error && (
@@ -50,7 +50,7 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Prenom</label>
+            <label className="block text-sm font-medium mb-1">Prénom</label>
             <input
               type="text"
               required
@@ -99,12 +99,12 @@ export default function RegisterPage() {
           disabled={loading}
           className="w-full py-3 bg-black text-white text-sm font-medium uppercase tracking-wider hover:bg-black/90 transition-colors disabled:opacity-50"
         >
-          {loading ? "Creation..." : "Creer mon compte"}
+          {loading ? "Création..." : "Créer mon compte"}
         </button>
       </form>
 
       <p className="text-center text-sm text-muted-foreground mt-6">
-        Deja un compte ?{" "}
+        Déjà un compte ?{" "}
         <Link href="/account/login" className="text-foreground underline hover:no-underline">
           Se connecter
         </Link>

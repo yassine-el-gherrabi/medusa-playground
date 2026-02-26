@@ -82,7 +82,7 @@ export default function AddressesPage() {
         <form onSubmit={handleAdd} className="space-y-4 max-w-md mb-8 pb-8 border-b border-border">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Prenom</label>
+              <label className="block text-sm font-medium mb-1">Prénom</label>
               <input
                 type="text"
                 required
@@ -153,7 +153,7 @@ export default function AddressesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Telephone</label>
+              <label className="block text-sm font-medium mb-1">Téléphone</label>
               <input
                 type="tel"
                 value={form.phone}
@@ -183,7 +183,7 @@ export default function AddressesPage() {
       )}
 
       {addresses.length === 0 && !showForm ? (
-        <p className="text-muted-foreground text-sm">Aucune adresse enregistree.</p>
+        <p className="text-muted-foreground text-sm">Aucune adresse enregistrée.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {addresses.map((addr: any) => (

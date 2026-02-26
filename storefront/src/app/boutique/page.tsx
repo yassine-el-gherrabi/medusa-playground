@@ -5,8 +5,8 @@ import Accordion, { type AccordionItemData } from "@/components/ui/Accordion"
 
 const SERVICES = [
   {
-    title: "Conseil personnalise",
-    description: "Notre equipe vous accompagne dans le choix de vos pieces et vous conseille sur les tailles et les coupes.",
+    title: "Conseil personnalisé",
+    description: "Notre équipe vous accompagne dans le choix de vos pièces et vous conseille sur les tailles et les coupes.",
   },
   {
     title: "Click & Collect",
@@ -14,26 +14,26 @@ const SERVICES = [
   },
   {
     title: "Retours en boutique",
-    description: "Retournez vos commandes en ligne directement en boutique pour un echange ou un remboursement immediat.",
+    description: "Retournez vos commandes en ligne directement en boutique pour un échange ou un remboursement immédiat.",
   },
 ]
 
 const FAQ_ITEMS: AccordionItemData[] = [
   {
     title: "Quels sont les horaires d'ouverture ?",
-    content: "Du mardi au samedi, de 10h30 a 19h00. Ferme le dimanche et le lundi.",
+    content: "Du mardi au samedi, de 10h30 à 19h00. Fermé le dimanche et le lundi.",
   },
   {
-    title: "Y a-t-il un parking a proximite ?",
-    content: "Oui, plusieurs parkings publics sont accessibles a moins de 5 minutes a pied de la boutique.",
+    title: "Y a-t-il un parking à proximité ?",
+    content: "Oui, plusieurs parkings publics sont accessibles à moins de 5 minutes à pied de la boutique.",
   },
   {
     title: "Puis-je essayer avant d'acheter ?",
-    content: "Bien sur ! Notre boutique dispose de cabines d'essayage. N'hesitez pas a demander conseil a notre equipe.",
+    content: "Bien sûr ! Notre boutique dispose de cabines d'essayage. N'hésitez pas à demander conseil à notre équipe.",
   },
   {
     title: "Acceptez-vous les retours en boutique ?",
-    content: "Oui, vous pouvez retourner vos achats en ligne et en boutique sous 14 jours, dans leur etat d'origine.",
+    content: "Oui, vous pouvez retourner vos achats en ligne et en boutique sous 14 jours, dans leur état d'origine.",
   },
 ]
 
@@ -49,7 +49,7 @@ export default function BoutiquePage() {
           </p>
           <h1 className="text-3xl md:text-5xl font-bold mb-4">Notre Boutique</h1>
           <p className="text-lg text-muted-foreground max-w-lg mx-auto">
-            Decouvrez l&apos;univers Ice Industry dans notre boutique au coeur de Marseille.
+            Découvrez l&apos;univers Ice Industry dans notre boutique au cœur de Marseille.
           </p>
         </div>
       </section>
@@ -58,9 +58,9 @@ export default function BoutiquePage() {
       <section className="max-w-4xl mx-auto px-4 py-16 text-center">
         <h2 className="text-2xl font-bold mb-4">Acheter avec nous</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Plus qu&apos;une boutique, un lieu de rencontre pour la communaute streetwear marseillaise.
-          Retrouvez toutes nos collections, nos exclusivites boutique et profitez de
-          conseils personnalises de notre equipe.
+          Plus qu&apos;une boutique, un lieu de rencontre pour la communauté streetwear marseillaise.
+          Retrouvez toutes nos collections, nos exclusivités boutique et profitez de
+          conseils personnalisés de notre équipe.
         </p>
       </section>
 
@@ -94,7 +94,7 @@ export default function BoutiquePage() {
                 <h3 className="text-sm font-medium mb-1">Horaires</h3>
                 <div className="text-sm text-muted-foreground space-y-1">
                   <p>Mardi - Samedi : 10h30 - 19h00</p>
-                  <p>Dimanche - Lundi : Ferme</p>
+                  <p>Dimanche - Lundi : Fermé</p>
                 </div>
               </div>
               <div>
@@ -112,7 +112,7 @@ export default function BoutiquePage() {
 
       {/* FAQ Boutique */}
       <section className="max-w-3xl mx-auto px-4 pb-20">
-        <h2 className="text-2xl font-bold mb-6">Questions frequentes</h2>
+        <h2 className="text-2xl font-bold mb-6">Questions fréquentes</h2>
         <Accordion items={FAQ_ITEMS} />
       </section>
     </div>

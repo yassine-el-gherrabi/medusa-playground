@@ -52,10 +52,10 @@ export default function FilterBar({
         onChange={(e) => onSortChange(e.target.value)}
         className="bg-muted border border-border rounded px-3 py-2 text-sm focus:outline-none focus:border-black"
       >
-        <option value="created_at">Nouveautes</option>
+        <option value="created_at">Nouveautés</option>
         <option value="price_asc">Prix croissant</option>
-        <option value="price_desc">Prix decroissant</option>
-        <option value="title">Alphabetique</option>
+        <option value="price_desc">Prix décroissant</option>
+        <option value="title">Alphabétique</option>
       </select>
     </div>
   )

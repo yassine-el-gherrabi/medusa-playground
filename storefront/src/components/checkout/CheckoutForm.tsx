@@ -80,7 +80,7 @@ export default function CheckoutForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Prenom</label>
+          <label className="block text-sm font-medium mb-1">Prénom</label>
           <input
             type="text"
             required
@@ -124,7 +124,7 @@ export default function CheckoutForm({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Region / Departement</label>
+          <label className="block text-sm font-medium mb-1">Région / Département</label>
           <input
             type="text"
             value={form.province}
@@ -156,7 +156,7 @@ export default function CheckoutForm({
             <option value="de">Allemagne</option>
             <option value="gb">Royaume-Uni</option>
             <option value="dk">Danemark</option>
-            <option value="se">Suede</option>
+            <option value="se">Suède</option>
             <option value="es">Espagne</option>
             <option value="it">Italie</option>
           </select>
@@ -164,7 +164,7 @@ export default function CheckoutForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Telephone (optionnel)</label>
+        <label className="block text-sm font-medium mb-1">Téléphone (optionnel)</label>
         <input
           type="tel"
           value={form.phone}

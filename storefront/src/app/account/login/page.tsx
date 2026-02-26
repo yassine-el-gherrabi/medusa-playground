@@ -36,7 +36,7 @@ export default function LoginPage() {
     <div className="max-w-md mx-auto px-4 py-20 animate-fade-in">
       <h1 className="text-2xl font-bold text-center mb-2">Connexion</h1>
       <p className="text-muted-foreground text-center text-sm mb-8">
-        Connectez-vous a votre compte Ice Industry.
+        Connectez-vous à votre compte Ice Industry.
       </p>
 
       {error && (
@@ -80,7 +80,7 @@ export default function LoginPage() {
       <p className="text-center text-sm text-muted-foreground mt-6">
         Pas encore de compte ?{" "}
         <Link href="/account/register" className="text-foreground underline hover:no-underline">
-          Creer un compte
+          Créer un compte
         </Link>
       </p>
     </div>
