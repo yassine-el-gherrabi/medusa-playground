@@ -35,7 +35,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <HeroSection latestCollectionHandle={latestCollection?.handle} />
+      <HeroSection />
       <NouveautesSection />
       <NewCollectionSection collection={latestCollection} />
       <CollectionCarousel collections={sorted} />

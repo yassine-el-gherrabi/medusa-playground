@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import AnimatedLink from "@/components/ui/AnimatedLink"
 
 type Collection = {
   id: string
@@ -78,12 +79,12 @@ export default function CollectionCarousel({ collections }: { collections: Colle
             <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-tight">
               Toutes les Collections
             </h2>
-            <Link
+            <AnimatedLink
               href="/voir-tout"
-              className="text-xs font-medium uppercase tracking-[0.2em] hover:opacity-60 transition-opacity hidden md:block"
+              className="text-xs font-medium uppercase tracking-[0.2em] hidden md:inline-flex"
             >
               Voir tout
-            </Link>
+            </AnimatedLink>
           </div>
         </div>
 
@@ -119,7 +120,7 @@ export default function CollectionCarousel({ collections }: { collections: Colle
                 {collection.title}
               </h3>
               <span className="text-xs text-muted-foreground uppercase tracking-[0.15em] group-hover:text-foreground transition-colors">
-                Decouvrir
+                Découvrir
               </span>
             </Link>
           ))}
@@ -127,12 +128,12 @@ export default function CollectionCarousel({ collections }: { collections: Colle
 
         {/* Mobile "Voir tout" */}
         <div className="px-6 md:px-10 mt-8 md:hidden">
-          <Link
+          <AnimatedLink
             href="/voir-tout"
-            className="text-xs font-medium uppercase tracking-[0.2em] hover:opacity-60 transition-opacity"
+            className="text-xs font-medium uppercase tracking-[0.2em]"
           >
             Voir tout
-          </Link>
+          </AnimatedLink>
         </div>
       </div>
     </section>
