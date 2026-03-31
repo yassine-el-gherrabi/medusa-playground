@@ -1,0 +1,213 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - navigation [ref=e4]:
+        - button "Collections" [ref=e5]: Collections
+      - link "Ice Industry" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "Ice Industry" [ref=e7]
+      - generic [ref=e8]:
+        - button "Rechercher" [ref=e9] [cursor=pointer]:
+          - img [ref=e10]
+        - link "Compte" [ref=e12] [cursor=pointer]:
+          - /url: /account
+          - text: Compte
+        - button "Panier" [ref=e13]: Panier
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - paragraph [ref=e18]: Collections
+        - list [ref=e19]:
+          - listitem [ref=e20]:
+            - link "Toutes les collections" [ref=e21] [cursor=pointer]:
+              - /url: /boutique
+      - generic [ref=e22]:
+        - paragraph [ref=e23]: Boutique
+        - link "Shirts" [ref=e25] [cursor=pointer]:
+          - /url: /categories/shirts
+        - link "Sweatshirts" [ref=e27] [cursor=pointer]:
+          - /url: /categories/sweatshirts
+        - link "Merch" [ref=e29] [cursor=pointer]:
+          - /url: /categories/merch
+        - link "Pants" [ref=e31] [cursor=pointer]:
+          - /url: /categories/pants
+        - link "Tout voir" [ref=e33] [cursor=pointer]:
+          - /url: /boutique
+      - link "Collections Collections Découvrir →" [ref=e34] [cursor=pointer]:
+        - /url: /boutique
+        - generic [ref=e35]:
+          - img "Collections" [ref=e37]
+          - generic [ref=e39]:
+            - paragraph [ref=e40]: Collections
+            - generic [ref=e41]: Découvrir →
+      - link "Shirts Shirts Découvrir →" [ref=e42] [cursor=pointer]:
+        - /url: /categories/shirts
+        - generic [ref=e43]:
+          - img "Shirts" [ref=e45]
+          - generic [ref=e47]:
+            - paragraph [ref=e48]: Shirts
+            - generic [ref=e49]: Découvrir →
+  - dialog "Panier" [ref=e50]:
+    - generic [ref=e51]:
+      - generic [ref=e52]:
+        - heading "Panier" [level=2] [ref=e53]
+        - button "Fermer le panier" [ref=e54]:
+          - img [ref=e55]
+      - generic [ref=e57]:
+        - paragraph [ref=e58]: Votre panier est vide
+        - button "Continuer le shopping" [ref=e59]
+  - main [ref=e60]:
+    - generic [ref=e61]:
+      - generic [ref=e62]:
+        - img "Boutique" [ref=e63]
+        - generic [ref=e65]:
+          - paragraph [ref=e66]: Catalogue
+          - heading "Boutique" [level=1] [ref=e67]
+      - generic [ref=e68]:
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - button "Tout" [ref=e72]
+            - button "Shirts" [ref=e73]
+            - button "Sweatshirts" [ref=e74]
+            - button "Merch" [ref=e75]
+            - button "Pants" [ref=e76]
+          - combobox [ref=e77]:
+            - option "Nouveautés" [selected]
+            - option "Prix croissant"
+            - option "Prix décroissant"
+            - option "Alphabétique"
+        - generic [ref=e78]:
+          - link "Medusa Sweatshirt Medusa Sweatshirt 10,00 €" [ref=e79] [cursor=pointer]:
+            - /url: /products/sweatshirt
+            - img "Medusa Sweatshirt" [ref=e81]
+            - generic [ref=e82]:
+              - heading "Medusa Sweatshirt" [level=3] [ref=e83]
+              - paragraph [ref=e84]: 10,00 €
+          - link "Medusa T-Shirt Medusa T-Shirt 10,00 €" [ref=e85] [cursor=pointer]:
+            - /url: /products/t-shirt
+            - img "Medusa T-Shirt" [ref=e87]
+            - generic [ref=e88]:
+              - heading "Medusa T-Shirt" [level=3] [ref=e89]
+              - paragraph [ref=e90]: 10,00 €
+          - link "Medusa Sweatpants Medusa Sweatpants 10,00 €" [ref=e91] [cursor=pointer]:
+            - /url: /products/sweatpants
+            - img "Medusa Sweatpants" [ref=e93]
+            - generic [ref=e94]:
+              - heading "Medusa Sweatpants" [level=3] [ref=e95]
+              - paragraph [ref=e96]: 10,00 €
+          - link "Medusa Shorts Medusa Shorts 10,00 €" [ref=e97] [cursor=pointer]:
+            - /url: /products/shorts
+            - img "Medusa Shorts" [ref=e99]
+            - generic [ref=e100]:
+              - heading "Medusa Shorts" [level=3] [ref=e101]
+              - paragraph [ref=e102]: 10,00 €
+  - contentinfo [ref=e103]:
+    - generic [ref=e106]:
+      - generic [ref=e107]:
+        - heading "S'inscrire à notre newsletter" [level=3] [ref=e108]
+        - paragraph [ref=e109]: Recevez -10% sur votre première commande et un accès exclusif à nos nouveaux drops.
+        - link "→ S'inscrire" [ref=e110] [cursor=pointer]:
+          - /url: /newsletter
+          - generic [ref=e111]:
+            - generic [ref=e112]: →
+            - text: S'inscrire
+      - generic [ref=e114]:
+        - heading "Besoin de conseils ?" [level=3] [ref=e115]
+        - paragraph [ref=e116]: Notre équipe se tient à votre disposition pour répondre à vos questions, du lundi au samedi de 11h à 19h.
+        - link "→ Contactez-nous" [ref=e117] [cursor=pointer]:
+          - /url: /contact
+          - generic [ref=e118]:
+            - generic [ref=e119]: →
+            - text: Contactez-nous
+      - generic [ref=e121]:
+        - heading "Livraison & retours" [level=3] [ref=e122]
+        - paragraph [ref=e123]: Les frais de livraison sont offerts pour toute commande au-delà d'un certain montant. Vous disposez de 14 jours après réception pour retourner vos articles.
+        - link "→ En savoir plus" [ref=e124] [cursor=pointer]:
+          - /url: /livraison
+          - generic [ref=e125]:
+            - generic [ref=e126]: →
+            - text: En savoir plus
+    - generic [ref=e130]:
+      - generic [ref=e131]:
+        - button "Service client" [ref=e132]:
+          - generic [ref=e133]: Service client
+        - list [ref=e135]:
+          - listitem [ref=e136]:
+            - link "F.A.Q" [ref=e137] [cursor=pointer]:
+              - /url: /faq
+          - listitem [ref=e138]:
+            - link "Suivre ma commande" [ref=e139] [cursor=pointer]:
+              - /url: /suivi-commande
+          - listitem [ref=e140]:
+            - link "Livraison & retours" [ref=e141] [cursor=pointer]:
+              - /url: /livraison
+          - listitem [ref=e142]:
+            - link "Entretien & guide des tailles" [ref=e143] [cursor=pointer]:
+              - /url: /guide-des-tailles
+      - generic [ref=e144]:
+        - button "Entreprise" [ref=e145]:
+          - generic [ref=e146]: Entreprise
+        - list [ref=e148]:
+          - listitem [ref=e149]:
+            - link "Notre univers" [ref=e150] [cursor=pointer]:
+              - /url: /notre-univers
+          - listitem [ref=e151]:
+            - link "La marque" [ref=e152] [cursor=pointer]:
+              - /url: /legal/mentions-legales
+          - listitem [ref=e153]:
+            - link "Carrières" [ref=e154] [cursor=pointer]:
+              - /url: /carrieres
+          - listitem [ref=e155]:
+            - link "Collaborations" [ref=e156] [cursor=pointer]:
+              - /url: /collaborations
+      - generic [ref=e157]:
+        - button "Suivez-nous" [ref=e158]:
+          - generic [ref=e159]: Suivez-nous
+        - list [ref=e161]:
+          - listitem [ref=e162]:
+            - link "Instagram" [ref=e163] [cursor=pointer]:
+              - /url: https://www.instagram.com/ice_industry_
+          - listitem [ref=e164]:
+            - link "TikTok" [ref=e165] [cursor=pointer]:
+              - /url: https://www.tiktok.com/@ice_industry
+          - listitem [ref=e166]:
+            - link "Snapchat" [ref=e167] [cursor=pointer]:
+              - /url: https://www.snapchat.com/@ice_industry
+          - listitem [ref=e168]:
+            - link "Snapchat Ice for Girls" [ref=e169] [cursor=pointer]:
+              - /url: https://www.snapchat.com/@ice_forgirl
+      - generic [ref=e170]:
+        - button "Contact" [ref=e171]:
+          - generic [ref=e172]: Contact
+        - list [ref=e174]:
+          - listitem [ref=e175]:
+            - link "Nous contacter" [ref=e176] [cursor=pointer]:
+              - /url: /contact
+          - listitem [ref=e177]:
+            - link "Boutique Marseille" [ref=e178] [cursor=pointer]:
+              - /url: /notre-boutique
+          - listitem [ref=e179]:
+            - link "+33 7 64 08 57 97" [ref=e180] [cursor=pointer]:
+              - /url: tel:+33764085797
+          - listitem [ref=e181]:
+            - link "contact@iceindustry.fr" [ref=e182] [cursor=pointer]:
+              - /url: mailto:contact@iceindustry.fr
+      - generic [ref=e183]:
+        - button "Légal" [ref=e184]:
+          - generic [ref=e185]: Légal
+        - list [ref=e187]:
+          - listitem [ref=e188]:
+            - link "Mentions légales" [ref=e189] [cursor=pointer]:
+              - /url: /legal/mentions-legales
+          - listitem [ref=e190]:
+            - link "Conditions générales de vente" [ref=e191] [cursor=pointer]:
+              - /url: /legal/cgv
+          - listitem [ref=e192]:
+            - link "Politique de confidentialité" [ref=e193] [cursor=pointer]:
+              - /url: /legal/confidentialite
+          - listitem [ref=e194]:
+            - link "Politique de cookies" [ref=e195] [cursor=pointer]:
+              - /url: /legal/cookies
+    - paragraph [ref=e197]: © 2026 Ice Industry. Tous droits réservés.
+  - button "Open Next.js Dev Tools" [ref=e203] [cursor=pointer]:
+    - img [ref=e204]
+  - alert [ref=e207]

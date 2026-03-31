@@ -29,26 +29,34 @@ export default function ShippingOptions({
   const [fetchError, setFetchError] = useState("")
 
   useEffect(() => {
-    setFetchError("")
-    sdk.store.fulfillment
-      .listCartOptions({ cart_id: cartId })
-      .then(({ shipping_options }) => {
-        setOptions(
-          (shipping_options || []).map((opt) => ({
-            id: opt.id,
-            name: opt.name,
-            amount: (opt as unknown as Record<string, unknown>).amount as number | null,
-          }))
-        )
-      })
-      .catch((err) => {
-        setFetchError(
-          err instanceof Error
-            ? err.message
-            : "Impossible de charger les options de livraison."
-        )
-      })
-      .finally(() => setFetching(false))
+    let cancelled = false
+    const run = async () => {
+      try {
+        const { shipping_options } = await sdk.store.fulfillment.listCartOptions({ cart_id: cartId })
+        if (!cancelled) {
+          setFetchError("")
+          setOptions(
+            (shipping_options || []).map((opt) => ({
+              id: opt.id,
+              name: opt.name,
+              amount: (opt as unknown as Record<string, unknown>).amount as number | null,
+            }))
+          )
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setFetchError(
+            err instanceof Error
+              ? err.message
+              : "Impossible de charger les options de livraison."
+          )
+        }
+      } finally {
+        if (!cancelled) setFetching(false)
+      }
+    }
+    run()
+    return () => { cancelled = true }
   }, [cartId])
 
   const handleSelect = (optionId: string) => {

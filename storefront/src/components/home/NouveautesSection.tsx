@@ -36,7 +36,7 @@ function extractColorInfo(product: Product): { name: string; count: number } {
 
 /* ─── Product card — Represent CLO style ─── */
 
-function ProductCard({ product, index }: { product: Product; index: number }) {
+function ProductCard({ product }: { product: Product }) {
   const router = useRouter()
   const [hovered, setHovered] = useState(false)
   const [sizesVisible, setSizesVisible] = useState(false)
@@ -233,8 +233,8 @@ export default function NouveautesSection({ products }: NouveautesSectionProps) 
           className="flex gap-[1px] overflow-x-auto scroll-smooth"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {products.map((product, idx) => (
-            <ProductCard key={product.id} product={product} index={idx} />
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
 

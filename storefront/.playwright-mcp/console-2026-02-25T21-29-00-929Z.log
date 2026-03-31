@@ -1,0 +1,15 @@
+[    1224ms] ReferenceError: email is not defined
+    at https://fearofgod.com/en-fr:558:15
+[    1267ms] Identifier 'headerTextColorArr' has already been declared
+[    1327ms] TypeError: Cannot read properties of undefined (reading 'addEventListener')
+    at https://fearofgod.com/cdn/shop/t/314/assets/fog-theme.js?v=173186845047953891251771366330:24:30167
+    at Array.forEach (<anonymous>)
+    at https://fearofgod.com/cdn/shop/t/314/assets/fog-theme.js?v=173186845047953891251771366330:24:30151
+[    1469ms] Uncaught TypeError: Cannot read properties of undefined (reading 'TenantFeatures')
+    at <anonymous> (https://cdn.cookielaw.org/scripttemplates/202511.1.0/otBannerSdk.js:6:516809)
+    at <anonymous> (https://cdn.cookielaw.org/scripttemplates/202511.1.0/otBannerSdk.js:6:525786)
+[    2121ms] [WARNING] In a sandboxed environment, addEventListener may not behave as expected. @ https://fearofgod.com/web-pixels@3c1f2529w4065d210p03530cb8m151179d6/custom/web-pixel-128155709@3/sandbox/modern/en-fr:6
+[    3682ms] [WARNING] In a sandboxed environment, addEventListener may not behave as expected. @ https://fearofgod.com/web-pixels@3c1f2529w4065d210p03530cb8m151179d6/app/web-pixel-813137981@c6b888297782ed4a1cba19cda43d6625/sandbox/modern/en-fr:6
+[    4308ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://cdn.shopify.com/s/files/1/2576/5462/t/26/assets/OPTIMA.woff2?v=16461315325710269163:0
+[    4352ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://cdn.shopify.com/s/files/1/2576/5462/t/26/assets/OPTIMA.woff?v=728769763894588032:0
+[    5035ms] [WARNING] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> @ https://fearofgod.com/en-fr:0

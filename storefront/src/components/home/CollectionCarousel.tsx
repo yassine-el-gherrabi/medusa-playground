@@ -222,9 +222,9 @@ export default function CollectionCarousel({ collections }: CollectionCarouselPr
               >
                 {/* Image */}
                 <div className="absolute inset-0 overflow-hidden">
-                  {(collection.metadata as Record<string, any>)?.hero_image ? (
+                  {(collection.metadata as Record<string, string>)?.hero_image ? (
                     <Image
-                      src={(collection.metadata as Record<string, any>).hero_image}
+                      src={(collection.metadata as Record<string, string>).hero_image}
                       alt={collection.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"

@@ -1,0 +1,43 @@
+[     224ms] [WARNING] Image with src "/images/hero/hero-desk-1.webp" is using quality "80" which is not configured in images.qualities [75]. Please update your config to [75, 80].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[     225ms] [WARNING] Image with src "/images/hero/hero-mobile-2.webp" is using quality "80" which is not configured in images.qualities [75]. Please update your config to [75, 80].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[     226ms] [WARNING] Image with src "/images/hero/hero-desk-2.webp" is using quality "80" which is not configured in images.qualities [75]. Please update your config to [75, 80].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[     226ms] [WARNING] Image with src "/images/hero/hero-mobile-1.webp" is using quality "80" which is not configured in images.qualities [75]. Please update your config to [75, 80].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[     298ms] [WARNING] Image with src "/images/hero/hero-mobile-2.webp" has "fill" prop and "sizes" prop of "100vw", but image is not rendered at full viewport width. Please adjust "sizes" to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[     600ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:9000/store/product-categories?fields=%2Acategory_children&parent_category_id=null:0
+[     600ms] [ERROR] TypeError: Failed to fetch
+    at Client.<anonymous> (http://localhost:3377/_next/static/chunks/node_modules__pnpm_fcec5d91._.js:11496:30)
+    at Generator.next (<anonymous>)
+    at fulfilled (http://localhost:3377/_next/static/chunks/node_modules__pnpm_fcec5d91._.js:11213:32) @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:3127
+[     600ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:9000/store/collections?fields=id%2Ctitle%2Chandle%2Cmetadata%2Ccreated_at:0
+[     600ms] [ERROR] TypeError: Failed to fetch
+    at Client.<anonymous> (http://localhost:3377/_next/static/chunks/node_modules__pnpm_fcec5d91._.js:11496:30)
+    at Generator.next (<anonymous>)
+    at fulfilled (http://localhost:3377/_next/static/chunks/node_modules__pnpm_fcec5d91._.js:11213:32) @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:3127
+[     600ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:9000/store/customers/me:0
+[     600ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:9000/store/regions:0
+[     600ms] [ERROR] TypeError: Failed to fetch
+    at Client.<anonymous> (http://localhost:3377/_next/static/chunks/node_modules__pnpm_fcec5d91._.js:11496:30)
+    at Generator.next (<anonymous>)
+    at fulfilled (http://localhost:3377/_next/static/chunks/node_modules__pnpm_fcec5d91._.js:11213:32) @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:3127
+[     600ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:9000/store/collections?fields=id%2Ctitle%2Chandle%2Cmetadata%2Ccreated_at:0
+[     600ms] [ERROR] TypeError: Failed to fetch
+    at Client.<anonymous> (http://localhost:3377/_next/static/chunks/node_modules__pnpm_fcec5d91._.js:11496:30)
+    at Generator.next (<anonymous>)
+    at fulfilled (http://localhost:3377/_next/static/chunks/node_modules__pnpm_fcec5d91._.js:11213:32) @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:3127
+[  569891ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed:  @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878
+[  570896ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878
+[  571898ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878
+[  572900ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878
+[  573903ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878
+[  574907ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878
+[  579913ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878
+[  584920ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878
+[  589931ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878
+[  594964ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878
+[  600002ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878
+[  605085ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878
+[  610369ms] [ERROR] WebSocket connection to 'ws://localhost:3377/_next/webpack-hmr?id=v5E0XMIMS2dSoMEkQLatQ' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3377/_next/static/chunks/b2b3e_next_dist_client_121ab40e._.js:10878

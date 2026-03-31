@@ -1,0 +1,2 @@
+[     833ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://www.rickowens.eu/cdn/shop/t/3/assets/ro-cookiebot-trigger.js?v=75013:0
+[     833ms] [ERROR] Refused to execute script from 'https://www.rickowens.eu/cdn/shop/t/3/assets/ro-cookiebot-trigger.js?v=75013' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled. @ https://www.rickowens.eu/:0

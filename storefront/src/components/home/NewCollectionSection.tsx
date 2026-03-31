@@ -28,7 +28,7 @@ export default function NewCollectionSection({ collection }: NewCollectionSectio
     return () => observer.disconnect()
   }, [])
 
-  const heroImage = (collection.metadata as Record<string, any>)?.hero_image
+  const heroImage = (collection.metadata as Record<string, string>)?.hero_image
   if (!heroImage) return null
 
   return (
@@ -61,7 +61,7 @@ export default function NewCollectionSection({ collection }: NewCollectionSectio
           {collection.title}
         </h2>
         <p className="text-sm md:text-base text-white/60 mb-8 max-w-md leading-relaxed">
-          {(collection.metadata as Record<string, any>)?.description || ""}
+          {(collection.metadata as Record<string, string>)?.description || ""}
         </p>
         <Link
           href={`/collections/${collection.handle}`}

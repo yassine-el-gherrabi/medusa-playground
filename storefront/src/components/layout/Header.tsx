@@ -99,9 +99,8 @@ export default function Header({
   }, [megaMenuOpen])
 
   // Close mega menu on route change
-  useEffect(() => {
-    setMegaMenuOpen(false)
-  }, [pathname])
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: reset UI state on navigation
+  useEffect(() => { setMegaMenuOpen(false) }, [pathname])
 
   const openMegaMenu = useCallback(() => setMegaMenuOpen(true), [])
   const closeMegaMenu = useCallback(() => setMegaMenuOpen(false), [])

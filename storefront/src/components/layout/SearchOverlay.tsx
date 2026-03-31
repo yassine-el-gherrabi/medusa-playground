@@ -190,6 +190,7 @@ export default function SearchOverlay({
             type="text"
             role="combobox"
             aria-expanded={suggestions.length > 0}
+            aria-controls="search-suggestions"
             aria-haspopup="listbox"
             aria-autocomplete="list"
             value={query}

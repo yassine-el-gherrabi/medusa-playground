@@ -1,5 +1,5 @@
 import { sdk } from "@/lib/sdk"
-import { REVALIDATE_CATEGORIES, TAGS } from "@/lib/constants"
+import { TAGS } from "@/lib/constants"
 import type { Category } from "@/types"
 
 export async function getCategories(

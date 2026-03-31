@@ -1,0 +1,214 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - navigation [ref=e4]:
+        - button "Collections" [ref=e5]: Collections
+        - link "Capsule Origines" [ref=e6] [cursor=pointer]:
+          - /url: /collections/capsule-origines
+          - text: Capsule Origines
+      - link "Ice Industry" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - img "Ice Industry" [ref=e8]
+      - generic [ref=e9]:
+        - button "Rechercher" [ref=e10] [cursor=pointer]:
+          - img [ref=e11]
+        - link "Compte" [ref=e13] [cursor=pointer]:
+          - /url: /account
+          - text: Compte
+        - button "Panier" [ref=e14]: Panier
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - paragraph [ref=e19]: Collections
+        - list [ref=e20]:
+          - listitem [ref=e21]:
+            - link "Capsule Origines" [ref=e22] [cursor=pointer]:
+              - /url: /collections/capsule-origines
+          - listitem [ref=e23]:
+            - link "Capsule Nuit" [ref=e24] [cursor=pointer]:
+              - /url: /collections/capsule-nuit
+          - listitem [ref=e25]:
+            - link "Capsule Blaze" [ref=e26] [cursor=pointer]:
+              - /url: /collections/capsule-blaze
+          - listitem [ref=e27]:
+            - link "Capsule Arctic" [ref=e28] [cursor=pointer]:
+              - /url: /collections/capsule-arctic
+          - listitem [ref=e29]:
+            - link "Toutes les collections" [ref=e30] [cursor=pointer]:
+              - /url: /boutique
+      - generic [ref=e31]:
+        - paragraph [ref=e32]: Boutique
+        - link "Shirts" [ref=e34] [cursor=pointer]:
+          - /url: /categories/shirts
+        - link "Sweatshirts" [ref=e36] [cursor=pointer]:
+          - /url: /categories/sweatshirts
+        - link "Merch" [ref=e38] [cursor=pointer]:
+          - /url: /categories/merch
+        - link "Pants" [ref=e40] [cursor=pointer]:
+          - /url: /categories/pants
+        - link "Vetements" [ref=e42] [cursor=pointer]:
+          - /url: /categories/vetements
+        - generic [ref=e43]:
+          - link "Accessoires" [ref=e44] [cursor=pointer]:
+            - /url: /categories/accessoires
+          - list [ref=e45]:
+            - listitem [ref=e46]:
+              - link "Lunettes de soleil" [ref=e47] [cursor=pointer]:
+                - /url: /categories/lunettes
+            - listitem [ref=e48]:
+              - link "Cache-cou" [ref=e49] [cursor=pointer]:
+                - /url: /categories/cache-cou
+            - listitem [ref=e50]:
+              - link "Casquettes" [ref=e51] [cursor=pointer]:
+                - /url: /categories/casquettes
+        - link "Ice for Girls" [ref=e53] [cursor=pointer]:
+          - /url: /categories/ice-for-girls
+        - generic [ref=e54]:
+          - link "Chaussures" [ref=e55] [cursor=pointer]:
+            - /url: /categories/chaussures
+          - list [ref=e56]:
+            - listitem [ref=e57]:
+              - link "Nike" [ref=e58] [cursor=pointer]:
+                - /url: /categories/chaussures-nike
+            - listitem [ref=e59]:
+              - link "Jordan" [ref=e60] [cursor=pointer]:
+                - /url: /categories/chaussures-jordan
+            - listitem [ref=e61]:
+              - link "New Balance" [ref=e62] [cursor=pointer]:
+                - /url: /categories/chaussures-new-balance
+        - link "Tout voir" [ref=e64] [cursor=pointer]:
+          - /url: /boutique
+      - link "Capsule Origines Capsule Origines Découvrir →" [ref=e65] [cursor=pointer]:
+        - /url: /collections/capsule-origines
+        - generic [ref=e66]:
+          - img "Capsule Origines" [ref=e68]
+          - generic [ref=e70]:
+            - paragraph [ref=e71]: Capsule Origines
+            - generic [ref=e72]: Découvrir →
+      - link "Shirts Shirts Découvrir →" [ref=e73] [cursor=pointer]:
+        - /url: /categories/shirts
+        - generic [ref=e74]:
+          - img "Shirts" [ref=e76]
+          - generic [ref=e78]:
+            - paragraph [ref=e79]: Shirts
+            - generic [ref=e80]: Découvrir →
+  - dialog "Panier" [ref=e81]:
+    - generic [ref=e82]:
+      - generic [ref=e83]:
+        - heading "Panier" [level=2] [ref=e84]
+        - button "Fermer le panier" [ref=e85]:
+          - img [ref=e86]
+      - generic [ref=e88]:
+        - paragraph [ref=e89]: Votre panier est vide
+        - button "Continuer le shopping" [ref=e90]
+  - main [ref=e91]
+  - contentinfo [ref=e94]:
+    - generic [ref=e97]:
+      - generic [ref=e98]:
+        - heading "S'inscrire à notre newsletter" [level=3] [ref=e99]
+        - paragraph [ref=e100]: Recevez -10% sur votre première commande et un accès exclusif à nos nouveaux drops.
+        - link "→ S'inscrire" [ref=e101] [cursor=pointer]:
+          - /url: /newsletter
+          - generic [ref=e102]:
+            - generic [ref=e103]: →
+            - text: S'inscrire
+      - generic [ref=e105]:
+        - heading "Besoin de conseils ?" [level=3] [ref=e106]
+        - paragraph [ref=e107]: Notre équipe se tient à votre disposition pour répondre à vos questions, du lundi au samedi de 11h à 19h.
+        - link "→ Contactez-nous" [ref=e108] [cursor=pointer]:
+          - /url: /contact
+          - generic [ref=e109]:
+            - generic [ref=e110]: →
+            - text: Contactez-nous
+      - generic [ref=e112]:
+        - heading "Livraison & retours" [level=3] [ref=e113]
+        - paragraph [ref=e114]: Les frais de livraison sont offerts pour toute commande au-delà d'un certain montant. Vous disposez de 14 jours après réception pour retourner vos articles.
+        - link "→ En savoir plus" [ref=e115] [cursor=pointer]:
+          - /url: /livraison
+          - generic [ref=e116]:
+            - generic [ref=e117]: →
+            - text: En savoir plus
+    - generic [ref=e121]:
+      - generic [ref=e122]:
+        - button "Service client" [ref=e123]:
+          - generic [ref=e124]: Service client
+        - list [ref=e126]:
+          - listitem [ref=e127]:
+            - link "F.A.Q" [ref=e128] [cursor=pointer]:
+              - /url: /faq
+          - listitem [ref=e129]:
+            - link "Suivre ma commande" [ref=e130] [cursor=pointer]:
+              - /url: /suivi-commande
+          - listitem [ref=e131]:
+            - link "Livraison & retours" [ref=e132] [cursor=pointer]:
+              - /url: /livraison
+          - listitem [ref=e133]:
+            - link "Entretien & guide des tailles" [ref=e134] [cursor=pointer]:
+              - /url: /guide-des-tailles
+      - generic [ref=e135]:
+        - button "Entreprise" [ref=e136]:
+          - generic [ref=e137]: Entreprise
+        - list [ref=e139]:
+          - listitem [ref=e140]:
+            - link "Notre univers" [ref=e141] [cursor=pointer]:
+              - /url: /notre-univers
+          - listitem [ref=e142]:
+            - link "La marque" [ref=e143] [cursor=pointer]:
+              - /url: /legal/mentions-legales
+          - listitem [ref=e144]:
+            - link "Carrières" [ref=e145] [cursor=pointer]:
+              - /url: /carrieres
+          - listitem [ref=e146]:
+            - link "Collaborations" [ref=e147] [cursor=pointer]:
+              - /url: /collaborations
+      - generic [ref=e148]:
+        - button "Suivez-nous" [ref=e149]:
+          - generic [ref=e150]: Suivez-nous
+        - list [ref=e152]:
+          - listitem [ref=e153]:
+            - link "Instagram" [ref=e154] [cursor=pointer]:
+              - /url: https://www.instagram.com/ice_industry_
+          - listitem [ref=e155]:
+            - link "TikTok" [ref=e156] [cursor=pointer]:
+              - /url: https://www.tiktok.com/@ice_industry
+          - listitem [ref=e157]:
+            - link "Snapchat" [ref=e158] [cursor=pointer]:
+              - /url: https://www.snapchat.com/@ice_industry
+          - listitem [ref=e159]:
+            - link "Snapchat Ice for Girls" [ref=e160] [cursor=pointer]:
+              - /url: https://www.snapchat.com/@ice_forgirl
+      - generic [ref=e161]:
+        - button "Contact" [ref=e162]:
+          - generic [ref=e163]: Contact
+        - list [ref=e165]:
+          - listitem [ref=e166]:
+            - link "Nous contacter" [ref=e167] [cursor=pointer]:
+              - /url: /contact
+          - listitem [ref=e168]:
+            - link "Boutique Marseille" [ref=e169] [cursor=pointer]:
+              - /url: /notre-boutique
+          - listitem [ref=e170]:
+            - link "+33 7 64 08 57 97" [ref=e171] [cursor=pointer]:
+              - /url: tel:+33764085797
+          - listitem [ref=e172]:
+            - link "contact@iceindustry.fr" [ref=e173] [cursor=pointer]:
+              - /url: mailto:contact@iceindustry.fr
+      - generic [ref=e174]:
+        - button "Légal" [ref=e175]:
+          - generic [ref=e176]: Légal
+        - list [ref=e178]:
+          - listitem [ref=e179]:
+            - link "Mentions légales" [ref=e180] [cursor=pointer]:
+              - /url: /legal/mentions-legales
+          - listitem [ref=e181]:
+            - link "Conditions générales de vente" [ref=e182] [cursor=pointer]:
+              - /url: /legal/cgv
+          - listitem [ref=e183]:
+            - link "Politique de confidentialité" [ref=e184] [cursor=pointer]:
+              - /url: /legal/confidentialite
+          - listitem [ref=e185]:
+            - link "Politique de cookies" [ref=e186] [cursor=pointer]:
+              - /url: /legal/cookies
+    - paragraph [ref=e188]: © 2026 Ice Industry. Tous droits réservés.
+  - button "Open Next.js Dev Tools" [ref=e194] [cursor=pointer]:
+    - img [ref=e195]
+  - alert [ref=e198]

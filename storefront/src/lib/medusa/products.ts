@@ -1,5 +1,5 @@
 import { sdk } from "@/lib/sdk"
-import { REVALIDATE_PRODUCTS, TAGS } from "@/lib/constants"
+import { TAGS } from "@/lib/constants"
 import type { Product } from "@/types"
 
 const PRODUCT_FIELDS =

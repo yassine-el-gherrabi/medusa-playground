@@ -1,5 +1,5 @@
 import { sdk } from "@/lib/sdk"
-import { REVALIDATE_COLLECTIONS, TAGS } from "@/lib/constants"
+import { TAGS } from "@/lib/constants"
 import type { Collection } from "@/types"
 
 export async function getCollections(

@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+/* Shiny text — hover-triggered sweep (left → right) */
+@keyframes shiny-sweep {
+  0% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+.shiny-text {
+  background: linear-gradient(120deg, #d4d4d4 0%, #d4d4d4 40%, #ffffff 50%, #d4d4d4 60%, #d4d4d4 100%);
+  background-size: 300% auto;
+  background-position: 100% center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.shiny-btn:hover .shiny-text {
+  animation: shiny-sweep 1.5s linear infinite;
+}
+/* Brighter variant for lighter backgrounds (size chips etc.) */
+.shiny-text-bright {
+  background: linear-gradient(120deg, #ffffff 0%, #ffffff 40%, #d4d4d4 50%, #ffffff 60%, #ffffff 100%);
+  background-size: 300% auto;
+  background-position: 100% center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.shiny-btn:hover .shiny-text-bright {
+  animation: shiny-sweep 1.5s linear infinite;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+  --accent: #555555;
+  --muted: #f5f5f5;
+  --muted-foreground: #717171;
+  --border: #e5e5e5;
+  --input: #ffffff;
+  --ring: #000000;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-sans);
+}
+
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--muted) 25%, #ebebeb 50%, var(--muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeInImage {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in-image {
+  animation: fadeInImage 0.3s ease-out forwards;
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s ease-in-out infinite;
+}
+
+/* Hero slide progress bar */
+@keyframes slideProgress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-slide-progress {
+  animation: slideProgress 6s linear forwards;
+}
+
+/* Hide scrollbar — horizontal scroll strips */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

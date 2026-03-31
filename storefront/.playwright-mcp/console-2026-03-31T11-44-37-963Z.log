@@ -1,0 +1,23 @@
+[     223ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[     289ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[     374ms] [WARNING] Image with src "/images/hero/hero-desk-1.webp" is using quality "80" which is not configured in images.qualities [70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 75]. Please update your config to [70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 75, 80].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities @ http://localhost:3000/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[     375ms] [WARNING] Image with src "/images/hero/hero-mobile-2.webp" is using quality "80" which is not configured in images.qualities [70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 75]. Please update your config to [70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 75, 80].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities @ http://localhost:3000/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[     375ms] [WARNING] Image with src "/images/hero/hero-desk-2.webp" is using quality "80" which is not configured in images.qualities [70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 75]. Please update your config to [70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 75, 80].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities @ http://localhost:3000/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[     376ms] [WARNING] Image with src "/images/hero/hero-mobile-1.webp" is using quality "80" which is not configured in images.qualities [70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 75]. Please update your config to [70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 75, 80].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities @ http://localhost:3000/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[     388ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9000/store/regions/reg_01JQHEER18KTPFNKYJTTF8SC7T:0
+[     404ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9000/store/carts/cart_01KJFQDDPFT5MP4DVC9BM8BC3Z:0
+[     542ms] [WARNING] Image with src "/images/hero/hero-mobile-2.webp" has "fill" prop and "sizes" prop of "100vw", but image is not rendered at full viewport width. Please adjust "sizes" to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes @ http://localhost:3000/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[    1407ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9000/store/carts/cart_01KJFQDDPFT5MP4DVC9BM8BC3Z:0
+[   17838ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/suivi-commande?_rsc=lutug:0
+[   17951ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[   17986ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/suivi-commande:0
+[   18025ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[   18036ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[   18054ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9000/store/regions/reg_01JQHEER18KTPFNKYJTTF8SC7T:0
+[   18057ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9000/store/carts/cart_01KJFQDDPFT5MP4DVC9BM8BC3Z:0
+[   18226ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/b2b3e_next_dist_77a734fe._.js:2297
+[   19058ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9000/store/carts/cart_01KJFQDDPFT5MP4DVC9BM8BC3Z:0

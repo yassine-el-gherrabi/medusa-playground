@@ -1,0 +1,12 @@
+[    2684ms] [WARNING]  [33m[1m⚠[22m[39m Runtime config is deprecated and will be removed in Next.js 16. Please remove the usage of "next/config" from your project. @ https://www.endclothing.com/storeassets/_next/static/chunks/pages/_app-0947b85ab450ffa7.js:9
+[    3622ms] [ERROR] Failed to load resource: the server responded with a status of 405 () @ https://www.endclothing.com/akam/13/pixel_4e05d326:0
+[    5099ms] [ERROR] Failed to load resource: the server responded with a status of 405 () @ https://www.endclothing.com/oaKsIRgzXDNq8oTmkg/LN9pppQ9bO/TVwBGXI5AQ/LTMzFVk/5Q3YPAg:0
+[   11174ms] [ERROR] Failed to load resource: the server responded with a status of 405 () @ https://www.endclothing.com/oaKsIRgzXDNq8oTmkg/LN9pppQ9bO/TVwBGXI5AQ/LTMzFVk/5Q3YPAg:0
+[   15946ms] [ERROR] Failed to load resource: the server responded with a status of 429 () @ https://o4509078657302528.ingest.de.sentry.io/api/4509122581495889/envelope/?sentry_version=7&sentry_key=506debe00a79ca2a8b2ea420e73c8475&sentry_client=sentry.javascript.nextjs%2F9.42.1:0
+[   32802ms] [WARNING] [TikTok Pixel] - Duplicate Pixel ID
+Issue: The pixel ID is duplicate. This could impact the pixel data accuracy.
+Suggestion: Please double check and delete any unnecessary pixel code. @ https://www.endclothing.com/storeassets/_next/static/chunks/pages/_app-0947b85ab450ffa7.js:1
+[   44642ms] [WARNING] [TikTok Pixel] - Duplicate Pixel ID
+Issue: The pixel ID is duplicate. This could impact the pixel data accuracy.
+Suggestion: Please double check and delete any unnecessary pixel code. @ https://www.endclothing.com/storeassets/_next/static/chunks/pages/_app-0947b85ab450ffa7.js:1
+[   71232ms] [ERROR] Failed to load resource: the server responded with a status of 405 () @ https://www.endclothing.com/oaKsIRgzXDNq8oTmkg/LN9pppQ9bO/TVwBGXI5AQ/LTMzFVk/5Q3YPAg:0

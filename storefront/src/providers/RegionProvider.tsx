@@ -25,17 +25,26 @@ export function RegionProvider({ children }: { children: React.ReactNode }) {
   const [regionError, setRegionError] = useState("")
 
   useEffect(() => {
-    setRegionError("")
-    sdk.store.region
-      .retrieve(regionId)
-      .then(({ region }) => setRegion(region as Region))
-      .catch((err) => {
-        setRegionError(
-          err instanceof Error
-            ? err.message
-            : "Impossible de charger la région."
-        )
-      })
+    let cancelled = false
+    const run = async () => {
+      try {
+        const { region } = await sdk.store.region.retrieve(regionId)
+        if (!cancelled) {
+          setRegionError("")
+          setRegion(region as Region)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setRegionError(
+            err instanceof Error
+              ? err.message
+              : "Impossible de charger la région."
+          )
+        }
+      }
+    }
+    run()
+    return () => { cancelled = true }
   }, [regionId])
 
   return (

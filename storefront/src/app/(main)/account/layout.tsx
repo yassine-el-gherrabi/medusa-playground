@@ -5,7 +5,6 @@ import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { getCustomer } from "@/lib/medusa/customer"
 import { cn } from "@/lib/utils"
-import type { Customer } from "@/types"
 
 const NAV_ITEMS = [
   { label: "Mon compte", href: "/account" },
@@ -21,23 +20,22 @@ export default function AccountLayout({
 }) {
   const router = useRouter()
   const pathname = usePathname()
-  const [customer, setCustomer] = useState<Customer | null>(null)
   const [loading, setLoading] = useState(true)
 
   const isPublic = PUBLIC_PATHS.includes(pathname)
 
   useEffect(() => {
+    let cancelled = false
     getCustomer()
       .then((c) => {
-        setCustomer(c)
-        if (!c && !isPublic) {
-          router.replace("/account/login")
-        }
+        if (cancelled) return
+        if (!c && !isPublic) router.replace("/account/login")
       })
       .catch(() => {
-        if (!isPublic) router.replace("/account/login")
+        if (!cancelled && !isPublic) router.replace("/account/login")
       })
-      .finally(() => setLoading(false))
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [pathname, isPublic, router])
 
   if (loading) {

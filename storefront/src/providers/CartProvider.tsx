@@ -4,7 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
+
   useState,
 } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -28,14 +28,11 @@ const CartContext = createContext<CartContextType | null>(null)
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { regionId } = useRegion()
   const queryClient = useQueryClient()
-  const [cartId, setCartId] = useState<string | null>(null)
+  const [cartId, setCartId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null
+    return localStorage.getItem("cart_id")
+  })
   const [drawerOpen, setDrawerOpen] = useState(false)
-
-  // Initialize cart ID from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem("cart_id")
-    if (stored) setCartId(stored)
-  }, [])
 
   // Fetch cart
   const { data: cart, isLoading } = useQuery({
