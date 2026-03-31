@@ -207,7 +207,7 @@ export default function CheckoutPage() {
 
         {/* Order summary sidebar */}
         <div className="bg-muted rounded-lg p-6 h-fit">
-          <h3 className="font-semibold mb-4">R&eacute;capitulatif</h3>
+          <h3 className="font-semibold mb-4">Récapitulatif</h3>
           <div className="space-y-3">
             {cart.items?.map((item: LineItem) => (
               <div key={item.id} className="flex justify-between text-sm">

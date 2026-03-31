@@ -99,10 +99,10 @@ export default function Footer() {
             {/* Newsletter */}
             <div className="p-8 lg:p-10">
               <h3 className="text-xs uppercase tracking-[0.2em] font-medium mb-3">
-                S&apos;inscrire &agrave; notre newsletter
+                S&apos;inscrire à notre newsletter
               </h3>
               <p className="text-xs text-black/60 leading-relaxed mb-4">
-                Recevez -10% sur votre premi&egrave;re commande et un acc&egrave;s exclusif &agrave; nos nouveaux drops.
+                Recevez -10% sur votre première commande et un accès exclusif à nos nouveaux drops.
               </p>
               <AnimatedLink
                 href="/newsletter"
@@ -118,7 +118,7 @@ export default function Footer() {
                 Besoin de conseils ?
               </h3>
               <p className="text-xs text-black/60 leading-relaxed mb-4">
-                Notre &eacute;quipe se tient &agrave; votre disposition pour r&eacute;pondre &agrave; vos questions, du lundi au samedi de 11h &agrave; 19h.
+                Notre équipe se tient à votre disposition pour répondre à vos questions, du lundi au samedi de 11h à 19h.
               </p>
               <AnimatedLink
                 href="/contact"
@@ -134,7 +134,7 @@ export default function Footer() {
                 Livraison &amp; retours
               </h3>
               <p className="text-xs text-black/60 leading-relaxed mb-4">
-                Les frais de livraison sont offerts pour toute commande au-del&agrave; d&apos;un certain montant. Vous disposez de 14 jours apr&egrave;s r&eacute;ception pour retourner vos articles.
+                Les frais de livraison sont offerts pour toute commande au-delà d&apos;un certain montant. Vous disposez de 14 jours après réception pour retourner vos articles.
               </p>
               <AnimatedLink
                 href="/livraison"
@@ -150,10 +150,10 @@ export default function Footer() {
             {/* Newsletter */}
             <div className="py-8 px-2">
               <h3 className="text-xs uppercase tracking-[0.2em] font-medium mb-3">
-                S&apos;inscrire &agrave; notre newsletter
+                S&apos;inscrire à notre newsletter
               </h3>
               <p className="text-xs text-black/60 leading-relaxed mb-4">
-                Recevez -10% sur votre premi&egrave;re commande et un acc&egrave;s exclusif &agrave; nos nouveaux drops.
+                Recevez -10% sur votre première commande et un accès exclusif à nos nouveaux drops.
               </p>
               <AnimatedLink
                 href="/newsletter"
@@ -169,7 +169,7 @@ export default function Footer() {
                 Besoin de conseils ?
               </h3>
               <p className="text-xs text-black/60 leading-relaxed mb-4">
-                Notre &eacute;quipe se tient &agrave; votre disposition pour r&eacute;pondre &agrave; vos questions, du lundi au samedi de 11h &agrave; 19h.
+                Notre équipe se tient à votre disposition pour répondre à vos questions, du lundi au samedi de 11h à 19h.
               </p>
               <AnimatedLink
                 href="/contact"
@@ -185,7 +185,7 @@ export default function Footer() {
                 Livraison &amp; retours
               </h3>
               <p className="text-xs text-black/60 leading-relaxed mb-4">
-                Les frais de livraison sont offerts pour toute commande au-del&agrave; d&apos;un certain montant. Vous disposez de 14 jours apr&egrave;s r&eacute;ception pour retourner vos articles.
+                Les frais de livraison sont offerts pour toute commande au-delà d&apos;un certain montant. Vous disposez de 14 jours après réception pour retourner vos articles.
               </p>
               <AnimatedLink
                 href="/livraison"
@@ -317,7 +317,7 @@ export default function Footer() {
       {/* COUCHE 3 — Bottom bar (copyright) */}
       <div className="bg-white border-t border-black/10 py-6 px-6 lg:px-12">
         <p className="text-[10px] text-black uppercase tracking-wider text-center">
-          &copy; 2026 Ice Industry. Tous droits r&eacute;serv&eacute;s.
+          &copy; 2026 Ice Industry. Tous droits réservés.
         </p>
       </div>
     </footer>

@@ -70,7 +70,7 @@ export default function CheckoutForm({ onSubmit, loading }: CheckoutFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Pr&eacute;nom</label>
+          <label className="block text-sm font-medium mb-1">Prénom</label>
           <input
             type="text"
             {...register("first_name")}
@@ -107,7 +107,7 @@ export default function CheckoutForm({ onSubmit, loading }: CheckoutFormProps) {
 
       <div>
         <label className="block text-sm font-medium mb-1">
-          Compl&eacute;ment d&apos;adresse (optionnel)
+          Complément d&apos;adresse (optionnel)
         </label>
         <input
           type="text"
@@ -149,7 +149,7 @@ export default function CheckoutForm({ onSubmit, loading }: CheckoutFormProps) {
             <option value="de">Allemagne</option>
             <option value="gb">Royaume-Uni</option>
             <option value="dk">Danemark</option>
-            <option value="se">Su&egrave;de</option>
+            <option value="se">Suède</option>
             <option value="es">Espagne</option>
             <option value="it">Italie</option>
           </select>
@@ -159,7 +159,7 @@ export default function CheckoutForm({ onSubmit, loading }: CheckoutFormProps) {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">
-            T&eacute;l&eacute;phone (optionnel)
+            Téléphone (optionnel)
           </label>
           <input
             type="tel"

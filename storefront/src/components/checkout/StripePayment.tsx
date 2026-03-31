@@ -134,7 +134,7 @@ export default function StripePayment({
       <div className="space-y-4">
         <h2 className="text-xl font-semibold mb-4">Paiement</h2>
         <p className="text-muted-foreground">
-          Le paiement n&apos;est pas configur&eacute;. Veuillez configurer
+          Le paiement n&apos;est pas configuré. Veuillez configurer
           Stripe dans l&apos;administration Medusa.
         </p>
         <button

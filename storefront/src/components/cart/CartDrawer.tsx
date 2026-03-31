@@ -116,7 +116,7 @@ export default function CartDrawer() {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Frais de livraison calcul&eacute;s &agrave; l&apos;&eacute;tape suivante
+                  Frais de livraison calculés à l&apos;étape suivante
                 </p>
                 <Link
                   href="/checkout"

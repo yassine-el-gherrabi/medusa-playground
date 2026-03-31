@@ -115,7 +115,7 @@ export default function ShippingOptions({
                 {isPickup && (
                   <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
                     <p>Boutique Ice Industry &mdash; 13001 Marseille</p>
-                    <p>Pr&ecirc;t sous 24h</p>
+                    <p>Prêt sous 24h</p>
                   </div>
                 )}
               </div>

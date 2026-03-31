@@ -144,7 +144,7 @@ export default function MobileMenu({
                     {latestCollection.title}
                   </p>
                   <span className="text-xs text-white/80 mt-1 inline-block">
-                    D&eacute;couvrir &rarr;
+                    Découvrir &rarr;
                   </span>
                 </div>
               </div>
