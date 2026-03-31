@@ -92,6 +92,7 @@ export default function StripePayment({
 }: StripePaymentProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [initError, setInitError] = useState("")
 
   useEffect(() => {
     sdk.store.payment
@@ -117,7 +118,13 @@ export default function StripePayment({
           setClientSecret(session.data.client_secret)
         }
       })
-      .catch(console.error)
+      .catch((err) => {
+        setInitError(
+          err instanceof Error
+            ? err.message
+            : "Impossible d'initialiser le paiement."
+        )
+      })
       .finally(() => setLoading(false))
   }, [cartId])
 
@@ -125,6 +132,14 @@ export default function StripePayment({
     return (
       <div className="text-muted-foreground py-4">
         Chargement du paiement...
+      </div>
+    )
+  }
+
+  if (initError) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md px-4 py-3">
+        {initError}
       </div>
     )
   }

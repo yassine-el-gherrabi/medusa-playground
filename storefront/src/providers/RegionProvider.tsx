@@ -8,28 +8,38 @@ import type { Region } from "@/types"
 type RegionContextType = {
   region: Region | null
   regionId: string
+  regionError: string
   setRegionId: (id: string) => void
 }
 
 const RegionContext = createContext<RegionContextType>({
   region: null,
   regionId: DEFAULT_REGION,
+  regionError: "",
   setRegionId: () => {},
 })
 
 export function RegionProvider({ children }: { children: React.ReactNode }) {
   const [regionId, setRegionId] = useState(DEFAULT_REGION)
   const [region, setRegion] = useState<Region | null>(null)
+  const [regionError, setRegionError] = useState("")
 
   useEffect(() => {
+    setRegionError("")
     sdk.store.region
       .retrieve(regionId)
       .then(({ region }) => setRegion(region as Region))
-      .catch(console.error)
+      .catch((err) => {
+        setRegionError(
+          err instanceof Error
+            ? err.message
+            : "Impossible de charger la région."
+        )
+      })
   }, [regionId])
 
   return (
-    <RegionContext.Provider value={{ region, regionId, setRegionId }}>
+    <RegionContext.Provider value={{ region, regionId, regionError, setRegionId }}>
       {children}
     </RegionContext.Provider>
   )

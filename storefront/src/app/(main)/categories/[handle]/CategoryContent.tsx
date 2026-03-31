@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { sdk } from "@/lib/sdk"
+import { useState, useEffect, useMemo } from "react"
 import { useRegion } from "@/providers/RegionProvider"
+import { useProductList } from "@/hooks/useProductList"
 import ProductCard from "@/components/product/ProductCard"
 import { ProductGridSkeleton } from "@/components/ui/Skeleton"
-import type { Product, Category } from "@/types"
+import type { Category } from "@/types"
 
 const LIMIT = 12
 
@@ -17,68 +17,43 @@ export default function CategoryContent({
 }: {
   categoryId: string
   children: Category[]
-  initialProducts: Product[]
+  initialProducts: import("@/types").Product[]
   initialCount: number
 }) {
   const { region } = useRegion()
-  const [products, setProducts] = useState<Product[]>(initialProducts)
-  const [count, setCount] = useState(initialCount)
-  const [offset, setOffset] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const { products, loading, hasMore, error, fetchProducts, loadMore } =
+    useProductList({ products: initialProducts, count: initialCount })
+
   const [activeChild, setActiveChild] = useState("")
+
+  // Memoize child handle → id map for O(1) lookup
+  const childIdMap = useMemo(
+    () => new Map(children.map((c) => [c.handle, c.id])),
+    [children]
+  )
+
+  const getActiveCategoryId = () =>
+    activeChild ? childIdMap.get(activeChild) || categoryId : categoryId
 
   // Re-fetch when sub-category changes
   useEffect(() => {
     if (!region) return
-    setLoading(true)
-    setOffset(0)
-
-    const id = activeChild
-      ? children.find((c) => c.handle === activeChild)?.id || categoryId
-      : categoryId
-
-    sdk.store.product
-      .list({
-        limit: LIMIT,
-        offset: 0,
-        category_id: [id],
-        fields: "*variants.calculated_price",
-        region_id: region.id,
-      })
-      .then(({ products, count }) => {
-        setProducts((products as Product[]) || [])
-        setCount(count || 0)
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
+    fetchProducts({
+      regionId: region.id,
+      limit: LIMIT,
+      categoryId: [getActiveCategoryId()],
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [region, activeChild])
 
-  const loadMore = () => {
+  const handleLoadMore = () => {
     if (!region) return
-    const nextOffset = offset + LIMIT
-
-    const id = activeChild
-      ? children.find((c) => c.handle === activeChild)?.id || categoryId
-      : categoryId
-
-    sdk.store.product
-      .list({
-        limit: LIMIT,
-        offset: nextOffset,
-        category_id: [id],
-        fields: "*variants.calculated_price",
-        region_id: region.id,
-      })
-      .then(({ products: newProducts, count }) => {
-        setProducts((prev) => [...prev, ...((newProducts as Product[]) || [])])
-        setOffset(nextOffset)
-        setCount(count || 0)
-      })
-      .catch(console.error)
+    loadMore({
+      regionId: region.id,
+      limit: LIMIT,
+      categoryId: [getActiveCategoryId()],
+    })
   }
-
-  const hasMore = offset + LIMIT < count
 
   return (
     <>
@@ -115,6 +90,12 @@ export default function CategoryContent({
 
       {/* Products */}
       <div className="max-w-7xl mx-auto px-4 pb-20">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md px-4 py-3 mb-6">
+            {error}
+          </div>
+        )}
+
         {loading ? (
           <ProductGridSkeleton count={8} />
         ) : products.length === 0 ? (
@@ -132,7 +113,7 @@ export default function CategoryContent({
             {hasMore && (
               <div className="text-center mt-12">
                 <button
-                  onClick={loadMore}
+                  onClick={handleLoadMore}
                   className="px-8 py-3 border border-border text-sm font-medium uppercase tracking-wider hover:bg-muted transition-colors"
                 >
                   Charger plus

@@ -28,7 +28,7 @@ export default function SearchOverlay({
   const [activeIndex, setActiveIndex] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
-  const trendingFetchedRef = useRef(false)
+  const trendingRegionRef = useRef<string | null>(null)
   const { region } = useRegion()
 
   const { suggestions, matchingCategories } = useSearchSuggestions(query, categories)
@@ -36,13 +36,12 @@ export default function SearchOverlay({
   // Focus + scroll lock + fetch trending
   useEffect(() => {
     if (isOpen) {
-      // Small delay to ensure the overlay is rendered before focusing
       requestAnimationFrame(() => inputRef.current?.focus())
       document.body.style.overflow = "hidden"
 
-      // Fetch trending products once
-      if (!trendingFetchedRef.current && region) {
-        trendingFetchedRef.current = true
+      // Fetch trending products (re-fetch if region changed)
+      if (region && trendingRegionRef.current !== region.id) {
+        trendingRegionRef.current = region.id
         setLoadingTrending(true)
         sdk.store.product
           .list({
@@ -50,7 +49,9 @@ export default function SearchOverlay({
             region_id: region.id,
             fields: "*variants.calculated_price",
           })
-          .then(({ products }) => setTrendingProducts(products || []))
+          .then(({ products }) =>
+            setTrendingProducts((products as Product[]) || [])
+          )
           .catch(() => setTrendingProducts([]))
           .finally(() => setLoadingTrending(false))
       }
@@ -95,7 +96,7 @@ export default function SearchOverlay({
           region_id: region.id,
           fields: "*variants.calculated_price",
         })
-        setResults(products || [])
+        setResults((products as Product[]) || [])
         setTotalCount(count || products?.length || 0)
       } catch {
         setResults([])

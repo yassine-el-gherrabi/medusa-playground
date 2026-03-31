@@ -26,8 +26,10 @@ export default function ShippingOptions({
   const [options, setOptions] = useState<ShippingOption[]>([])
   const [selectedId, setSelectedId] = useState<string>("")
   const [fetching, setFetching] = useState(true)
+  const [fetchError, setFetchError] = useState("")
 
   useEffect(() => {
+    setFetchError("")
     sdk.store.fulfillment
       .listCartOptions({ cart_id: cartId })
       .then(({ shipping_options }) => {
@@ -39,7 +41,13 @@ export default function ShippingOptions({
           }))
         )
       })
-      .catch(console.error)
+      .catch((err) => {
+        setFetchError(
+          err instanceof Error
+            ? err.message
+            : "Impossible de charger les options de livraison."
+        )
+      })
       .finally(() => setFetching(false))
   }, [cartId])
 
@@ -51,6 +59,14 @@ export default function ShippingOptions({
     return (
       <div className="text-muted-foreground py-4">
         Chargement des options de livraison...
+      </div>
+    )
+  }
+
+  if (fetchError) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md px-4 py-3">
+        {fetchError}
       </div>
     )
   }

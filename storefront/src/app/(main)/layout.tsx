@@ -8,10 +8,17 @@ export default async function MainLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [categories, collections] = await Promise.all([
+  const [categories, rawCollections] = await Promise.all([
     getCategories().catch(() => []),
     getCollections().catch(() => []),
   ])
+
+  // Sort collections once (newest first) — children don't need to re-sort
+  const collections = [...rawCollections].sort(
+    (a, b) =>
+      new Date(b.created_at || 0).getTime() -
+      new Date(a.created_at || 0).getTime()
+  )
 
   return (
     <>

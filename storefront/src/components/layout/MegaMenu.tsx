@@ -21,12 +21,8 @@ export default function MegaMenu({
   isOpen: boolean
   onClose: () => void
 }) {
-  const sorted = [...collections].sort(
-    (a, b) =>
-      new Date(b.created_at || 0).getTime() -
-      new Date(a.created_at || 0).getTime()
-  )
-  const latest = sorted[0] || null
+  // Collections already sorted by layout (newest first)
+  const latest = collections[0] || null
   const firstCategory = categories[0]
 
   const defaultCollectionItem: HoveredItem = latest
@@ -86,7 +82,7 @@ export default function MegaMenu({
                 Collections
               </p>
               <ul className="space-y-2.5">
-                {sorted.map((c) => (
+                {collections.map((c) => (
                   <li key={c.id}>
                     <Link
                       href={`/collections/${c.handle}`}

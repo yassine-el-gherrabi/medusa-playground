@@ -61,13 +61,8 @@ export default function MobileMenu({
     }
   }, [isOpen])
 
-  // Sort collections newest first
-  const sorted = [...collections].sort(
-    (a, b) =>
-      new Date(b.created_at || 0).getTime() -
-      new Date(a.created_at || 0).getTime()
-  )
-  const latestCollection = sorted[0]
+  // Collections already sorted by layout (newest first)
+  const latestCollection = collections[0]
 
   // Toggle accordion — only one open at a time
   const toggle = (section: string) => {
@@ -171,7 +166,7 @@ export default function MobileMenu({
               >
                 <div className="overflow-hidden">
                   <div className="pb-4 space-y-3">
-                    {sorted.map((c) => (
+                    {collections.map((c) => (
                       <Link
                         key={c.id}
                         href={`/collections/${c.handle}`}

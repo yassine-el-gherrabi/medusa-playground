@@ -106,14 +106,10 @@ export default function Header({
   const openMegaMenu = useCallback(() => setMegaMenuOpen(true), [])
   const closeMegaMenu = useCallback(() => setMegaMenuOpen(false), [])
 
-  // Find newest collection for the nav link
+  // Collections already sorted by layout (newest first)
   const latestCollection =
     collections.length > 0
-      ? collections.reduce((latest, c) =>
-          new Date(c.created_at || 0) > new Date(latest.created_at || 0)
-            ? c
-            : latest
-        )
+      ? collections[0]
       : null
 
   const transparent = isOverlay && !scrolled && !megaMenuOpen

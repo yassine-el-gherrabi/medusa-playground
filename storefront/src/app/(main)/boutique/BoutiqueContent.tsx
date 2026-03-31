@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useEffect, useRef } from "react"
+import { useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { sdk } from "@/lib/sdk"
 import { useRegion } from "@/providers/RegionProvider"
+import { useProductList } from "@/hooks/useProductList"
 import ProductCard from "@/components/product/ProductCard"
 import FilterBar from "@/components/catalogue/FilterBar"
 import { ProductGridSkeleton } from "@/components/ui/Skeleton"
-import type { Product, Category, Collection } from "@/types"
+import type { Category, Collection } from "@/types"
 
 const LIMIT = 12
 
@@ -17,7 +18,7 @@ export default function BoutiqueContent({
   categories,
   collections,
 }: {
-  initialProducts: Product[]
+  initialProducts: import("@/types").Product[]
   initialCount: number
   categories: Category[]
   collections: Collection[]
@@ -25,11 +26,9 @@ export default function BoutiqueContent({
   const { region } = useRegion()
   const searchParams = useSearchParams()
 
-  const [products, setProducts] = useState<Product[]>(initialProducts)
-  const [loading, setLoading] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [offset, setOffset] = useState(0)
-  const [hasMore, setHasMore] = useState(initialProducts.length < initialCount)
+  const { products, loading, loadingMore, hasMore, error, fetchProducts, loadMore } =
+    useProductList({ products: initialProducts, count: initialCount })
+
   const [selectedCategory, setSelectedCategory] = useState("")
   const [selectedCollection, setSelectedCollection] = useState(
     searchParams.get("collection") || ""
@@ -37,101 +36,61 @@ export default function BoutiqueContent({
   const [sortOrder, setSortOrder] = useState("created_at")
   const sentinelRef = useRef<HTMLDivElement>(null)
 
+  // Build sort order string
+  const getOrder = () => {
+    if (sortOrder === "title") return "title"
+    if (sortOrder === "price_asc")
+      return "variants.calculated_price.calculated_amount"
+    return "-created_at"
+  }
+
+  // Build filter IDs
+  const getCategoryId = () => {
+    if (!selectedCategory) return undefined
+    const cat = categories.find((c) => c.handle === selectedCategory)
+    return cat ? [cat.id] : undefined
+  }
+
+  const getCollectionId = () => {
+    if (!selectedCollection) return undefined
+    const col = collections.find((c) => c.handle === selectedCollection)
+    return col ? [col.id] : undefined
+  }
+
   // Re-fetch when filters change
   useEffect(() => {
     if (!region) return
-    setLoading(true)
-    setOffset(0)
-    setHasMore(true)
-
-    const params: Record<string, unknown> = {
+    fetchProducts({
+      regionId: region.id,
       limit: LIMIT,
-      offset: 0,
-      region_id: region.id,
-      fields: "*variants.calculated_price",
-    }
-
-    if (selectedCategory) {
-      const cat = categories.find((c) => c.handle === selectedCategory)
-      if (cat) params.category_id = [cat.id]
-    }
-
-    if (selectedCollection) {
-      const col = collections.find((c) => c.handle === selectedCollection)
-      if (col) params.collection_id = [col.id]
-    }
-
-    if (sortOrder === "title") params.order = "title"
-    else if (sortOrder === "price_asc")
-      params.order = "variants.calculated_price.calculated_amount"
-    else params.order = "-created_at"
-
-    sdk.store.product
-      .list(params)
-      .then(({ products, count }) => {
-        setProducts((products as Product[]) || [])
-        setHasMore((products?.length || 0) < (count || 0))
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
+      categoryId: getCategoryId(),
+      collectionId: getCollectionId(),
+      order: getOrder(),
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [region, selectedCategory, selectedCollection, sortOrder])
-
-  // Load more
-  const loadMore = useCallback(() => {
-    if (!region || !hasMore || loadingMore) return
-    setLoadingMore(true)
-    const nextOffset = offset + LIMIT
-
-    const params: Record<string, unknown> = {
-      limit: LIMIT,
-      offset: nextOffset,
-      region_id: region.id,
-      fields: "*variants.calculated_price",
-    }
-
-    if (selectedCategory) {
-      const cat = categories.find((c) => c.handle === selectedCategory)
-      if (cat) params.category_id = [cat.id]
-    }
-
-    if (selectedCollection) {
-      const col = collections.find((c) => c.handle === selectedCollection)
-      if (col) params.collection_id = [col.id]
-    }
-
-    sdk.store.product
-      .list(params)
-      .then(({ products: newProducts, count }) => {
-        setProducts((prev) => [...prev, ...((newProducts as Product[]) || [])])
-        setOffset(nextOffset)
-        setHasMore(nextOffset + LIMIT < (count || 0))
-      })
-      .catch(console.error)
-      .finally(() => setLoadingMore(false))
-  }, [
-    region,
-    hasMore,
-    loadingMore,
-    offset,
-    selectedCategory,
-    selectedCollection,
-    categories,
-    collections,
-  ])
 
   // Infinite scroll
   useEffect(() => {
     if (!sentinelRef.current || !hasMore || loading) return
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) loadMore()
+        if (entry.isIntersecting && region) {
+          loadMore({
+            regionId: region.id,
+            limit: LIMIT,
+            categoryId: getCategoryId(),
+            collectionId: getCollectionId(),
+            order: getOrder(),
+          })
+        }
       },
       { rootMargin: "200px" }
     )
     observer.observe(sentinelRef.current)
     return () => observer.disconnect()
-  }, [hasMore, loading, loadMore])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMore, loading, region])
 
   return (
     <div className="max-w-7xl mx-auto px-4 pb-20">
@@ -145,6 +104,12 @@ export default function BoutiqueContent({
         sortOrder={sortOrder}
         onSortChange={setSortOrder}
       />
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-md px-4 py-3 mb-6">
+          {error}
+        </div>
+      )}
 
       {loading ? (
         <ProductGridSkeleton count={12} />
