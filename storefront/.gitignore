@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Playwright MCP logs
+.playwright-mcp/
+
+# Old backup
+_old/
+
+# CI/CD research docs
+ci-cd-hosting-strategy.md
+research-*.md

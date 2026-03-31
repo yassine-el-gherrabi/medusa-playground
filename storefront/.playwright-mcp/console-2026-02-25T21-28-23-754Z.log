@@ -1,6 +1,0 @@
-[     481ms] [WARNING] <link rel=preload> has an invalid `href` value @ https://www.jacquemus.com/fr_fr:382
-[     655ms] [WARNING] ⚠️ Cannot find method named setScrolling in component o-navigation ⚠️ @ https://www.jacquemus.com/on/demandware.static/Sites-Jacquemus-Site/-/fr_FR/v1772044007059/js/main.js:1
-[     655ms] [WARNING] ⚠️ Cannot find method named keyboardAccessibility in component o-navigation ⚠️ @ https://www.jacquemus.com/on/demandware.static/Sites-Jacquemus-Site/-/fr_FR/v1772044007059/js/main.js:1
-[     655ms] [WARNING] ⚠️ Cannot find method named showCountrySwitcherDropdown in component o-navigation ⚠️ @ https://www.jacquemus.com/on/demandware.static/Sites-Jacquemus-Site/-/fr_FR/v1772044007059/js/main.js:1
-[     656ms] [WARNING] ⚠️ Cannot find method named initToggleCartBtns in component mini-cart ⚠️ @ https://www.jacquemus.com/on/demandware.static/Sites-Jacquemus-Site/-/fr_FR/v1772044007059/js/main.js:1
-[     658ms] [WARNING] ⚠️ Cannot find method named handleClose in component pop-in ⚠️ @ https://www.jacquemus.com/on/demandware.static/Sites-Jacquemus-Site/-/fr_FR/v1772044007059/js/main.js:1
