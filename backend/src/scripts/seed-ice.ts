@@ -14,6 +14,7 @@ import {
 } from "@medusajs/medusa/core-flows"
 
 const IMG = "https://medusa-public-images.s3.eu-west-1.amazonaws.com"
+const UNS = "https://images.unsplash.com"
 
 const images = {
   teeBlack: [{ url: `${IMG}/tee-black-front.png` }, { url: `${IMG}/tee-black-back.png` }],
@@ -21,6 +22,25 @@ const images = {
   sweatshirt: [{ url: `${IMG}/sweatshirt-vintage-front.png` }, { url: `${IMG}/sweatshirt-vintage-back.png` }],
   sweatpants: [{ url: `${IMG}/sweatpants-gray-front.png` }, { url: `${IMG}/sweatpants-gray-back.png` }],
   shorts: [{ url: `${IMG}/shorts-vintage-front.png` }, { url: `${IMG}/shorts-vintage-back.png` }],
+}
+
+// Unsplash hero images for collections (dark, streetwear-friendly)
+const heroImages = {
+  lineaNebula: `${UNS}/photo-1523398002811-999ca8dec234?w=1600&q=80`,
+  oscura: `${UNS}/photo-1509631179647-0177331693ae?w=1600&q=80`,
+  seamless: `${UNS}/photo-1551028719-00167b16eac5?w=1600&q=80`,
+  iceReflect: `${UNS}/photo-1576566588028-4147f3842f27?w=1600&q=80`,
+  abyss: `${UNS}/photo-1578681994506-b8f463449011?w=1600&q=80`,
+  shadow: `${UNS}/photo-1441986300917-64674bd600d8?w=1600&q=80`,
+  concrete: `${UNS}/photo-1483985988355-763728e1935b?w=1600&q=80`,
+}
+
+// Category images
+const catImages = {
+  vetements: `${UNS}/photo-1490481651871-ab68de25d43d?w=800&q=80`,
+  accessoires: `${UNS}/photo-1556306535-0f09a537f0a3?w=800&q=80`,
+  chaussures: `${UNS}/photo-1542291026-7eec264c27ff?w=800&q=80`,
+  iceForGirls: `${UNS}/photo-1483985988355-763728e1935b?w=800&q=80`,
 }
 
 function sizeVariants(price: number, prefix: string, sizes = ["S", "M", "L", "XL"]) {
@@ -208,10 +228,10 @@ export default async function seedIceData({ container }: ExecArgs) {
   const { result: parents } = await createProductCategoriesWorkflow(container).run({
     input: {
       product_categories: [
-        { name: "Vetements", handle: "vetements", is_active: true, is_internal: false },
-        { name: "Accessoires", handle: "accessoires", is_active: true, is_internal: false },
-        { name: "Chaussures", handle: "chaussures", is_active: true, is_internal: false },
-        { name: "Ice for Girls", handle: "ice-for-girls", is_active: true, is_internal: false },
+        { name: "Vêtements", handle: "vetements", is_active: true, is_internal: false, metadata: { image: catImages.vetements } },
+        { name: "Accessoires", handle: "accessoires", is_active: true, is_internal: false, metadata: { image: catImages.accessoires } },
+        { name: "Chaussures", handle: "chaussures", is_active: true, is_internal: false, metadata: { image: catImages.chaussures } },
+        { name: "Ice for Girls", handle: "ice-for-girls", is_active: true, is_internal: false, metadata: { image: catImages.iceForGirls } },
       ],
     },
   })
@@ -222,14 +242,14 @@ export default async function seedIceData({ container }: ExecArgs) {
   const { result: children } = await createProductCategoriesWorkflow(container).run({
     input: {
       product_categories: [
+        // Vêtements subcategories
+        { name: "Hauts", handle: "hauts", is_active: true, parent_category_id: parentMap["Vêtements"] },
+        { name: "Bas", handle: "bas", is_active: true, parent_category_id: parentMap["Vêtements"] },
+        { name: "Vestes & Manteaux", handle: "vestes-manteaux", is_active: true, parent_category_id: parentMap["Vêtements"] },
         // Accessoires subcategories
-        { name: "Lunettes de soleil", handle: "lunettes", is_active: true, parent_category_id: parentMap["Accessoires"] },
+        { name: "Lunettes de soleil", handle: "lunettes-de-soleil", is_active: true, parent_category_id: parentMap["Accessoires"] },
         { name: "Casquettes", handle: "casquettes", is_active: true, parent_category_id: parentMap["Accessoires"] },
         { name: "Cache-cou", handle: "cache-cou", is_active: true, parent_category_id: parentMap["Accessoires"] },
-        // Chaussures subcategories
-        { name: "Nike", handle: "chaussures-nike", is_active: true, parent_category_id: parentMap["Chaussures"] },
-        { name: "Jordan", handle: "chaussures-jordan", is_active: true, parent_category_id: parentMap["Chaussures"] },
-        { name: "New Balance", handle: "chaussures-new-balance", is_active: true, parent_category_id: parentMap["Chaussures"] },
       ],
     },
   })
@@ -248,55 +268,66 @@ export default async function seedIceData({ container }: ExecArgs) {
     input: {
       collections: [
         {
-          title: "Capsule Origines",
-          handle: "capsule-origines",
+          title: "Linea Nebula",
+          handle: "linea-nebula",
           metadata: {
-            hero_image: `${IMG}/sweatshirt-vintage-front.png`,
-            description: "La collection qui a tout lance. Retour aux sources du streetwear marseillais avec des pieces iconiques qui ont defini l'identite Ice Industry.",
-            shoot_gallery: [
-              `${IMG}/tee-black-front.png`,
-              `${IMG}/sweatshirt-vintage-front.png`,
-              `${IMG}/sweatpants-gray-front.png`,
-            ],
+            hero_image: heroImages.lineaNebula,
+            description: "La dernière capsule Ice Industry. Inspirée par les étoiles et la nuit marseillaise, Linea Nebula repousse les limites du streetwear avec des matières techniques et un design avant-gardiste.",
+            shoot_gallery: [heroImages.lineaNebula, heroImages.oscura, heroImages.seamless],
           },
         },
         {
-          title: "Capsule Nuit",
-          handle: "capsule-nuit",
+          title: "Oscura",
+          handle: "oscura",
           metadata: {
-            hero_image: `${IMG}/tee-black-front.png`,
-            description: "Inspiree par les nuits marseillaises. Des pieces sombres et elegantes pour ceux qui vivent la nuit, avec des details reflectifs et des coupes modernes.",
-            shoot_gallery: [
-              `${IMG}/tee-black-front.png`,
-              `${IMG}/tee-black-back.png`,
-              `${IMG}/shorts-vintage-front.png`,
-            ],
+            hero_image: heroImages.oscura,
+            description: "L'obscurité comme source d'inspiration. Des pièces sombres et élégantes pour ceux qui vivent la nuit, avec des détails réflectifs et des coupes modernes.",
+            shoot_gallery: [heroImages.oscura, heroImages.abyss, heroImages.shadow],
           },
         },
         {
-          title: "Capsule Blaze",
-          handle: "capsule-blaze",
+          title: "Seamless Bi-Material",
+          handle: "seamless-bi-material",
           metadata: {
-            hero_image: `${IMG}/tee-white-front.png`,
-            description: "Le feu interieur. Une collection audacieuse qui melange couleurs vives et coupes streetwear pour affirmer votre style sans compromis.",
-            shoot_gallery: [
-              `${IMG}/tee-white-front.png`,
-              `${IMG}/tee-white-back.png`,
-              `${IMG}/sweatshirt-vintage-back.png`,
-            ],
+            hero_image: heroImages.seamless,
+            description: "La fusion parfaite. Deux matières, zéro couture visible. Une collection technique qui repense les bases du streetwear avec une approche minimaliste.",
+            shoot_gallery: [heroImages.seamless, heroImages.concrete, heroImages.iceReflect],
           },
         },
         {
-          title: "Capsule Arctic",
-          handle: "capsule-arctic",
+          title: "Abyss",
+          handle: "abyss",
           metadata: {
-            hero_image: `${IMG}/sweatshirt-vintage-front.png`,
-            description: "La derniere capsule Ice Industry. Inspiree par le froid et la purete, cette collection repousse les limites du streetwear avec des matieres techniques et un design avant-gardiste.",
-            shoot_gallery: [
-              `${IMG}/sweatshirt-vintage-front.png`,
-              `${IMG}/sweatshirt-vintage-back.png`,
-              `${IMG}/sweatpants-gray-front.png`,
-            ],
+            hero_image: heroImages.abyss,
+            description: "Plongée dans les profondeurs. Des teintes profondes, des coupes oversize et une identité visuelle brute. La collection pour ceux qui assument l'intensité.",
+            shoot_gallery: [heroImages.abyss, heroImages.oscura, heroImages.shadow],
+          },
+        },
+        {
+          title: "ICE Reflect",
+          handle: "ice-reflect",
+          metadata: {
+            hero_image: heroImages.iceReflect,
+            description: "Reflets urbains. Des pièces aux finitions réfléchissantes qui captent la lumière de la ville. Du jour à la nuit, ICE Reflect vous accompagne.",
+            shoot_gallery: [heroImages.iceReflect, heroImages.lineaNebula, heroImages.concrete],
+          },
+        },
+        {
+          title: "Capsule Shadow",
+          handle: "capsule-shadow",
+          metadata: {
+            hero_image: heroImages.shadow,
+            description: "Dans l'ombre naît le style. Une capsule monochrome aux coupes affirmées, pensée pour le quotidien marseillais.",
+            shoot_gallery: [heroImages.shadow, heroImages.abyss, heroImages.oscura],
+          },
+        },
+        {
+          title: "Capsule Concrete",
+          handle: "capsule-concrete",
+          metadata: {
+            hero_image: heroImages.concrete,
+            description: "Née du béton. Inspirée par l'architecture brute de Marseille, cette capsule mêle robustesse et élégance streetwear.",
+            shoot_gallery: [heroImages.concrete, heroImages.seamless, heroImages.lineaNebula],
           },
         },
       ],
@@ -318,8 +349,8 @@ export default async function seedIceData({ container }: ExecArgs) {
       title: "Hoodie Ice Classic",
       handle: "hoodie-ice-classic",
       description: "Le hoodie signature Ice Industry. Coton epais 400g, coupe oversize, broderie logo sur la poitrine. Un incontournable du streetwear marseillais.",
-      category_ids: [catMap["Vetements"]],
-      collection_id: collectionMap["Capsule Arctic"],
+      category_ids: [catMap["Vêtements"]],
+      collection_id: collectionMap["Linea Nebula"],
       images: images.sweatshirt,
       weight: 550,
       options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
@@ -329,8 +360,8 @@ export default async function seedIceData({ container }: ExecArgs) {
       title: "T-shirt Logo Ice",
       handle: "t-shirt-logo-ice",
       description: "T-shirt 100% coton organique avec le logo Ice Industry serigraphie. Coupe regular, col rond renforce.",
-      category_ids: [catMap["Vetements"]],
-      collection_id: collectionMap["Capsule Arctic"],
+      category_ids: [catMap["Vêtements"]],
+      collection_id: collectionMap["Linea Nebula"],
       images: images.teeBlack,
       weight: 200,
       options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
@@ -340,8 +371,8 @@ export default async function seedIceData({ container }: ExecArgs) {
       title: "Pantalon Cargo Ice",
       handle: "pantalon-cargo-ice",
       description: "Cargo en toile resistante avec poches laterales et broderie Ice. Coupe large, taille ajustable par cordon.",
-      category_ids: [catMap["Vetements"]],
-      collection_id: collectionMap["Capsule Blaze"],
+      category_ids: [catMap["Vêtements"]],
+      collection_id: collectionMap["Seamless Bi-Material"],
       images: images.sweatpants,
       weight: 500,
       options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
@@ -351,8 +382,8 @@ export default async function seedIceData({ container }: ExecArgs) {
       title: "Veste Coupe-vent Ice",
       handle: "veste-coupe-vent-ice",
       description: "Coupe-vent leger impermeable avec capuche escamotable. Bandes reflechissantes et logo Ice brode.",
-      category_ids: [catMap["Vetements"]],
-      collection_id: collectionMap["Capsule Nuit"],
+      category_ids: [catMap["Vêtements"]],
+      collection_id: collectionMap["Oscura"],
       images: images.sweatshirt,
       weight: 350,
       options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
@@ -362,8 +393,8 @@ export default async function seedIceData({ container }: ExecArgs) {
       title: "Jogging Essential Ice",
       handle: "jogging-essential-ice",
       description: "Jogging en molleton brosse, coupe slim avec chevilles resserrees. Logo Ice Industry brode sur la cuisse.",
-      category_ids: [catMap["Vetements"]],
-      collection_id: collectionMap["Capsule Origines"],
+      category_ids: [catMap["Vêtements"]],
+      collection_id: collectionMap["Abyss"],
       images: images.sweatpants,
       weight: 420,
       options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
@@ -376,7 +407,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       handle: "robe-ice-flow",
       description: "Robe mi-longue en jersey stretch avec logo Ice subtil. Coupe fluide et confortable, parfaite du matin au soir.",
       category_ids: [catMap["Ice for Girls"]],
-      collection_id: collectionMap["Capsule Blaze"],
+      collection_id: collectionMap["Seamless Bi-Material"],
       images: images.teeWhite,
       weight: 250,
       options: [{ title: "Taille", values: ["XS", "S", "M", "L"] }],
@@ -387,7 +418,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       handle: "crop-top-ice",
       description: "Crop top en coton cotelee avec logo Ice brode. Coupe ajustee, finitions soignees.",
       category_ids: [catMap["Ice for Girls"]],
-      collection_id: collectionMap["Capsule Blaze"],
+      collection_id: collectionMap["Seamless Bi-Material"],
       images: images.teeWhite,
       weight: 120,
       options: [{ title: "Taille", values: ["XS", "S", "M", "L"] }],
@@ -398,7 +429,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       handle: "jupe-ice-street",
       description: "Mini-jupe cargo avec poches a rabat et logo Ice. Toile stretch pour un confort optimal.",
       category_ids: [catMap["Ice for Girls"]],
-      collection_id: collectionMap["Capsule Nuit"],
+      collection_id: collectionMap["Oscura"],
       images: images.shorts,
       weight: 220,
       options: [{ title: "Taille", values: ["XS", "S", "M", "L"] }],
@@ -409,7 +440,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       handle: "hoodie-ice-for-girls",
       description: "Hoodie oversized adapte a la morphologie feminine. Coton 400g, broderie Ice for Girls exclusive.",
       category_ids: [catMap["Ice for Girls"]],
-      collection_id: collectionMap["Capsule Arctic"],
+      collection_id: collectionMap["Linea Nebula"],
       images: images.sweatshirt,
       weight: 500,
       options: [{ title: "Taille", values: ["XS", "S", "M", "L"] }],
@@ -422,7 +453,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       handle: "lunettes-ice-shade",
       description: "Lunettes de soleil polarisees monture acetate. Protection UV400. Logo Ice grave sur les branches.",
       category_ids: [catMap["Lunettes de soleil"]],
-      collection_id: collectionMap["Capsule Blaze"],
+      collection_id: collectionMap["Seamless Bi-Material"],
       images: images.teeBlack,
       weight: 35,
       options: [{ title: "Type", values: ["Default"] }],
@@ -445,7 +476,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       handle: "casquette-logo-ice",
       description: "Casquette 6 panels en coton brosse avec logo Ice Industry brode en facade. Fermeture boucle metal.",
       category_ids: [catMap["Casquettes"]],
-      collection_id: collectionMap["Capsule Origines"],
+      collection_id: collectionMap["Abyss"],
       images: images.teeBlack,
       weight: 80,
       options: [{ title: "Type", values: ["Default"] }],
@@ -456,7 +487,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       handle: "casquette-snapback-ice",
       description: "Snapback structuree avec visiere plate. Broderie 3D du logo Ice et fermeture snap reglable.",
       category_ids: [catMap["Casquettes"]],
-      collection_id: collectionMap["Capsule Nuit"],
+      collection_id: collectionMap["Oscura"],
       images: images.teeBlack,
       weight: 90,
       options: [{ title: "Type", values: ["Default"] }],
@@ -469,7 +500,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       handle: "cache-cou-polar-ice",
       description: "Cache-cou en polaire douce avec logo Ice Industry. Polyvalent : tour de cou, bonnet, bandeau. Parfait pour le mistral.",
       category_ids: [catMap["Cache-cou"]],
-      collection_id: collectionMap["Capsule Arctic"],
+      collection_id: collectionMap["Linea Nebula"],
       images: images.sweatshirt,
       weight: 60,
       options: [{ title: "Type", values: ["Default"] }],
@@ -481,7 +512,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       title: "Nike Air Max Ice Edition",
       handle: "nike-air-max-ice",
       description: "Air Max exclusivite Ice Industry. Coloris glacier unique, semelle Air visible, details glaces sur le talon.",
-      category_ids: [catMap["Nike"]],
+      category_ids: [catMap["Chaussures"]],
       images: images.shorts,
       weight: 400,
       options: [{ title: "Pointure", values: ["39", "40", "41", "42", "43", "44", "45"] }],
@@ -491,7 +522,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       title: "Jordan 1 Ice Edition",
       handle: "jordan-1-ice",
       description: "Jordan 1 High en collaboration Ice Industry. Cuir premium blanc et bleu glacier, swoosh glace.",
-      category_ids: [catMap["Jordan"]],
+      category_ids: [catMap["Chaussures"]],
       images: images.shorts,
       weight: 450,
       options: [{ title: "Pointure", values: ["39", "40", "41", "42", "43", "44", "45"] }],
@@ -501,7 +532,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       title: "New Balance 550 Ice Edition",
       handle: "nb-550-ice",
       description: "New Balance 550 revisitee par Ice Industry. Cuir blanc, accents bleu polaire, semelle gomme.",
-      category_ids: [catMap["New Balance"]],
+      category_ids: [catMap["Chaussures"]],
       images: images.shorts,
       weight: 380,
       options: [{ title: "Pointure", values: ["39", "40", "41", "42", "43", "44", "45"] }],
@@ -511,7 +542,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       title: "Nike Dunk Low Ice Edition",
       handle: "nike-dunk-low-ice",
       description: "Dunk Low aux couleurs Ice Industry. Cuir tumbled, double branding, lacets assortis inclus.",
-      category_ids: [catMap["Nike"]],
+      category_ids: [catMap["Chaussures"]],
       images: images.shorts,
       weight: 370,
       options: [{ title: "Pointure", values: ["39", "40", "41", "42", "43", "44", "45"] }],
