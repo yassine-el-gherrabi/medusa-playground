@@ -3,124 +3,49 @@
 import { useEffect, useState, useCallback, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { sdk } from "@/lib/sdk"
-import { useCart } from "@/providers/cart"
-import CartIcon from "./CartIcon"
+import { isOverlayRoute, getHeroHeightFraction } from "@/lib/utils"
+import { useCart } from "@/providers/CartProvider"
+import type { Category, Collection } from "@/types"
 import CartDrawer from "@/components/cart/CartDrawer"
 import MegaMenu from "./MegaMenu"
 import MobileMenu from "./MobileMenu"
 import SearchOverlay from "./SearchOverlay"
 import Logo from "./Logo"
 
-type Category = {
-  id: string
-  name: string
-  handle: string
-  category_children?: Category[]
+const HEADER_H = 64
+
+function SearchIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1}
+      stroke="currentColor"
+      className={className}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+      />
+    </svg>
+  )
 }
 
-type Collection = {
-  id: string
-  title: string
-  handle: string
-  metadata?: Record<string, any>
-  created_at?: string
-}
-
-// Fallback data when Medusa backend is unavailable
-const DEMO_COLLECTIONS: Collection[] = [
-  {
-    id: "demo-arctic",
-    title: "Capsule Arctic",
-    handle: "capsule-arctic",
-    metadata: { hero_image: "https://images.unsplash.com/photo-1523398002811-999ca8dec234?w=800&q=80" },
-    created_at: "2026-02-01T00:00:00Z",
-  },
-  {
-    id: "demo-nuit",
-    title: "Capsule Nuit",
-    handle: "capsule-nuit",
-    metadata: { hero_image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80" },
-    created_at: "2026-01-15T00:00:00Z",
-  },
-  {
-    id: "demo-blaze",
-    title: "Capsule Blaze",
-    handle: "capsule-blaze",
-    metadata: { hero_image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80" },
-    created_at: "2026-01-01T00:00:00Z",
-  },
-  {
-    id: "demo-origines",
-    title: "Capsule Origines",
-    handle: "capsule-origines",
-    metadata: { hero_image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80" },
-    created_at: "2025-12-01T00:00:00Z",
-  },
-  {
-    id: "demo-shadow",
-    title: "Capsule Shadow",
-    handle: "capsule-shadow",
-    metadata: { hero_image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&q=80" },
-    created_at: "2025-11-01T00:00:00Z",
-  },
-  {
-    id: "demo-concrete",
-    title: "Capsule Concrete",
-    handle: "capsule-concrete",
-    metadata: { hero_image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&q=80" },
-    created_at: "2025-10-01T00:00:00Z",
-  },
-  {
-    id: "demo-volt",
-    title: "Capsule Volt",
-    handle: "capsule-volt",
-    metadata: { hero_image: "https://images.unsplash.com/photo-1578681994506-b8f463449011?w=800&q=80" },
-    created_at: "2025-09-01T00:00:00Z",
-  },
-]
-
-const DEMO_CATEGORIES: Category[] = [
-  {
-    id: "demo-vetements",
-    name: "V\u00eatements",
-    handle: "vetements",
-    category_children: [
-      { id: "demo-hauts", name: "Hauts", handle: "hauts" },
-      { id: "demo-bas", name: "Bas", handle: "bas" },
-      { id: "demo-vestes", name: "Vestes & Manteaux", handle: "vestes-manteaux" },
-    ],
-  },
-  {
-    id: "demo-accessoires",
-    name: "Accessoires",
-    handle: "accessoires",
-    category_children: [
-      { id: "demo-lunettes", name: "Lunettes de soleil", handle: "lunettes-de-soleil" },
-      { id: "demo-casquettes", name: "Casquettes", handle: "casquettes" },
-      { id: "demo-cache-cou", name: "Cache-cou", handle: "cache-cou" },
-    ],
-  },
-  {
-    id: "demo-chaussures",
-    name: "Chaussures",
-    handle: "chaussures",
-  },
-  {
-    id: "demo-ice-for-girls",
-    name: "Ice for Girls",
-    handle: "ice-for-girls",
-  },
-]
-
-export default function Header() {
+export default function Header({
+  categories,
+  collections,
+}: {
+  categories: Category[]
+  collections: Collection[]
+}) {
   const pathname = usePathname()
-  const isHome = pathname === "/"
+  const isOverlay = isOverlayRoute(pathname)
   const { cart, openDrawer } = useCart()
-  const cartCount = cart?.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0
+  const cartCount =
+    cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
 
-  const [categories, setCategories] = useState<Category[]>([])
-  const [collections, setCollections] = useState<Collection[]>([])
   const [megaMenuOpen, setMegaMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -128,40 +53,29 @@ export default function Header() {
   const lastScrollY = useRef(0)
   const headerOffset = useRef(0)
   const headerRef = useRef<HTMLElement>(null)
-  const HEADER_H = 64
+  const heroFractionRef = useRef(getHeroHeightFraction(pathname))
 
-  // Data fetching
+  // Update hero fraction on route change
   useEffect(() => {
-    sdk.store.category
-      .list({
-        fields: "*category_children",
-        parent_category_id: "null",
-      })
-      .then(({ product_categories }) => {
-        setCategories(product_categories as Category[])
-      })
-      .catch(console.error)
+    heroFractionRef.current = getHeroHeightFraction(pathname)
+    const threshold = heroFractionRef.current * window.innerHeight - HEADER_H
+    setScrolled(window.scrollY > threshold)
+  }, [pathname])
 
-    sdk.store.collection
-      .list({ fields: "id,title,handle,metadata,created_at" })
-      .then(({ collections }) => {
-        setCollections(collections as Collection[])
-      })
-      .catch(console.error)
-  }, [])
-
-  // Scroll detection: navbar moves pixel-by-pixel with scroll
+  // Scroll: transparent→solid transition + header slide
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY
       const delta = currentY - lastScrollY.current
 
-      setScrolled(currentY > window.innerHeight - HEADER_H)
+      setScrolled(
+        currentY > heroFractionRef.current * window.innerHeight - HEADER_H
+      )
 
-      // Move header by scroll delta, clamped between -HEADER_H and 0
-      headerOffset.current = Math.min(0, Math.max(-HEADER_H, headerOffset.current - delta))
-
-      // Always fully visible at top of page
+      headerOffset.current = Math.min(
+        0,
+        Math.max(-HEADER_H, headerOffset.current - delta)
+      )
       if (currentY <= 0) headerOffset.current = 0
 
       if (headerRef.current) {
@@ -174,16 +88,14 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Escape key to close mega menu
+  // Escape to close mega menu
   useEffect(() => {
     if (!megaMenuOpen) return
-
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") setMegaMenuOpen(false)
     }
-
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
   }, [megaMenuOpen])
 
   // Close mega menu on route change
@@ -191,28 +103,20 @@ export default function Header() {
     setMegaMenuOpen(false)
   }, [pathname])
 
-  const openMegaMenu = useCallback(() => {
-    setMegaMenuOpen(true)
-  }, [])
+  const openMegaMenu = useCallback(() => setMegaMenuOpen(true), [])
+  const closeMegaMenu = useCallback(() => setMegaMenuOpen(false), [])
 
-  const closeMegaMenu = useCallback(() => {
-    setMegaMenuOpen(false)
-  }, [])
+  // Find newest collection for the nav link
+  const latestCollection =
+    collections.length > 0
+      ? collections.reduce((latest, c) =>
+          new Date(c.created_at || 0) > new Date(latest.created_at || 0)
+            ? c
+            : latest
+        )
+      : null
 
-  // Use real data or fallback demo data
-  const activeCollections = collections.length > 0 ? collections : DEMO_COLLECTIONS
-  const activeCategories = categories.length > 0 ? categories : DEMO_CATEGORIES
-
-  // Find newest collection
-  const latestCollection = activeCollections.reduce((latest, c) =>
-    new Date(c.created_at || 0) > new Date(latest.created_at || 0)
-      ? c
-      : latest
-  )
-
-  const transparent = isHome && !scrolled && !megaMenuOpen
-  const headerBg = transparent ? "bg-transparent" : "bg-white"
-  const borderStyle = ""
+  const transparent = isOverlay && !scrolled && !megaMenuOpen
   const textColor = transparent ? "text-white" : "text-foreground"
 
   return (
@@ -220,9 +124,8 @@ export default function Header() {
       <header
         ref={headerRef}
         onMouseLeave={closeMegaMenu}
-        className={`fixed top-0 left-0 right-0 z-30 ${headerBg} ${textColor}`}
+        className={`fixed top-0 left-0 right-0 z-30 ${transparent ? "bg-transparent" : "bg-white"} ${textColor}`}
       >
-        {/* Navbar bar */}
         <div className="h-16 px-6 lg:px-10 flex items-center">
           {/* Mobile LEFT: Burger + Search */}
           <div className="lg:hidden flex items-center gap-3">
@@ -241,70 +144,51 @@ export default function Header() {
               className="p-2 hover:opacity-70 cursor-pointer"
               aria-label="Rechercher"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                />
-              </svg>
+              <SearchIcon />
             </button>
           </div>
 
-          {/* Desktop LEFT: Nav items */}
+          {/* Desktop LEFT: Nav */}
           <nav className="hidden lg:flex items-center gap-12 flex-1">
             <button
               onMouseEnter={openMegaMenu}
               className="group relative text-[11px] font-normal tracking-[0.15em] uppercase"
             >
               Collections
-              <span className={`absolute -bottom-0.5 left-0 w-full h-px bg-current transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] ${megaMenuOpen ? "scale-x-100 origin-left" : "scale-x-0 origin-right group-hover:origin-left group-hover:scale-x-100"}`} />
+              <span
+                className={`absolute -bottom-0.5 left-0 w-full h-px bg-current transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] ${megaMenuOpen ? "scale-x-100 origin-left" : "scale-x-0 origin-right group-hover:origin-left group-hover:scale-x-100"}`}
+              />
             </button>
-            <Link
-              href={`/collections/${latestCollection.handle}`}
-              className="group relative text-[11px] font-normal tracking-[0.15em] uppercase"
-            >
-              {latestCollection.title}
-              <span className="absolute -bottom-0.5 left-0 w-full h-px bg-current scale-x-0 origin-right transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:origin-left group-hover:scale-x-100" />
-            </Link>
+            {latestCollection && (
+              <Link
+                href={`/collections/${latestCollection.handle}`}
+                className="group relative text-[11px] font-normal tracking-[0.15em] uppercase"
+              >
+                {latestCollection.title}
+                <span className="absolute -bottom-0.5 left-0 w-full h-px bg-current scale-x-0 origin-right transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:origin-left group-hover:scale-x-100" />
+              </Link>
+            )}
           </nav>
 
-          {/* CENTER: Logo — absolute center on mobile, natural flow on desktop */}
+          {/* CENTER: Logo */}
           <Link
             href="/"
             className="flex-shrink-0 flex items-center lg:relative absolute left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0"
           >
-            <Logo className="h-24 w-auto" variant={transparent ? "white" : "black"} />
+            <Logo
+              className="h-24 w-auto"
+              variant={transparent ? "white" : "black"}
+            />
           </Link>
 
-          {/* Desktop RIGHT: Utilities (text style, Stone Island inspired) */}
+          {/* Desktop RIGHT: Utilities */}
           <div className="hidden lg:flex items-center gap-12 flex-1 justify-end">
             <button
               onClick={() => setSearchOpen(true)}
               className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
               aria-label="Rechercher"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                />
-              </svg>
+              <SearchIcon />
             </button>
             <Link
               href="/account"
@@ -322,37 +206,60 @@ export default function Header() {
             </button>
           </div>
 
-          {/* Mobile RIGHT: Cart only */}
+          {/* Mobile RIGHT: Cart */}
           <div className="lg:hidden flex items-center ml-auto">
-            <CartIcon />
+            <button
+              onClick={openDrawer}
+              className="p-2 hover:opacity-70"
+              aria-label="Panier"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                />
+              </svg>
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-foreground text-background text-[9px] rounded-full flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Mega menu — natural child so onMouseLeave covers both navbar + panel */}
+        {/* Mega menu */}
         <MegaMenu
-          categories={activeCategories}
-          collections={activeCollections}
+          categories={categories}
+          collections={collections}
           isOpen={megaMenuOpen}
           onClose={closeMegaMenu}
         />
       </header>
 
-      {/* Cart drawer */}
       <CartDrawer />
-
-      {/* Search overlay */}
-      <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} categories={activeCategories} />
-
-      {/* Mobile menu */}
+      <SearchOverlay
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        categories={categories}
+      />
       <MobileMenu
-        categories={activeCategories}
-        collections={activeCollections}
+        categories={categories}
+        collections={collections}
         isOpen={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
       />
 
-      {/* Spacer for non-home pages */}
-      {!isHome && <div className="h-16" />}
+      {/* Spacer for non-overlay pages */}
+      {!isOverlay && <div className="h-16" />}
     </>
   )
 }

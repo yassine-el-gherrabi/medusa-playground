@@ -3,9 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import GlassButton from "@/components/ui/GlassButton"
 
-type HeroSlide = {
+export type HeroSlide = {
   type: "image" | "video"
   desktop: string
   mobile: string
@@ -17,35 +16,14 @@ type HeroSlide = {
   ctaHref: string
 }
 
-const SLIDES: HeroSlide[] = [
-  {
-    type: "image",
-    desktop: "/images/hero/hero-desk-1.webp",
-    mobile: "/images/hero/hero-mobile-2.webp",
-    alt: "Ice Industry — Terrain Sauvage",
-    kicker: "Nouvelle Capsule",
-    headline: "Terrain Sauvage",
-    subline: "Collection Hiver 2026",
-    cta: "Découvrir la collection",
-    ctaHref: "/collections/capsule-arctic",
-  },
-  {
-    type: "image",
-    desktop: "/images/hero/hero-desk-2.webp",
-    mobile: "/images/hero/hero-mobile-1.webp",
-    alt: "Ice Industry — Nés du Froid",
-    kicker: "Marseille",
-    headline: "Nés du Froid",
-    subline: "Streetwear Technique",
-    cta: "Explorer l'univers",
-    ctaHref: "/voir-tout",
-  },
-]
+type HeroSectionProps = {
+  slides: HeroSlide[]
+}
 
 const SLIDE_DURATION = 6000
 const FADE_MS = 1000
 
-export default function HeroSection() {
+export default function HeroSection({ slides }: HeroSectionProps) {
   const [current, setCurrent] = useState(0)
   const [mounted, setMounted] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -56,9 +34,9 @@ export default function HeroSection() {
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
     timerRef.current = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % SLIDES.length)
+      setCurrent((prev) => (prev + 1) % slides.length)
     }, SLIDE_DURATION)
-  }, [])
+  }, [slides.length])
 
   const pauseCarousel = useCallback(() => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
@@ -90,8 +68,8 @@ export default function HeroSection() {
     if (Math.abs(delta) > 50) {
       const next =
         delta < 0
-          ? (current + 1) % SLIDES.length
-          : (current - 1 + SLIDES.length) % SLIDES.length
+          ? (current + 1) % slides.length
+          : (current - 1 + slides.length) % slides.length
       goToSlide(next)
     }
   }
@@ -101,6 +79,8 @@ export default function HeroSection() {
     startTimer()
   }
 
+  if (slides.length === 0) return null
+
   return (
     <section
       className="relative h-dvh w-full overflow-hidden bg-black"
@@ -108,7 +88,7 @@ export default function HeroSection() {
       onTouchEnd={onTouchEnd}
     >
       {/* ── Media layers (image or video) ── */}
-      {SLIDES.map((slide, index) => {
+      {slides.map((slide, index) => {
         const active = index === current
         return (
           <div
@@ -188,13 +168,13 @@ export default function HeroSection() {
 
       {/* ── Full-area clickable link for active slide ── */}
       <Link
-        href={SLIDES[current].ctaHref}
+        href={slides[current].ctaHref}
         className="absolute inset-0 z-[2] cursor-pointer"
-        aria-label={SLIDES[current].cta}
+        aria-label={slides[current].cta}
       />
 
       {/* ── Text per slide — compact statement block (Represent style) ── */}
-      {SLIDES.map((slide, index) => {
+      {slides.map((slide, index) => {
         const active = index === current
         return (
           <div

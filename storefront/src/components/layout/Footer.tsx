@@ -16,7 +16,7 @@ const SERVICE_CLIENT_LINKS = [
 const ENTREPRISE_LINKS = [
   { label: "Notre univers", href: "/notre-univers" },
   { label: "La marque", href: "/legal/mentions-legales" },
-  { label: "Carrières", href: "/carrieres" },
+  { label: "Carri\u00e8res", href: "/carrieres" },
   { label: "Collaborations", href: "/collaborations" },
 ]
 
@@ -28,9 +28,9 @@ const SOCIAL_LINKS = [
 ]
 
 const LEGAL_LINKS = [
-  { label: "Mentions légales", href: "/legal/mentions-legales" },
-  { label: "Conditions générales de vente", href: "/legal/cgv" },
-  { label: "Politique de confidentialité", href: "/legal/confidentialite" },
+  { label: "Mentions l\u00e9gales", href: "/legal/mentions-legales" },
+  { label: "Conditions g\u00e9n\u00e9rales de vente", href: "/legal/cgv" },
+  { label: "Politique de confidentialit\u00e9", href: "/legal/confidentialite" },
   { label: "Politique de cookies", href: "/legal/cookies" },
 ]
 
@@ -91,9 +91,7 @@ export default function Footer() {
 
   return (
     <footer className="mt-auto">
-      {/* ═══════════════════════════════════════════════
-          COUCHE 1 — Bandeau Services (fond blanc)
-         ═══════════════════════════════════════════════ */}
+      {/* COUCHE 1 — Bandeau Services (fond blanc) */}
       <div className="bg-white border-t border-black/10">
         <div className="px-6 lg:px-12">
           {/* Desktop: 3 cols side by side with vertical dividers */}
@@ -101,14 +99,13 @@ export default function Footer() {
             {/* Newsletter */}
             <div className="p-8 lg:p-10">
               <h3 className="text-xs uppercase tracking-[0.2em] font-medium mb-3">
-                S&apos;inscrire à notre newsletter
+                S&apos;inscrire &agrave; notre newsletter
               </h3>
               <p className="text-xs text-black/60 leading-relaxed mb-4">
-                Recevez -10% sur votre première commande et un accès exclusif à nos nouveaux drops.
+                Recevez -10% sur votre premi&egrave;re commande et un acc&egrave;s exclusif &agrave; nos nouveaux drops.
               </p>
               <AnimatedLink
                 href="/newsletter"
-
                 className="text-xs text-black/70 hover:text-black transition-colors duration-200"
               >
                 S&apos;inscrire
@@ -121,11 +118,10 @@ export default function Footer() {
                 Besoin de conseils ?
               </h3>
               <p className="text-xs text-black/60 leading-relaxed mb-4">
-                Notre équipe se tient à votre disposition pour répondre à vos questions, du lundi au samedi de 11h à 19h.
+                Notre &eacute;quipe se tient &agrave; votre disposition pour r&eacute;pondre &agrave; vos questions, du lundi au samedi de 11h &agrave; 19h.
               </p>
               <AnimatedLink
                 href="/contact"
-
                 className="text-xs text-black/70 hover:text-black transition-colors duration-200"
               >
                 Contactez-nous
@@ -138,11 +134,10 @@ export default function Footer() {
                 Livraison &amp; retours
               </h3>
               <p className="text-xs text-black/60 leading-relaxed mb-4">
-                Les frais de livraison sont offerts pour toute commande au-delà d&apos;un certain montant. Vous disposez de 14 jours après réception pour retourner vos articles.
+                Les frais de livraison sont offerts pour toute commande au-del&agrave; d&apos;un certain montant. Vous disposez de 14 jours apr&egrave;s r&eacute;ception pour retourner vos articles.
               </p>
               <AnimatedLink
                 href="/livraison"
-
                 className="text-xs text-black/70 hover:text-black transition-colors duration-200"
               >
                 En savoir plus
@@ -155,14 +150,13 @@ export default function Footer() {
             {/* Newsletter */}
             <div className="py-8 px-2">
               <h3 className="text-xs uppercase tracking-[0.2em] font-medium mb-3">
-                S&apos;inscrire à notre newsletter
+                S&apos;inscrire &agrave; notre newsletter
               </h3>
               <p className="text-xs text-black/60 leading-relaxed mb-4">
-                Recevez -10% sur votre première commande et un accès exclusif à nos nouveaux drops.
+                Recevez -10% sur votre premi&egrave;re commande et un acc&egrave;s exclusif &agrave; nos nouveaux drops.
               </p>
               <AnimatedLink
                 href="/newsletter"
-
                 className="text-xs text-black/70 hover:text-black transition-colors duration-200"
               >
                 S&apos;inscrire
@@ -175,11 +169,10 @@ export default function Footer() {
                 Besoin de conseils ?
               </h3>
               <p className="text-xs text-black/60 leading-relaxed mb-4">
-                Notre équipe se tient à votre disposition pour répondre à vos questions, du lundi au samedi de 11h à 19h.
+                Notre &eacute;quipe se tient &agrave; votre disposition pour r&eacute;pondre &agrave; vos questions, du lundi au samedi de 11h &agrave; 19h.
               </p>
               <AnimatedLink
                 href="/contact"
-
                 className="text-xs text-black/70 hover:text-black transition-colors duration-200"
               >
                 Contactez-nous
@@ -192,11 +185,10 @@ export default function Footer() {
                 Livraison &amp; retours
               </h3>
               <p className="text-xs text-black/60 leading-relaxed mb-4">
-                Les frais de livraison sont offerts pour toute commande au-delà d&apos;un certain montant. Vous disposez de 14 jours après réception pour retourner vos articles.
+                Les frais de livraison sont offerts pour toute commande au-del&agrave; d&apos;un certain montant. Vous disposez de 14 jours apr&egrave;s r&eacute;ception pour retourner vos articles.
               </p>
               <AnimatedLink
                 href="/livraison"
-
                 className="text-xs text-black/70 hover:text-black transition-colors duration-200"
               >
                 En savoir plus
@@ -206,9 +198,7 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════
-          COUCHE 2 — Colonnes de liens (5 cols Stone Island style)
-         ═══════════════════════════════════════════════ */}
+      {/* COUCHE 2 — Colonnes de liens (5 cols Stone Island style) */}
       <div className="bg-white border-t border-black/10">
         <div className="px-6 lg:px-12 py-8">
           <div className="lg:grid lg:grid-cols-5 lg:gap-8">
@@ -281,7 +271,7 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/boutique" className={linkClasses}>
+                  <Link href="/notre-boutique" className={linkClasses}>
                     Boutique Marseille
                   </Link>
                 </li>
@@ -304,9 +294,9 @@ export default function Footer() {
               </ul>
             </FooterAccordion>
 
-            {/* LÉGAL */}
+            {/* LEGAL */}
             <FooterAccordion
-              title="Légal"
+              title="L\u00e9gal"
               open={activeIndex === 4}
               onToggle={() => handleAccordionToggle(4)}
             >
@@ -324,12 +314,10 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════
-          COUCHE 3 — Bottom bar (copyright)
-         ═══════════════════════════════════════════════ */}
+      {/* COUCHE 3 — Bottom bar (copyright) */}
       <div className="bg-white border-t border-black/10 py-6 px-6 lg:px-12">
         <p className="text-[10px] text-black uppercase tracking-wider text-center">
-          &copy; 2026 Ice Industry. Tous droits réservés.
+          &copy; 2026 Ice Industry. Tous droits r&eacute;serv&eacute;s.
         </p>
       </div>
     </footer>

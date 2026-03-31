@@ -4,21 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import Logo from "./Logo"
-
-type Category = {
-  id: string
-  name: string
-  handle: string
-  category_children?: Category[]
-}
-
-type Collection = {
-  id: string
-  title: string
-  handle: string
-  metadata?: Record<string, any>
-  created_at?: string
-}
+import type { Category, Collection } from "@/types"
 
 // Chevron icon with rotation animation
 function Chevron({ open }: { open: boolean }) {
@@ -83,11 +69,6 @@ export default function MobileMenu({
   )
   const latestCollection = sorted[0]
 
-  const vetements = categories.find((c) => c.handle === "vetements")
-  const accessoires = categories.find((c) => c.handle === "accessoires")
-  const iceForGirls = categories.find((c) => c.handle === "ice-for-girls")
-  const chaussures = categories.find((c) => c.handle === "chaussures")
-
   // Toggle accordion — only one open at a time
   const toggle = (section: string) => {
     setExpandedSection((prev) => (prev === section ? null : section))
@@ -145,7 +126,7 @@ export default function MobileMenu({
               <div className="relative aspect-[5/2] overflow-hidden bg-muted">
                 {latestCollection.metadata?.hero_image ? (
                   <Image
-                    src={latestCollection.metadata.hero_image}
+                    src={latestCollection.metadata.hero_image as string}
                     alt={latestCollection.title}
                     fill
                     className="object-cover"
@@ -163,7 +144,7 @@ export default function MobileMenu({
                     {latestCollection.title}
                   </p>
                   <span className="text-xs text-white/80 mt-1 inline-block">
-                    Découvrir &rarr;
+                    D&eacute;couvrir &rarr;
                   </span>
                 </div>
               </div>
@@ -202,7 +183,7 @@ export default function MobileMenu({
                     ))}
                     <div className="pt-1 pl-2">
                       <Link
-                        href="/collections"
+                        href="/boutique"
                         onClick={onClose}
                         className="text-xs font-medium text-foreground uppercase tracking-[0.12em] hover:opacity-60 transition-opacity"
                       >
@@ -214,142 +195,60 @@ export default function MobileMenu({
               </div>
             </div>
 
-            {/* ─── Vêtements (accordion) ─── */}
-            {vetements &&
-            vetements.category_children &&
-            vetements.category_children.length > 0 ? (
-              <div className="border-b border-border">
-                <button
-                  onClick={() => toggle("vetements")}
-                  className="w-full flex items-center justify-between py-4 text-sm font-medium uppercase tracking-wide text-foreground"
-                >
-                  <span>Vêtements</span>
-                  <Chevron open={expandedSection === "vetements"} />
-                </button>
-                <div
-                  className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-                    expandedSection === "vetements"
-                      ? "grid-rows-[1fr]"
-                      : "grid-rows-[0fr]"
-                  }`}
-                >
-                  <div className="overflow-hidden">
-                    <div className="pb-4 space-y-3">
-                      {vetements.category_children.map((child) => (
-                        <Link
-                          key={child.id}
-                          href={`/categories/${child.handle}`}
-                          onClick={onClose}
-                          className="block text-[13px] text-foreground/60 hover:text-foreground transition-colors pl-2"
-                        >
-                          {child.name}
-                        </Link>
-                      ))}
-                      <div className="pt-1 pl-2">
-                        <Link
-                          href={`/categories/${vetements.handle}`}
-                          onClick={onClose}
-                          className="text-[13px] font-medium text-foreground uppercase tracking-[0.12em] hover:opacity-60 transition-opacity"
-                        >
-                          Tout voir
-                        </Link>
+            {/* ─── Categories (dynamic accordions) ─── */}
+            {categories.map((cat) =>
+              cat.category_children && cat.category_children.length > 0 ? (
+                <div key={cat.id} className="border-b border-border">
+                  <button
+                    onClick={() => toggle(cat.handle)}
+                    className="w-full flex items-center justify-between py-4 text-sm font-medium uppercase tracking-wide text-foreground"
+                  >
+                    <span>{cat.name}</span>
+                    <Chevron open={expandedSection === cat.handle} />
+                  </button>
+                  <div
+                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                      expandedSection === cat.handle
+                        ? "grid-rows-[1fr]"
+                        : "grid-rows-[0fr]"
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="pb-4 space-y-3">
+                        {cat.category_children.map((child) => (
+                          <Link
+                            key={child.id}
+                            href={`/categories/${child.handle}`}
+                            onClick={onClose}
+                            className="block text-[13px] text-foreground/60 hover:text-foreground transition-colors pl-2"
+                          >
+                            {child.name}
+                          </Link>
+                        ))}
+                        <div className="pt-1 pl-2">
+                          <Link
+                            href={`/categories/${cat.handle}`}
+                            onClick={onClose}
+                            className="text-[13px] font-medium text-foreground uppercase tracking-[0.12em] hover:opacity-60 transition-opacity"
+                          >
+                            Tout voir
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ) : vetements ? (
-              <div className="border-b border-border">
-                <Link
-                  href={`/categories/${vetements.handle}`}
-                  onClick={onClose}
-                  className="block py-4 text-sm font-medium uppercase tracking-wide text-foreground"
-                >
-                  Vêtements
-                </Link>
-              </div>
-            ) : null}
-
-            {/* ─── Accessoires (accordion) ─── */}
-            {accessoires &&
-            accessoires.category_children &&
-            accessoires.category_children.length > 0 ? (
-              <div className="border-b border-border">
-                <button
-                  onClick={() => toggle("accessoires")}
-                  className="w-full flex items-center justify-between py-4 text-sm font-medium uppercase tracking-wide text-foreground"
-                >
-                  <span>Accessoires</span>
-                  <Chevron open={expandedSection === "accessoires"} />
-                </button>
-                <div
-                  className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-                    expandedSection === "accessoires"
-                      ? "grid-rows-[1fr]"
-                      : "grid-rows-[0fr]"
-                  }`}
-                >
-                  <div className="overflow-hidden">
-                    <div className="pb-4 space-y-3">
-                      {accessoires.category_children.map((child) => (
-                        <Link
-                          key={child.id}
-                          href={`/categories/${child.handle}`}
-                          onClick={onClose}
-                          className="block text-[13px] text-foreground/60 hover:text-foreground transition-colors pl-2"
-                        >
-                          {child.name}
-                        </Link>
-                      ))}
-                      <div className="pt-1 pl-2">
-                        <Link
-                          href={`/categories/${accessoires.handle}`}
-                          onClick={onClose}
-                          className="text-[13px] font-medium text-foreground uppercase tracking-[0.12em] hover:opacity-60 transition-opacity"
-                        >
-                          Tout voir
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
+              ) : (
+                <div key={cat.id} className="border-b border-border py-4">
+                  <Link
+                    href={`/categories/${cat.handle}`}
+                    onClick={onClose}
+                    className="text-sm font-medium uppercase tracking-wide text-foreground hover:opacity-60 transition-opacity"
+                  >
+                    {cat.name}
+                  </Link>
                 </div>
-              </div>
-            ) : accessoires ? (
-              <div className="border-b border-border">
-                <Link
-                  href={`/categories/${accessoires.handle}`}
-                  onClick={onClose}
-                  className="block py-4 text-sm font-medium uppercase tracking-wide text-foreground"
-                >
-                  Accessoires
-                </Link>
-              </div>
-            ) : null}
-
-            {/* ─── Chaussures (direct link) ─── */}
-            {chaussures && (
-              <div className="border-b border-border py-4">
-                <Link
-                  href={`/categories/${chaussures.handle}`}
-                  onClick={onClose}
-                  className="text-sm font-medium uppercase tracking-wide text-foreground hover:opacity-60 transition-opacity"
-                >
-                  Chaussures
-                </Link>
-              </div>
-            )}
-
-            {/* ─── Ice for Girls (direct link) ─── */}
-            {iceForGirls && (
-              <div className="border-b border-border py-4">
-                <Link
-                  href={`/categories/${iceForGirls.handle}`}
-                  onClick={onClose}
-                  className="text-sm font-medium uppercase tracking-wide text-foreground hover:opacity-60 transition-opacity"
-                >
-                  Ice for Girls
-                </Link>
-              </div>
+              )
             )}
 
             {/* ─── Voir tout (direct link) — last, no border-b ─── */}

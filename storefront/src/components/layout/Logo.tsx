@@ -7,7 +7,8 @@ export default function Logo({
   className?: string
   variant?: "black" | "white"
 }) {
-  const src = variant === "white" ? "/images/logo-white.svg" : "/images/logo-black.svg"
+  const src =
+    variant === "white" ? "/images/logo-white.svg" : "/images/logo-black.svg"
 
   return (
     <Image

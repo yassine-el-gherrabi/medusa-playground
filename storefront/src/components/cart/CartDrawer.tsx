@@ -3,12 +3,12 @@
 import { useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useCart } from "@/providers/cart"
+import { useCart } from "@/providers/CartProvider"
 import CartItem from "./CartItem"
 import { formatPrice } from "@/lib/utils"
 
 export default function CartDrawer() {
-  const { cart, isDrawerOpen, closeDrawer } = useCart()
+  const { cart, drawerOpen, closeDrawer } = useCart()
   const pathname = usePathname()
 
   // Close on route change
@@ -18,7 +18,7 @@ export default function CartDrawer() {
 
   // Body scroll lock
   useEffect(() => {
-    if (isDrawerOpen) {
+    if (drawerOpen) {
       document.body.style.overflow = "hidden"
     } else {
       document.body.style.overflow = ""
@@ -26,17 +26,17 @@ export default function CartDrawer() {
     return () => {
       document.body.style.overflow = ""
     }
-  }, [isDrawerOpen])
+  }, [drawerOpen])
 
   // Escape key
   useEffect(() => {
-    if (!isDrawerOpen) return
+    if (!drawerOpen) return
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeDrawer()
     }
     document.addEventListener("keydown", handleKeyDown)
     return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [isDrawerOpen, closeDrawer])
+  }, [drawerOpen, closeDrawer])
 
   const items = cart?.items || []
   const currencyCode = cart?.currency_code || "eur"
@@ -47,7 +47,7 @@ export default function CartDrawer() {
       {/* Backdrop */}
       <div
         className={`fixed inset-0 z-[60] transition-colors duration-300 ${
-          isDrawerOpen
+          drawerOpen
             ? "bg-black/40 pointer-events-auto"
             : "bg-transparent pointer-events-none"
         }`}
@@ -59,10 +59,10 @@ export default function CartDrawer() {
       <div
         role="dialog"
         aria-label="Panier"
-        aria-modal={isDrawerOpen}
+        aria-modal={drawerOpen}
         className={`fixed top-0 right-0 h-full w-full sm:w-[400px] z-[61] bg-white
           transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]
-          ${isDrawerOpen ? "translate-x-0" : "translate-x-full"}`}
+          ${drawerOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
@@ -116,7 +116,7 @@ export default function CartDrawer() {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Frais de livraison calculés à l&apos;étape suivante
+                  Frais de livraison calcul&eacute;s &agrave; l&apos;&eacute;tape suivante
                 </p>
                 <Link
                   href="/checkout"

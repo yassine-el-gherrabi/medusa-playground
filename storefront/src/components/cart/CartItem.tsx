@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useCart } from "@/providers/cart"
+import { useCart } from "@/providers/CartProvider"
 import { formatPrice } from "@/lib/utils"
 
 export default function CartItem({ item }: { item: any }) {

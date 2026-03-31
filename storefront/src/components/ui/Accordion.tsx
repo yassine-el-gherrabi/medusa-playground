@@ -50,11 +50,7 @@ export function AccordionItem({
 
 export type AccordionItemData = { title: string; content: React.ReactNode }
 
-export default function Accordion({
-  items,
-}: {
-  items: AccordionItemData[]
-}) {
+export default function Accordion({ items }: { items: AccordionItemData[] }) {
   return (
     <div>
       {items.map((item, i) => (

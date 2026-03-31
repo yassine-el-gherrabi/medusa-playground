@@ -1,22 +1,6 @@
 @import "tailwindcss";
 
-/* Shiny text — hover-triggered sweep (left → right) */
-@keyframes shiny-sweep {
-  0% { background-position: 100% center; }
-  100% { background-position: 0% center; }
-}
-.shiny-text {
-  background: linear-gradient(120deg, #d4d4d4 0%, #d4d4d4 40%, #ffffff 50%, #d4d4d4 60%, #d4d4d4 100%);
-  background-size: 300% auto;
-  background-position: 100% center;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.shiny-btn:hover .shiny-text {
-  animation: shiny-sweep 1.5s linear infinite;
-}
-
+/* ── Design Tokens ── */
 :root {
   --background: #ffffff;
   --foreground: #000000;
@@ -40,31 +24,66 @@
   --font-sans: var(--font-sans);
 }
 
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* ── Animations ── */
+@keyframes shiny-sweep {
+  0% { background-position: 100% center; }
+  100% { background-position: 0% center; }
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInImage {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes slideProgress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* ── Utility Classes ── */
+.shiny-text {
+  background: linear-gradient(120deg, #d4d4d4 0%, #d4d4d4 40%, #ffffff 50%, #d4d4d4 60%, #d4d4d4 100%);
+  background-size: 300% auto;
+  background-position: 100% center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.shiny-btn:hover .shiny-text {
+  animation: shiny-sweep 1.5s linear infinite;
+}
+
+.shiny-text-bright {
+  background: linear-gradient(120deg, #fff 0%, #fff 40%, #d4d4d4 50%, #fff 60%, #fff 100%);
+  background-size: 300% auto;
+  background-position: 100% center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.shiny-btn:hover .shiny-text-bright {
+  animation: shiny-sweep 1.5s linear infinite;
 }
 
 .animate-shimmer {
@@ -77,47 +96,18 @@ body {
   animation: fadeIn 0.4s ease-out forwards;
 }
 
-@keyframes fadeInImage {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 .animate-fade-in-image {
   animation: fadeInImage 0.3s ease-out forwards;
-}
-
-@keyframes pulse-slow {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.4;
-  }
 }
 
 .animate-pulse-slow {
   animation: pulse-slow 2s ease-in-out infinite;
 }
 
-/* Hero slide progress bar */
-@keyframes slideProgress {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
 .animate-slide-progress {
   animation: slideProgress 6s linear forwards;
 }
 
-/* Hide scrollbar — horizontal scroll strips */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

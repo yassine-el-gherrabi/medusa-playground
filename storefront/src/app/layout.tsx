@@ -1,30 +1,40 @@
-import type { Metadata } from "next";
-import { Instrument_Sans } from "next/font/google";
-import Script from "next/script";
-import "./globals.css";
-import { RegionProvider } from "@/providers/region";
-import { CartProvider } from "@/providers/cart";
-import { AuthProvider } from "@/providers/auth";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import type { Metadata } from "next"
+import { Instrument_Sans } from "next/font/google"
+import Script from "next/script"
+import "./globals.css"
+import QueryProvider from "@/providers/QueryProvider"
+import { RegionProvider } from "@/providers/RegionProvider"
+import { CartProvider } from "@/providers/CartProvider"
 
 const instrumentSans = Instrument_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-});
+})
 
 export const metadata: Metadata = {
-  title: "Ice Industry | Streetwear Marseille",
-  description: "Marque de streetwear basee a Marseille. Capsules exclusives, accessoires et chaussures multi-marques.",
-};
+  title: {
+    default: "Ice Industry | Streetwear Marseille",
+    template: "%s | Ice Industry",
+  },
+  description:
+    "Marque de streetwear basée à Marseille. Capsules exclusives, accessoires et chaussures multi-marques.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://iceindustry.fr"
+  ),
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "Ice Industry",
+  },
+}
 
-const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || "";
+const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || ""
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
@@ -44,16 +54,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <body
         className={`${instrumentSans.variable} antialiased min-h-screen flex flex-col`}
       >
-        <RegionProvider>
-          <CartProvider>
-            <AuthProvider>
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </AuthProvider>
-          </CartProvider>
-        </RegionProvider>
+        <QueryProvider>
+          <RegionProvider>
+            <CartProvider>{children}</CartProvider>
+          </RegionProvider>
+        </QueryProvider>
       </body>
     </html>
-  );
+  )
 }

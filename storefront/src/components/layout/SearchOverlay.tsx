@@ -2,19 +2,13 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { sdk } from "@/lib/sdk"
-import { useRegion } from "@/providers/region"
+import { useRegion } from "@/providers/RegionProvider"
 import { useSearchSuggestions } from "@/hooks/useSearchSuggestions"
 import SearchPreContent from "@/components/search/SearchPreContent"
 import SearchSuggestions from "@/components/search/SearchSuggestions"
 import SearchCategories from "@/components/search/SearchCategories"
 import SearchProductGrid from "@/components/search/SearchProductGrid"
-
-type Category = {
-  id: string
-  name: string
-  handle: string
-  category_children?: Category[]
-}
+import type { Category } from "@/types"
 
 export default function SearchOverlay({
   isOpen,
