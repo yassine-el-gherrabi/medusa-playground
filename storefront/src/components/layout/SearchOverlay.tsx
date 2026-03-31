@@ -8,7 +8,7 @@ import SearchPreContent from "@/components/search/SearchPreContent"
 import SearchSuggestions from "@/components/search/SearchSuggestions"
 import SearchCategories from "@/components/search/SearchCategories"
 import SearchProductGrid from "@/components/search/SearchProductGrid"
-import type { Category } from "@/types"
+import type { Category, Product } from "@/types"
 
 export default function SearchOverlay({
   isOpen,
@@ -20,10 +20,10 @@ export default function SearchOverlay({
   categories?: Category[]
 }) {
   const [query, setQuery] = useState("")
-  const [results, setResults] = useState<any[]>([])
+  const [results, setResults] = useState<Product[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [trendingProducts, setTrendingProducts] = useState<any[]>([])
+  const [trendingProducts, setTrendingProducts] = useState<Product[]>([])
   const [loadingTrending, setLoadingTrending] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)

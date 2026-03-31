@@ -16,7 +16,7 @@ const SERVICE_CLIENT_LINKS = [
 const ENTREPRISE_LINKS = [
   { label: "Notre univers", href: "/notre-univers" },
   { label: "La marque", href: "/legal/mentions-legales" },
-  { label: "Carri\u00e8res", href: "/carrieres" },
+  { label: "Carrières", href: "/carrieres" },
   { label: "Collaborations", href: "/collaborations" },
 ]
 
@@ -28,9 +28,9 @@ const SOCIAL_LINKS = [
 ]
 
 const LEGAL_LINKS = [
-  { label: "Mentions l\u00e9gales", href: "/legal/mentions-legales" },
-  { label: "Conditions g\u00e9n\u00e9rales de vente", href: "/legal/cgv" },
-  { label: "Politique de confidentialit\u00e9", href: "/legal/confidentialite" },
+  { label: "Mentions légales", href: "/legal/mentions-legales" },
+  { label: "Conditions générales de vente", href: "/legal/cgv" },
+  { label: "Politique de confidentialité", href: "/legal/confidentialite" },
   { label: "Politique de cookies", href: "/legal/cookies" },
 ]
 
@@ -296,7 +296,7 @@ export default function Footer() {
 
             {/* LEGAL */}
             <FooterAccordion
-              title="L\u00e9gal"
+              title="Légal"
               open={activeIndex === 4}
               onToggle={() => handleAccordionToggle(4)}
             >

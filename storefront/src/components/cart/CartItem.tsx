@@ -3,8 +3,9 @@
 import Image from "next/image"
 import { useCart } from "@/providers/CartProvider"
 import { formatPrice } from "@/lib/utils"
+import type { LineItem } from "@/types"
 
-export default function CartItem({ item }: { item: any }) {
+export default function CartItem({ item, currencyCode = "eur" }: { item: LineItem; currencyCode?: string }) {
   const { updateItem, removeItem } = useCart()
   const thumbnail = item.thumbnail || item.variant?.product?.thumbnail
 
@@ -48,7 +49,7 @@ export default function CartItem({ item }: { item: any }) {
 
       <div className="flex flex-col items-end justify-between">
         <p className="text-sm font-medium">
-          {formatPrice(item.unit_price * item.quantity, item.currency_code || "eur")}
+          {formatPrice(item.unit_price * item.quantity, currencyCode)}
         </p>
         <button
           onClick={() => removeItem(item.id)}

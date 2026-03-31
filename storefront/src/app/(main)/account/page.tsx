@@ -19,6 +19,7 @@ export default function AccountPage() {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState("")
 
   const {
     register,
@@ -51,8 +52,8 @@ export default function AccountPage() {
       setEditing(false)
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
-    } catch {
-      // Error handled silently
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Impossible de mettre à jour le profil.")
     }
   }
 
@@ -86,6 +87,10 @@ export default function AccountPage() {
 
       {success && (
         <p className="text-sm text-green-600 mb-4">Profil mis à jour avec succès.</p>
+      )}
+
+      {error && (
+        <p className="text-sm text-red-600 mb-4">{error}</p>
       )}
 
       {!editing ? (

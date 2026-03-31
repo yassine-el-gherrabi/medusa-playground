@@ -55,9 +55,9 @@ export default function CheckoutPage() {
             />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold mb-2">Commande confirm&eacute;e !</h1>
+        <h1 className="text-2xl font-bold mb-2">Commande confirmée !</h1>
         <p className="text-muted-foreground mb-8">
-          Merci pour votre commande. Num&eacute;ro de commande :{" "}
+          Merci pour votre commande. Numéro de commande :{" "}
           <span className="font-mono font-semibold text-foreground">
             {order.display_id || order.id}
           </span>
@@ -89,7 +89,7 @@ export default function CheckoutPage() {
       const msg =
         err instanceof Error
           ? err.message
-          : "Impossible de sauvegarder l'adresse. V\u00e9rifiez vos informations."
+          : "Impossible de sauvegarder l'adresse. Vérifiez vos informations."
       setError(msg)
       console.error("Failed to update address:", err)
     } finally {
@@ -110,7 +110,7 @@ export default function CheckoutPage() {
       const msg =
         err instanceof Error
           ? err.message
-          : "Impossible de d\u00e9finir le mode de livraison."
+          : "Impossible de définir le mode de livraison."
       setError(msg)
       console.error("Failed to set shipping:", err)
     } finally {

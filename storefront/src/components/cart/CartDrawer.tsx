@@ -40,7 +40,7 @@ export default function CartDrawer() {
 
   const items = cart?.items || []
   const currencyCode = cart?.currency_code || "eur"
-  const itemCount = items.reduce((sum: number, item: any) => sum + item.quantity, 0)
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
   return (
     <>
@@ -102,8 +102,8 @@ export default function CartDrawer() {
           ) : (
             <>
               <div className="flex-1 overflow-y-auto px-6">
-                {items.map((item: any) => (
-                  <CartItem key={item.id} item={item} />
+                {items.map((item) => (
+                  <CartItem key={item.id} item={item} currencyCode={currencyCode} />
                 ))}
               </div>
 

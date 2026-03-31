@@ -124,7 +124,7 @@ export default function ShippingOptions({
                   ? option.amount === 0
                     ? "Gratuit"
                     : formatPrice(option.amount, currencyCode)
-                  : "Calcul\u00e9"}
+                  : "Calculé"}
               </span>
             </label>
           )

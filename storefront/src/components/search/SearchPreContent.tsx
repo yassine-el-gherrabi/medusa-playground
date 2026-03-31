@@ -3,13 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { formatPrice, getProductPrice } from "@/lib/utils"
-
-type Category = {
-  id: string
-  name: string
-  handle: string
-  category_children?: Category[]
-}
+import type { Category, Product } from "@/types"
 
 export default function SearchPreContent({
   categories,
@@ -18,7 +12,7 @@ export default function SearchPreContent({
   onClose,
 }: {
   categories: Category[]
-  trendingProducts: any[]
+  trendingProducts: Product[]
   loadingTrending: boolean
   onClose: () => void
 }) {
@@ -73,7 +67,7 @@ export default function SearchPreContent({
           </div>
         ) : trendingProducts.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {trendingProducts.slice(0, 8).map((product: any) => {
+            {trendingProducts.slice(0, 8).map((product) => {
               const priceData = getProductPrice(product)
               const thumbnail = product.thumbnail || product.images?.[0]?.url
 

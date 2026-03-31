@@ -3,6 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { formatPrice, getProductPrice } from "@/lib/utils"
+import type { Product } from "@/types"
 
 export default function SearchProductGrid({
   products,
@@ -11,7 +12,7 @@ export default function SearchProductGrid({
   loading,
   onClose,
 }: {
-  products: any[]
+  products: Product[]
   query: string
   total: number
   loading: boolean
@@ -62,7 +63,7 @@ export default function SearchProductGrid({
         )}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {products.map((product: any) => {
+        {products.map((product) => {
           const priceData = getProductPrice(product)
           const thumbnail = product.thumbnail || product.images?.[0]?.url
 
