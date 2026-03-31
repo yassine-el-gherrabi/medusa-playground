@@ -3,7 +3,7 @@ import { sdk } from "@/lib/sdk"
 import type { Cart } from "@/types"
 
 const CART_COOKIE = "cart_id"
-const CART_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
+const CART_MAX_AGE = 60 * 60 * 24 * 30 // 30 days in seconds
 
 export async function getCartId(): Promise<string | undefined> {
   const cookieStore = await cookies()

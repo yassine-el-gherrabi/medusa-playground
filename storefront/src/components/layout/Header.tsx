@@ -12,7 +12,7 @@ import MobileMenu from "./MobileMenu"
 import SearchOverlay from "./SearchOverlay"
 import Logo from "./Logo"
 
-const HEADER_H = 64
+const HEADER_H = 64 // px — matches h-16 in Tailwind
 
 function SearchIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
@@ -55,14 +55,13 @@ export default function Header({
   const headerRef = useRef<HTMLElement>(null)
   const heroFractionRef = useRef(getHeroHeightFraction(pathname))
 
-  // Update hero fraction on route change
   useEffect(() => {
     heroFractionRef.current = getHeroHeightFraction(pathname)
     const threshold = heroFractionRef.current * window.innerHeight - HEADER_H
     setScrolled(window.scrollY > threshold)
   }, [pathname])
 
-  // Scroll: transparent→solid transition + header slide
+  // Hide header on scroll down, show on scroll up. Transparent over hero sections.
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY
@@ -88,7 +87,6 @@ export default function Header({
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Escape to close mega menu
   useEffect(() => {
     if (!megaMenuOpen) return
     const handler = (e: KeyboardEvent) => {

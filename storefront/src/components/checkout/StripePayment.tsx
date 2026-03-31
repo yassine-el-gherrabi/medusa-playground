@@ -159,8 +159,8 @@ export default function StripePayment({
               if (result.type === "order") {
                 onComplete(result.order as Order)
               }
-            } catch (err) {
-              console.error(err)
+            } catch {
+              // Payment completion failed — error shown by Stripe UI
             }
           }}
           className="w-full py-3 bg-black text-white text-sm font-medium uppercase tracking-wider hover:bg-black/90 transition-colors"

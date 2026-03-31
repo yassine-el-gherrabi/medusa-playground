@@ -49,7 +49,7 @@ export default function MegaMenu({
   const resetHover = useCallback(() => {
     setHoveredCollection(defaultCollectionItem)
     setHoveredCategory(defaultCategoryItem)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: reset hover only when image URLs change
   }, [defaultCollectionItem.image, defaultCategoryItem.image])
 
   const hoverCollection = (c: Collection) => {

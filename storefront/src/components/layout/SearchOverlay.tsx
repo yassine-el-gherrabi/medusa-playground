@@ -104,7 +104,7 @@ export default function SearchOverlay({
       } finally {
         setLoading(false)
       }
-    }, 300)
+    }, 300) // ms debounce
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)

@@ -4,7 +4,6 @@ import { useState } from "react"
 import Link from "next/link"
 import AnimatedLink from "@/components/ui/AnimatedLink"
 
-/* ── Link Data ── */
 
 const SERVICE_CLIENT_LINKS = [
   { label: "F.A.Q", href: "/faq" },
@@ -77,7 +76,6 @@ function FooterAccordion({
   )
 }
 
-/* ── Main Footer ── */
 
 export default function Footer() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)

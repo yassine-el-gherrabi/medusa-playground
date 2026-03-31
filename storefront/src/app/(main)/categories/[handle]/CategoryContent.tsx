@@ -43,7 +43,7 @@ export default function CategoryContent({
       limit: LIMIT,
       categoryId: [getActiveCategoryId()],
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: re-fetch only on region/activeChild change
   }, [region, activeChild])
 
   const handleLoadMore = () => {

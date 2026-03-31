@@ -67,7 +67,7 @@ export default function BoutiqueContent({
       collectionId: getCollectionId(),
       order: getOrder(),
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: re-fetch only on filter/sort change, not on helper fn refs
   }, [region, selectedCategory, selectedCollection, sortOrder])
 
   // Infinite scroll
@@ -89,7 +89,7 @@ export default function BoutiqueContent({
     )
     observer.observe(sentinelRef.current)
     return () => observer.disconnect()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: re-fetch only on filter/sort change, not on helper fn refs
   }, [hasMore, loading, region])
 
   return (

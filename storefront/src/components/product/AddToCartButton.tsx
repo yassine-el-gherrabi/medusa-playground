@@ -18,7 +18,7 @@ export default function AddToCartButton({
     try {
       await addItem(variantId, 1)
       setAdded(true)
-      setTimeout(() => setAdded(false), 2000)
+      setTimeout(() => setAdded(false), 2000) // show success for 2s
     } catch (err) {
       console.error("Failed to add to cart:", err)
     } finally {

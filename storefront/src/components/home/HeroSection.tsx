@@ -20,8 +20,8 @@ type HeroSectionProps = {
   slides: HeroSlide[]
 }
 
-const SLIDE_DURATION = 6000
-const FADE_MS = 1000
+const SLIDE_DURATION = 6000 // ms per slide
+const FADE_MS = 1000 // ms fade transition
 
 export default function HeroSection({ slides }: HeroSectionProps) {
   const [current, setCurrent] = useState(0)
