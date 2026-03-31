@@ -45,7 +45,7 @@ export default async function CategoryPage({ params }: Props) {
 
       <CategoryContent
         categoryId={category.id}
-        children={children}
+        subcategories={children}
         initialProducts={products}
         initialCount={count}
       />

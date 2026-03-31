@@ -11,12 +11,12 @@ const LIMIT = 12
 
 export default function CategoryContent({
   categoryId,
-  children,
+  subcategories,
   initialProducts,
   initialCount,
 }: {
   categoryId: string
-  children: Category[]
+  subcategories: Category[]
   initialProducts: import("@/types").Product[]
   initialCount: number
 }) {
@@ -28,8 +28,8 @@ export default function CategoryContent({
 
   // Memoize child handle → id map for O(1) lookup
   const childIdMap = useMemo(
-    () => new Map(children.map((c) => [c.handle, c.id])),
-    [children]
+    () => new Map(subcategories.map((c) => [c.handle, c.id])),
+    [subcategories]
   )
 
   const getActiveCategoryId = () =>
@@ -58,7 +58,7 @@ export default function CategoryContent({
   return (
     <>
       {/* Sub-category tabs */}
-      {children.length > 0 && (
+      {subcategories.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex flex-wrap gap-2 justify-center">
             <button
@@ -71,7 +71,7 @@ export default function CategoryContent({
             >
               Tout
             </button>
-            {children.map((child) => (
+            {subcategories.map((child) => (
               <button
                 key={child.id}
                 onClick={() => setActiveChild(child.handle)}
