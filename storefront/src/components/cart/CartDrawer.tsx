@@ -5,51 +5,43 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useCart } from "@/providers/CartProvider"
 import CartItem from "./CartItem"
+import FreeShippingBar from "./FreeShippingBar"
 import { formatPrice } from "@/lib/utils"
 
 export default function CartDrawer() {
-  const { cart, drawerOpen, closeDrawer } = useCart()
+  const { cart, drawerOpen, closeDrawer, error } = useCart()
   const pathname = usePathname()
 
   // Close on route change
-  useEffect(() => {
-    closeDrawer()
-  }, [pathname, closeDrawer])
+  useEffect(() => { closeDrawer() }, [pathname, closeDrawer])
 
   // Body scroll lock
   useEffect(() => {
     if (drawerOpen) {
       document.body.style.overflow = "hidden"
-    } else {
-      document.body.style.overflow = ""
-    }
-    return () => {
-      document.body.style.overflow = ""
+      return () => { document.body.style.overflow = "" }
     }
   }, [drawerOpen])
 
   // Escape key
   useEffect(() => {
     if (!drawerOpen) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeDrawer()
-    }
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") closeDrawer() }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
   }, [drawerOpen, closeDrawer])
 
   const items = cart?.items || []
   const currencyCode = cart?.currency_code || "eur"
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
+  const subtotal = cart?.subtotal || 0
 
   return (
     <>
       {/* Backdrop */}
       <div
         className={`fixed inset-0 z-[60] transition-colors duration-300 ${
-          drawerOpen
-            ? "bg-black/40 pointer-events-auto"
-            : "bg-transparent pointer-events-none"
+          drawerOpen ? "bg-black/40 pointer-events-auto" : "bg-transparent pointer-events-none"
         }`}
         onClick={closeDrawer}
         aria-hidden="true"
@@ -60,75 +52,82 @@ export default function CartDrawer() {
         role="dialog"
         aria-label="Panier"
         aria-modal={drawerOpen}
-        className={`fixed top-0 right-0 h-full w-full sm:w-[400px] z-[61] bg-white
+        className={`fixed top-0 right-0 h-full w-full sm:w-[420px] z-[61] bg-white flex flex-col
           transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]
           ${drawerOpen ? "translate-x-0" : "translate-x-full"}`}
       >
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 h-16 border-b border-border flex-shrink-0">
-            <h2 className="text-[11px] font-normal tracking-[0.15em] uppercase">
-              Panier{itemCount > 0 && ` (${itemCount})`}
-            </h2>
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between px-6 h-16 border-b border-border shrink-0">
+          <h2 className="text-[11px] font-medium tracking-[0.15em] uppercase">
+            Votre panier{itemCount > 0 ? ` (${itemCount})` : ""}
+          </h2>
+          <button
+            onClick={closeDrawer}
+            className="p-2 -mr-2 hover:opacity-70 transition-opacity cursor-pointer"
+            aria-label="Fermer le panier"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1" />
+            </svg>
+          </button>
+        </div>
+
+        {items.length === 0 ? (
+          /* ── Empty state ── */
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+            <p className="text-sm text-muted-foreground mb-6">Votre panier est vide</p>
             <button
               onClick={closeDrawer}
-              className="p-2 -mr-2 hover:opacity-70 transition-opacity"
-              aria-label="Fermer le panier"
+              className="text-[11px] font-medium tracking-[0.12em] uppercase cursor-pointer group relative"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-              </svg>
+              <span className="relative">
+                Continuer le shopping
+                <span className="absolute left-0 right-0 bottom-[-2px] h-px bg-current origin-right transition-transform duration-300 group-hover:scale-x-0" />
+                <span className="absolute left-0 right-0 bottom-[-2px] h-px bg-current scale-x-0 origin-left transition-transform duration-300 delay-200 group-hover:scale-x-100" />
+              </span>
             </button>
           </div>
-
-          {/* Items */}
-          {items.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center px-6">
-              <p className="text-sm text-muted-foreground mb-6">Votre panier est vide</p>
-              <button
-                onClick={closeDrawer}
-                className="text-[11px] font-normal tracking-[0.15em] uppercase border-b border-current pb-0.5 hover:opacity-70 transition-opacity"
-              >
-                Continuer le shopping
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="flex-1 overflow-y-auto px-6">
-                {items.map((item) => (
-                  <CartItem key={item.id} item={item} currencyCode={currencyCode} />
-                ))}
-              </div>
-
-              {/* Footer */}
-              <div className="flex-shrink-0 border-t border-border px-6 py-5 space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Sous-total</span>
-                  <span className="font-medium">
-                    {formatPrice(cart?.subtotal || 0, currencyCode)}
-                  </span>
+        ) : (
+          <>
+            {/* ── Items ── */}
+            <div className="flex-1 overflow-y-auto px-6">
+              {/* Error message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-600 text-[11px] rounded px-3 py-2 mt-3">
+                  {error}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Frais de livraison calculés à l&apos;étape suivante
-                </p>
-                <Link
-                  href="/checkout"
-                  onClick={closeDrawer}
-                  className="block w-full text-center py-3.5 bg-black text-white text-[11px] font-normal uppercase tracking-[0.15em] hover:bg-black/90 transition-colors"
-                >
-                  Passer la commande
-                </Link>
+              )}
+
+              {items.map((item) => (
+                <CartItem key={item.id} item={item} currencyCode={currencyCode} />
+              ))}
+            </div>
+
+            {/* ── Footer ── */}
+            <div className="shrink-0 px-6 pb-6">
+              {/* Free shipping bar */}
+              <FreeShippingBar subtotal={subtotal} currencyCode={currencyCode} />
+
+              {/* Subtotal */}
+              <div className="flex justify-between text-sm py-3">
+                <span className="text-muted-foreground">Sous-total</span>
+                <span className="font-medium">{formatPrice(subtotal, currencyCode)}</span>
               </div>
-            </>
-          )}
-        </div>
+
+              {/* Checkout CTA */}
+              <Link
+                href="/checkout"
+                onClick={closeDrawer}
+                className="block w-full text-center py-3.5 bg-foreground text-background text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-foreground/90 transition-colors"
+              >
+                Paiement
+              </Link>
+
+              {/* Cross-sell placeholder — will be filled when Related Products module is ready */}
+              {/* <CartCrossSell cartItems={items} /> */}
+            </div>
+          </>
+        )}
       </div>
     </>
   )

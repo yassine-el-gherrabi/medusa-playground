@@ -11,6 +11,9 @@ export const REVALIDATE_PRODUCTS = 120
 export const REVALIDATE_COLLECTIONS = 120
 export const REVALIDATE_CATEGORIES = 300
 
+// Free shipping threshold (EUR)
+export const FREE_SHIPPING_THRESHOLD = 250
+
 // Cache tags for on-demand revalidation
 export const TAGS = {
   products: "products",
