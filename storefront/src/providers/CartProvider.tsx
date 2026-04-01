@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-
   useState,
 } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -16,6 +15,7 @@ type CartContextType = {
   cart: Cart | null
   isLoading: boolean
   drawerOpen: boolean
+  error: string
   openDrawer: () => void
   closeDrawer: () => void
   addItem: (variantId: string, quantity?: number) => Promise<void>
@@ -33,29 +33,45 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return localStorage.getItem("cart_id")
   })
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [error, setError] = useState("")
 
-  // Fetch cart
+  // Fetch cart — handle expired/invalid cart IDs gracefully
   const { data: cart, isLoading } = useQuery({
     queryKey: ["cart", cartId],
     queryFn: async () => {
       if (!cartId) return null
-      const { cart } = await sdk.store.cart.retrieve(cartId)
-      return cart as Cart
+      try {
+        const { cart } = await sdk.store.cart.retrieve(cartId)
+        return cart as Cart
+      } catch {
+        // Cart expired or invalid — clear and start fresh
+        localStorage.removeItem("cart_id")
+        setCartId(null)
+        return null
+      }
     },
     enabled: !!cartId,
     staleTime: 0,
   })
 
-  // Create cart if needed
+  // Create cart if needed, verify existing cart is still valid
   const ensureCart = useCallback(async (): Promise<string> => {
-    if (cartId) return cartId
+    if (cartId) {
+      try {
+        await sdk.store.cart.retrieve(cartId)
+        return cartId
+      } catch {
+        localStorage.removeItem("cart_id")
+        setCartId(null)
+      }
+    }
+
     const { cart } = await sdk.store.cart.create({ region_id: regionId })
     localStorage.setItem("cart_id", cart.id)
     setCartId(cart.id)
     return cart.id
   }, [cartId, regionId])
 
-  // Mutations
   const invalidateCart = () =>
     queryClient.invalidateQueries({ queryKey: ["cart"] })
 
@@ -67,6 +83,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       variantId: string
       quantity: number
     }) => {
+      setError("")
       const id = await ensureCart()
       await sdk.store.cart.createLineItem(id, {
         variant_id: variantId,
@@ -76,6 +93,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     onSuccess: () => {
       invalidateCart()
       setDrawerOpen(true)
+    },
+    onError: (err) => {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Impossible d'ajouter au panier."
+      )
     },
   })
 
@@ -91,6 +115,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       await sdk.store.cart.updateLineItem(cartId, lineItemId, { quantity })
     },
     onSuccess: invalidateCart,
+    onError: (err) => {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Impossible de modifier la quantité."
+      )
+    },
   })
 
   const removeMutation = useMutation({
@@ -107,6 +138,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         cart: cart ?? null,
         isLoading,
         drawerOpen,
+        error,
         openDrawer: () => setDrawerOpen(true),
         closeDrawer: () => setDrawerOpen(false),
         addItem: (variantId, quantity = 1) =>
