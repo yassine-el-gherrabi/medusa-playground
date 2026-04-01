@@ -8,7 +8,7 @@ import { getProductPrice, formatPrice } from "@/lib/utils"
 import { useCart } from "@/providers/CartProvider"
 import AnimatedLink from "@/components/ui/AnimatedLink"
 
-// ── Helpers ──
+// ── Types ──
 
 type ColorOption = { value: string; label: string }
 type SizeOption = { value: string; label: string }
@@ -18,6 +18,11 @@ type VariantInfo = {
   size: string
   inStock: boolean
 }
+
+// color_images stored in product.metadata by the seed
+type ColorImagesMap = Record<string, { url: string }[]>
+
+// ── Helpers ──
 
 function extractColors(product: Product): ColorOption[] {
   const opt = product.options?.find(
@@ -43,8 +48,7 @@ function buildVariantMap(product: Product): VariantInfo[] {
   return product.variants.map((v) => {
     const opts: Record<string, string> = {}
     v.options?.forEach((o) => {
-      const title =
-        o.option?.title?.toLowerCase() || o.option_id || ""
+      const title = o.option?.title?.toLowerCase() || o.option_id || ""
       opts[title] = o.value
     })
     return {
@@ -56,33 +60,47 @@ function buildVariantMap(product: Product): VariantInfo[] {
   })
 }
 
-function findVariantId(
-  variants: VariantInfo[],
-  color: string,
-  size: string
-): string | null {
-  const match = variants.find(
-    (v) =>
-      v.color.toLowerCase() === color.toLowerCase() &&
-      v.size.toLowerCase() === size.toLowerCase()
-  )
-  return match?.id ?? null
+function findVariantId(variants: VariantInfo[], color: string, size: string): string | null {
+  return variants.find(
+    (v) => v.color.toLowerCase() === color.toLowerCase() && v.size.toLowerCase() === size.toLowerCase()
+  )?.id ?? null
 }
 
-function isSizeInStock(
-  variants: VariantInfo[],
-  color: string,
-  size: string
-): boolean {
-  const match = variants.find(
-    (v) =>
-      v.color.toLowerCase() === color.toLowerCase() &&
-      v.size.toLowerCase() === size.toLowerCase()
-  )
-  return match?.inStock ?? false
+function isSizeInStock(variants: VariantInfo[], color: string, size: string): boolean {
+  return variants.find(
+    (v) => v.color.toLowerCase() === color.toLowerCase() && v.size.toLowerCase() === size.toLowerCase()
+  )?.inStock ?? false
 }
 
-// Detect hover capability
+/** Get color_images map from product metadata */
+function getColorImages(product: Product): ColorImagesMap {
+  const meta = product.metadata as Record<string, unknown> | null
+  return (meta?.color_images as ColorImagesMap) || {}
+}
+
+/** Get image URL for a specific color, falling back to product thumbnail */
+function getImageForColor(product: Product, colorImages: ColorImagesMap, color: string): string {
+  const imgs = colorImages[color]
+  if (imgs?.[0]?.url) return imgs[0].url
+  return product.thumbnail || product.images?.[0]?.url || ""
+}
+
+/** Map color names to CSS-safe colors */
+function colorToCSS(name: string): string {
+  const map: Record<string, string> = {
+    noir: "#000", black: "#000",
+    blanc: "#fff", white: "#fff",
+    gris: "#888", grey: "#888", gray: "#888",
+    bleu: "#3b82f6", blue: "#3b82f6",
+    violet: "#7c3aed", purple: "#7c3aed",
+    vert: "#22c55e", green: "#22c55e",
+    beige: "#d4b896",
+    rouge: "#ef4444", red: "#ef4444",
+    "noir v2": "#111", "noir/gris": "#444",
+  }
+  return map[name.toLowerCase()] || name.toLowerCase()
+}
+
 function useHasHover() {
   const [hasHover] = useState(() => {
     if (typeof window === "undefined") return false
@@ -120,238 +138,85 @@ function QuickAddBottomSheet({
     if (!selectedSize) return
     const variantId = findVariantId(variants, selectedColor, selectedSize)
     if (!variantId) return
-
     setAdding(true)
     try {
       await addItem(variantId, 1)
       setAdded(true)
-      setTimeout(() => {
-        onClose()
-        setAdded(false)
-        setSelectedSize("")
-      }, 600) // brief feedback before closing
-    } catch {
-      // Cart provider handles error state
-    } finally {
-      setAdding(false)
-    }
+      setTimeout(() => { onClose(); setAdded(false); setSelectedSize("") }, 600)
+    } catch { /* cart provider handles */ } finally { setAdding(false) }
   }
 
-  // Reset state when opening
   useEffect(() => {
-    if (isOpen) {
-      setSelectedColor(colors[0]?.value || "")
-      setSelectedSize("")
-      setAdded(false)
-    }
+    if (isOpen) { setSelectedColor(colors[0]?.value || ""); setSelectedSize(""); setAdded(false) }
   }, [isOpen, colors])
 
-  // Lock body scroll
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden"
-      return () => {
-        document.body.style.overflow = ""
-      }
-    }
+    if (isOpen) { document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = "" } }
   }, [isOpen])
 
   if (!isOpen) return null
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-50 bg-black/40 transition-opacity duration-300"
-        onClick={onClose}
-      />
-
-      {/* Sheet */}
+      <div className="fixed inset-0 z-50 bg-black/40 transition-opacity duration-300" onClick={onClose} />
       <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl max-h-[70vh] animate-fade-in">
         <div className="p-6">
-          {/* Handle bar */}
-          <div className="flex justify-center mb-4">
-            <div className="w-10 h-1 bg-border rounded-full" />
-          </div>
+          <div className="flex justify-center mb-4"><div className="w-10 h-1 bg-border rounded-full" /></div>
 
-          {/* Product info */}
           <div className="flex justify-between items-start mb-6">
             <div>
               <h3 className="text-sm font-medium">{product.title}</h3>
-              {priceData && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {formatPrice(priceData.amount, priceData.currencyCode)}
-                </p>
-              )}
+              {priceData && <p className="text-sm text-muted-foreground mt-1">{formatPrice(priceData.amount, priceData.currencyCode)}</p>}
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 -mr-2 -mt-1"
-              aria-label="Fermer"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.5" />
-              </svg>
+            <button onClick={onClose} className="p-2 -mr-2 -mt-1" aria-label="Fermer">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.5" /></svg>
             </button>
           </div>
 
-          {/* Color selection */}
           {colors.length > 1 && (
             <div className="mb-5">
-              <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-3">
-                Couleur — {selectedColor}
-              </p>
+              <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-3">Couleur — {selectedColor}</p>
               <div className="flex gap-3">
-                {colors.map((color) => (
-                  <button
-                    key={color.value}
-                    onClick={() => {
-                      setSelectedColor(color.value)
-                      setSelectedSize("") // reset size when color changes
-                    }}
-                    className={`w-8 h-8 rounded-full border-2 transition-all ${
-                      selectedColor === color.value
-                        ? "border-foreground scale-110"
-                        : "border-border"
-                    }`}
-                    style={{
-                      backgroundColor:
-                        color.value.toLowerCase() === "black"
-                          ? "#000"
-                          : color.value.toLowerCase() === "white"
-                            ? "#fff"
-                            : color.value.toLowerCase(),
-                    }}
-                    aria-label={color.label}
-                  />
+                {colors.map((c) => (
+                  <button key={c.value} onClick={() => { setSelectedColor(c.value); setSelectedSize("") }}
+                    className={`w-8 h-8 rounded-full border-2 transition-all ${selectedColor === c.value ? "border-foreground scale-110" : "border-border"}`}
+                    style={{ backgroundColor: colorToCSS(c.value) }} aria-label={c.label} />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Size selection */}
           {sizes.length > 0 && (
             <div className="mb-6">
-              <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-3">
-                Taille
-              </p>
+              <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-3">Taille</p>
               <div className="flex flex-wrap gap-2">
-                {sizes.map((size) => {
-                  const inStock = isSizeInStock(variants, selectedColor, size.value)
-                  const isSelected = selectedSize === size.value
+                {sizes.map((s) => {
+                  const inStock = isSizeInStock(variants, selectedColor, s.value)
+                  const selected = selectedSize === s.value
                   return (
-                    <button
-                      key={size.value}
-                      onClick={() => inStock && setSelectedSize(size.value)}
-                      disabled={!inStock}
+                    <button key={s.value} onClick={() => inStock && setSelectedSize(s.value)} disabled={!inStock}
                       className={`h-11 min-w-[2.75rem] px-4 text-sm border transition-all ${
-                        isSelected
-                          ? "bg-foreground text-background border-foreground"
-                          : inStock
-                            ? "border-border hover:border-foreground"
-                            : "border-border/50 text-muted-foreground/40 line-through cursor-not-allowed"
-                      }`}
-                    >
-                      {size.label}
-                    </button>
+                        selected ? "bg-foreground text-background border-foreground"
+                        : inStock ? "border-border hover:border-foreground"
+                        : "border-border/50 text-muted-foreground/40 line-through cursor-not-allowed"
+                      }`}>{s.label}</button>
                   )
                 })}
               </div>
             </div>
           )}
 
-          {/* Add to bag */}
-          <button
-            onClick={handleAdd}
-            disabled={!selectedSize || adding || added}
+          <button onClick={handleAdd} disabled={!selectedSize || adding || added}
             className={`w-full h-[52px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all ${
-              added
-                ? "bg-foreground text-background"
-                : selectedSize
-                  ? "bg-foreground text-background hover:bg-foreground/90"
-                  : "bg-muted text-muted-foreground cursor-not-allowed"
-            }`}
-          >
-            {adding
-              ? "Ajout..."
-              : added
-                ? "✓ Ajouté"
-                : sizes.length === 0
-                  ? "Ajouter au panier"
-                  : !selectedSize
-                    ? "Sélectionnez une taille"
-                    : "Ajouter au panier"}
+              added ? "bg-foreground text-background"
+              : selectedSize ? "bg-foreground text-background hover:bg-foreground/90"
+              : "bg-muted text-muted-foreground cursor-not-allowed"
+            }`}>
+            {adding ? "Ajout..." : added ? "✓ Ajouté" : !selectedSize && sizes.length > 0 ? "Sélectionnez une taille" : "Ajouter au panier"}
           </button>
         </div>
       </div>
     </>
-  )
-}
-
-// ── Desktop inline size chips ──
-
-function DesktopSizeChips({
-  sizes,
-  variants,
-  activeColor,
-  visible,
-  onSelectSize,
-  addingSize,
-  addedSize,
-}: {
-  sizes: SizeOption[]
-  variants: VariantInfo[]
-  activeColor: string
-  visible: boolean
-  onSelectSize: (size: string) => void
-  addingSize: string | null
-  addedSize: string | null
-}) {
-  return (
-    <div
-      className={`absolute inset-x-0 bottom-0 z-20 transition-all duration-200 ease-out ${
-        visible
-          ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-2 pointer-events-none"
-      }`}
-    >
-      <div className="bg-gradient-to-t from-black/50 to-transparent pt-10 pb-3 px-3">
-        <div className="flex justify-center gap-[3px]">
-          {sizes.map((size) => {
-            const inStock = isSizeInStock(variants, activeColor, size.value)
-            const isAdding = addingSize === size.value
-            const isAdded = addedSize === size.value
-            return (
-              <button
-                key={size.value}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  if (inStock && !isAdding) onSelectSize(size.value)
-                }}
-                disabled={!inStock || isAdding}
-                className={`h-8 min-w-[2rem] px-2 text-[11px] tracking-wide transition-all duration-150 ${
-                  isAdded
-                    ? "bg-white text-black"
-                    : isAdding
-                      ? "bg-white/30 text-white"
-                      : inStock
-                        ? "bg-black/40 backdrop-blur-sm text-white border border-white/20 hover:bg-white hover:text-black"
-                        : "bg-black/20 text-white/30 line-through cursor-not-allowed border border-white/10"
-                }`}
-                aria-label={
-                  inStock
-                    ? `Ajouter taille ${size.label} au panier`
-                    : `Taille ${size.label} épuisée`
-                }
-              >
-                {isAdded ? "✓" : size.label}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-    </div>
   )
 }
 
@@ -364,60 +229,44 @@ function ProductCard({ product }: { product: Product }) {
   const colors = extractColors(product)
   const sizes = extractSizes(product)
   const variants = buildVariantMap(product)
+  const colorImages = getColorImages(product)
+  const hasVariants = sizes.length > 0
+  const hasColors = colors.length > 1
 
   const [hovered, setHovered] = useState(false)
   const [sizesVisible, setSizesVisible] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
-  const [activeColor] = useState(colors[0]?.value || "")
+  const [activeColor, setActiveColor] = useState(colors[0]?.value || "")
   const [addingSize, setAddingSize] = useState<string | null>(null)
   const [addedSize, setAddedSize] = useState<string | null>(null)
 
-  const thumbnail = product.thumbnail || product.images?.[0]?.url
-  const thumbnailAlt = product.images?.[1]?.url || thumbnail
+  // Image based on active color (from metadata.color_images)
+  const activeImage = getImageForColor(product, colorImages, activeColor)
+  const fallbackImage = product.thumbnail || product.images?.[0]?.url || ""
+  // Second image for hover crossfade: use second image from color set, or product second image
+  const activeImages = colorImages[activeColor]
+  const hoverImage = activeImages?.[1]?.url || product.images?.[1]?.url || ""
 
   const priceData = getProductPrice(product)
-  const priceLabel = priceData
-    ? formatPrice(priceData.amount, priceData.currencyCode)
-    : ""
-  const hasVariants = sizes.length > 0
+  const priceLabel = priceData ? formatPrice(priceData.amount, priceData.currencyCode) : ""
 
   const productUrl = `/products/${product.handle}`
 
-  // Desktop: quick-add a size directly
-  const handleDesktopAddSize = useCallback(
-    async (size: string) => {
-      const color = activeColor || colors[0]?.value || ""
-      const variantId = findVariantId(variants, color, size)
-      if (!variantId) return
+  // Desktop: quick-add size
+  const handleDesktopAddSize = useCallback(async (size: string) => {
+    const color = activeColor || colors[0]?.value || ""
+    const variantId = findVariantId(variants, color, size)
+    if (!variantId) return
+    setAddingSize(size)
+    try {
+      await addItem(variantId, 1)
+      setAddingSize(null)
+      setAddedSize(size)
+      setTimeout(() => { setAddedSize(null); setSizesVisible(false) }, 1200)
+    } catch { setAddingSize(null) }
+  }, [activeColor, colors, variants, addItem])
 
-      setAddingSize(size)
-      try {
-        await addItem(variantId, 1)
-        setAddingSize(null)
-        setAddedSize(size)
-        setTimeout(() => {
-          setAddedSize(null)
-          setSizesVisible(false)
-        }, 1200) // show feedback then close
-      } catch {
-        setAddingSize(null)
-      }
-    },
-    [activeColor, colors, variants, addItem]
-  )
-
-  // Mobile: open bottom sheet
-  const handlePlusClick = () => {
-    if (hasHover) {
-      // Desktop: toggle inline sizes
-      setSizesVisible((v) => !v)
-    } else {
-      // Mobile: open bottom sheet
-      setSheetOpen(true)
-    }
-  }
-
-  // No-variant products: direct add
+  // No-variant: direct add
   const handleDirectAdd = useCallback(async () => {
     const variantId = product.variants?.[0]?.id
     if (!variantId) return
@@ -427,41 +276,39 @@ function ProductCard({ product }: { product: Product }) {
       setAddingSize(null)
       setAddedSize("direct")
       setTimeout(() => setAddedSize(null), 1200)
-    } catch {
-      setAddingSize(null)
-    }
+    } catch { setAddingSize(null) }
   }, [product.variants, addItem])
+
+  const handlePlusInteraction = () => {
+    if (!hasVariants) { handleDirectAdd(); return }
+    if (hasHover) { setSizesVisible((v) => !v) }
+    else { setSheetOpen(true) }
+  }
 
   return (
     <>
       <div
         className="flex-shrink-0 w-[calc(100%/2.09)] md:w-[calc(100%/3.33)] lg:w-[calc(100%/4.44)] xl:w-[calc(100%/5.33)]"
         onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => {
-          setHovered(false)
-          setSizesVisible(false)
-        }}
+        onMouseLeave={() => { setHovered(false); setSizesVisible(false) }}
       >
-        {/* Image area */}
+        {/* ── Image area ── */}
         <div className="relative overflow-hidden">
-          <Link
-            href={productUrl}
-            className="block bg-[#f7f7f7] aspect-[3/4] relative overflow-hidden"
-          >
-            {thumbnail && (
+          <Link href={productUrl} className="block bg-[#f5f5f5] aspect-[3/4] relative overflow-hidden">
+            {/* Primary image — active color */}
+            <Image
+              src={activeImage || fallbackImage}
+              alt={product.title}
+              fill
+              className="object-cover transition-opacity duration-500 ease-in-out"
+              style={{ opacity: hovered && !sizesVisible && hoverImage ? 0 : 1 }}
+              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+              loading="lazy"
+            />
+            {/* Hover image — second shot of active color */}
+            {hoverImage && hoverImage !== activeImage && (
               <Image
-                src={thumbnail}
-                alt={product.title}
-                fill
-                className="object-cover transition-opacity duration-500 ease-in-out"
-                style={{ opacity: hovered && !sizesVisible ? 0 : 1 }}
-                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                loading="lazy"
-              />
-            )}
-            {thumbnailAlt && thumbnailAlt !== thumbnail && (
-              <Image
-                src={thumbnailAlt}
+                src={hoverImage}
                 alt={`${product.title} - vue 2`}
                 fill
                 className="object-cover transition-opacity duration-500 ease-in-out"
@@ -472,115 +319,118 @@ function ProductCard({ product }: { product: Product }) {
             )}
           </Link>
 
-          {/* "+" button — desktop: visible on hover / mobile: always visible */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              if (!hasVariants) {
-                handleDirectAdd()
-              } else {
-                handlePlusClick()
-              }
-            }}
-            className={`absolute bottom-2 right-2 z-30 w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-sm border border-black/10 transition-all duration-200 ${
-              hasHover
-                ? hovered
-                  ? "opacity-100 scale-100"
-                  : "opacity-0 scale-90"
-                : "opacity-100" // always visible on mobile
-            } ${addedSize === "direct" ? "bg-foreground" : ""}`}
-            aria-label={
-              sizesVisible ? "Masquer les tailles" : "Ajouter rapidement"
-            }
-            aria-expanded={sizesVisible}
+          {/* ── "+" button — Represent style: no background, always visible ── */}
+          <div
+            className="absolute bottom-0 right-0 z-30"
+            onMouseEnter={() => { if (hasHover && hasVariants) setSizesVisible(true) }}
           >
-            {addedSize === "direct" ? (
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 7l3.5 3.5L12 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            ) : (
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                className="transition-transform duration-300"
-                style={{
-                  transform: sizesVisible ? "rotate(45deg)" : "rotate(0deg)",
-                }}
-              >
-                <line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" strokeWidth="1" />
-                <line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" strokeWidth="1" />
-              </svg>
-            )}
-          </button>
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); handlePlusInteraction() }}
+              className="p-[10px] lg:p-[13px] transition-opacity duration-200"
+              aria-label={sizesVisible ? "Masquer les tailles" : "Ajouter rapidement"}
+              aria-expanded={sizesVisible}
+            >
+              {addedSize === "direct" ? (
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M1.5 6l3 3L10.5 3" stroke="black" strokeWidth="0.75" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              ) : (
+                <svg
+                  width="12" height="12" viewBox="0 0 12 12" fill="none"
+                  className="transition-transform duration-300 ease-out"
+                  style={{ transform: sizesVisible ? "rotate(45deg)" : "rotate(0deg)" }}
+                >
+                  <line x1="6" y1="0.5" x2="6" y2="11.5" stroke="black" strokeWidth="0.75" />
+                  <line x1="0.5" y1="6" x2="11.5" y2="6" stroke="black" strokeWidth="0.75" />
+                </svg>
+              )}
+            </button>
+          </div>
 
-          {/* Desktop: inline size chips */}
+          {/* ── Desktop: size chips — Represent style ── */}
           {hasHover && hasVariants && (
-            <DesktopSizeChips
-              sizes={sizes}
-              variants={variants}
-              activeColor={activeColor}
-              visible={sizesVisible}
-              onSelectSize={handleDesktopAddSize}
-              addingSize={addingSize}
-              addedSize={addedSize}
-            />
+            <div
+              className={`absolute inset-x-0 bottom-0 z-20 transition-all duration-200 ease-out ${
+                sizesVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 pointer-events-none"
+              }`}
+            >
+              <div className="flex items-center justify-center px-2 pb-[10px]">
+                <div
+                  className="flex gap-[2px] overflow-x-auto scrollbar-hide"
+                  style={{ scrollbarWidth: "none" }}
+                >
+                  {sizes.map((s) => {
+                    const inStock = isSizeInStock(variants, activeColor, s.value)
+                    const isAdding = addingSize === s.value
+                    const isAdded = addedSize === s.value
+                    return (
+                      <button
+                        key={s.value}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (inStock && !isAdding) handleDesktopAddSize(s.value) }}
+                        disabled={!inStock || isAdding}
+                        className={`shrink-0 h-8 min-w-[2rem] px-2 text-[10px] tracking-wide border transition-all duration-150 ${
+                          isAdded
+                            ? "bg-black text-white border-black"
+                            : isAdding
+                              ? "border-black/30 text-black/30"
+                              : inStock
+                                ? "border-black/20 text-black/70 hover:border-black hover:text-black bg-white/80"
+                                : "border-black/10 text-black/25 line-through cursor-not-allowed bg-white/50"
+                        }`}
+                        aria-label={inStock ? `Ajouter taille ${s.label}` : `Taille ${s.label} épuisée`}
+                      >
+                        {isAdded ? "✓" : s.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Product info */}
+        {/* ── Product info ── */}
         <div className="flex flex-col gap-1 pt-4 text-xs px-[10px] lg:px-[14px] lg:flex-row lg:justify-between lg:gap-4">
-          <Link href={productUrl} className="flex flex-col gap-1 min-w-0">
-            <h3 className="font-medium text-xs leading-tight">
-              {product.title}
-            </h3>
+          <div className="flex flex-col gap-1 min-w-0">
+            <Link href={productUrl}>
+              <h3 className="font-medium text-xs leading-tight">{product.title}</h3>
+            </Link>
 
-            {/* Color dots */}
-            {colors.length > 0 && (
+            {/* Color dots — interactive on desktop (change image) */}
+            {hasColors && (
               <div className="flex items-center gap-1.5 mt-0.5">
-                {colors.slice(0, 5).map((color) => (
-                  <span
-                    key={color.value}
-                    className={`w-2.5 h-2.5 rounded-full border ${
-                      color.value.toLowerCase() === "white"
-                        ? "border-border"
-                        : "border-transparent"
+                {colors.map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onMouseEnter={() => { if (hasHover) setActiveColor(c.value) }}
+                    onClick={() => setActiveColor(c.value)}
+                    className={`w-2.5 h-2.5 rounded-full border transition-all ${
+                      activeColor === c.value
+                        ? "ring-1 ring-black ring-offset-1 scale-110"
+                        : colorToCSS(c.value) === "#fff"
+                          ? "border-black/20"
+                          : "border-transparent"
                     }`}
-                    style={{
-                      backgroundColor:
-                        color.value.toLowerCase() === "black"
-                          ? "#000"
-                          : color.value.toLowerCase() === "white"
-                            ? "#fff"
-                            : color.value.toLowerCase(),
-                    }}
+                    style={{ backgroundColor: colorToCSS(c.value) }}
+                    aria-label={c.label}
                   />
                 ))}
-                {colors.length > 5 && (
-                  <span className="text-[10px] text-muted-foreground">
-                    +{colors.length - 5}
-                  </span>
-                )}
-                {colors.length > 1 && (
-                  <span className="text-[10px] text-muted-foreground ml-0.5">
-                    {colors.length} couleurs
-                  </span>
-                )}
+                <span className="text-[10px] text-muted-foreground ml-0.5">
+                  {colors.length} couleurs
+                </span>
               </div>
             )}
-          </Link>
+          </div>
 
           <div className="flex-shrink-0">
-            {priceLabel && (
-              <span className="text-xs font-normal">{priceLabel}</span>
-            )}
+            {priceLabel && <span className="text-xs font-normal">{priceLabel}</span>}
           </div>
         </div>
       </div>
 
-      {/* Mobile: bottom sheet */}
+      {/* Mobile bottom sheet */}
       {!hasHover && (
         <QuickAddBottomSheet
           product={product}
@@ -597,23 +447,14 @@ function ProductCard({ product }: { product: Product }) {
 
 // ── Main Section ──
 
-type NouveautesSectionProps = {
-  products: Product[]
-}
-
-export default function NouveautesSection({ products }: NouveautesSectionProps) {
+export default function NouveautesSection({ products }: { products: Product[] }) {
   const sectionRef = useRef<HTMLElement>(null)
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     if (!sectionRef.current) return
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true)
-          observer.disconnect()
-        }
-      },
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect() } },
       { threshold: 0.1 }
     )
     observer.observe(sectionRef.current)
@@ -624,44 +465,19 @@ export default function NouveautesSection({ products }: NouveautesSectionProps) 
 
   return (
     <section ref={sectionRef} className="bg-white">
-      <div
-        className={`transition-all duration-1000 ease-out ${
-          visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        }`}
-      >
-        {/* Header */}
+      <div className={`transition-all duration-1000 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
         <div className="flex items-end justify-between px-6 md:px-10 pt-6 md:pt-10 pb-8 md:pb-10">
-          <h2 className="text-sm font-medium uppercase tracking-[0.15em]">
-            Nouveautés
-          </h2>
-          <AnimatedLink
-            href="/boutique"
-            className="text-xs font-medium uppercase tracking-[0.2em] hidden md:inline-flex"
-          >
-            Voir tout
-          </AnimatedLink>
+          <h2 className="text-sm font-medium uppercase tracking-[0.15em]">Nouveautés</h2>
+          <AnimatedLink href="/boutique" className="text-xs font-medium uppercase tracking-[0.2em] hidden md:inline-flex">Voir tout</AnimatedLink>
         </div>
 
-        {/* Horizontal scroll */}
-        <div
-          className="flex gap-[1px] overflow-x-auto scroll-smooth"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <div className="flex gap-[1px] overflow-x-auto scroll-smooth scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+          {products.map((product) => <ProductCard key={product.id} product={product} />)}
         </div>
 
-        {/* Mobile link */}
         <div className="px-6 md:px-10 pb-14 md:pb-20 md:hidden pt-6">
-          <AnimatedLink
-            href="/boutique"
-            className="text-xs font-medium uppercase tracking-[0.2em]"
-          >
-            Voir toutes les nouveautés
-          </AnimatedLink>
+          <AnimatedLink href="/boutique" className="text-xs font-medium uppercase tracking-[0.2em]">Voir toutes les nouveautés</AnimatedLink>
         </div>
-
         <div className="pb-6 md:pb-10 hidden md:block" />
       </div>
     </section>
