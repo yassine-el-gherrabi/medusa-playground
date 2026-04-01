@@ -12,33 +12,21 @@ import AnimatedLink from "@/components/ui/AnimatedLink"
 
 type ColorOption = { value: string; label: string }
 type SizeOption = { value: string; label: string }
-type VariantInfo = {
-  id: string
-  color: string
-  size: string
-  inStock: boolean
-}
-
-// color_images stored in product.metadata by the seed
+type VariantInfo = { id: string; color: string; size: string; inStock: boolean }
 type ColorImagesMap = Record<string, { url: string }[]>
 
 // ── Helpers ──
 
 function extractColors(product: Product): ColorOption[] {
-  const opt = product.options?.find(
-    (o) =>
-      o.title?.toLowerCase() === "color" ||
-      o.title?.toLowerCase() === "couleur"
+  const opt = product.options?.find((o) =>
+    ["color", "couleur"].includes(o.title?.toLowerCase() || "")
   )
   return opt?.values?.map((v) => ({ value: v.value, label: v.value })) || []
 }
 
 function extractSizes(product: Product): SizeOption[] {
-  const opt = product.options?.find(
-    (o) =>
-      o.title?.toLowerCase() === "size" ||
-      o.title?.toLowerCase() === "taille" ||
-      o.title?.toLowerCase() === "pointure"
+  const opt = product.options?.find((o) =>
+    ["size", "taille", "pointure"].includes(o.title?.toLowerCase() || "")
   )
   return opt?.values?.map((v) => ({ value: v.value, label: v.value })) || []
 }
@@ -72,30 +60,55 @@ function isSizeInStock(variants: VariantInfo[], color: string, size: string): bo
   )?.inStock ?? false
 }
 
-/** Get color_images map from product metadata */
 function getColorImages(product: Product): ColorImagesMap {
-  const meta = product.metadata as Record<string, unknown> | null
-  return (meta?.color_images as ColorImagesMap) || {}
+  return ((product.metadata as Record<string, unknown> | null)?.color_images as ColorImagesMap) || {}
 }
 
-/** Get image URL for a specific color, falling back to product thumbnail */
 function getImageForColor(product: Product, colorImages: ColorImagesMap, color: string): string {
-  const imgs = colorImages[color]
-  if (imgs?.[0]?.url) return imgs[0].url
-  return product.thumbnail || product.images?.[0]?.url || ""
+  return colorImages[color]?.[0]?.url || product.thumbnail || product.images?.[0]?.url || ""
 }
 
-/** Map color names to CSS-safe colors */
+function getSecondImage(product: Product, colorImages: ColorImagesMap, color: string): string {
+  return colorImages[color]?.[1]?.url || product.images?.[1]?.url || ""
+}
+
+/** Extract category label from product categories (e.g. "Hauts" → "HAUT", "Vestes & Manteaux" → "VESTE") */
+function getCategoryLabel(product: Product): string {
+  const cats = (product as unknown as Record<string, unknown>).categories as { name: string }[] | undefined
+  if (!cats?.[0]?.name) return ""
+  const name = cats[0].name
+  // Map sub-category names to clean singular labels
+  const map: Record<string, string> = {
+    "Hauts": "HAUT",
+    "Bas": "BAS",
+    "Vestes & Manteaux": "VESTE",
+    "Casquettes": "CASQUETTE",
+    "Lunettes de soleil": "LUNETTES",
+    "Cache-cou": "CACHE-COU",
+    "Vêtements": "VÊTEMENT",
+    "Accessoires": "ACCESSOIRE",
+    "Chaussures": "CHAUSSURES",
+    "Ice for Girls": "ICE FOR GIRLS",
+  }
+  return map[name] || name.toUpperCase()
+}
+
+/** Check product metadata flags */
+function getProductMeta(product: Product) {
+  const meta = (product.metadata as Record<string, unknown>) || {}
+  return {
+    isNew: !!meta.is_new,
+    isSoldOut: !!meta.is_sold_out,
+    compareAtPrice: (meta.compare_at_price as number) || null,
+  }
+}
+
 function colorToCSS(name: string): string {
   const map: Record<string, string> = {
-    noir: "#000", black: "#000",
-    blanc: "#fff", white: "#fff",
-    gris: "#888", grey: "#888", gray: "#888",
-    bleu: "#3b82f6", blue: "#3b82f6",
-    violet: "#7c3aed", purple: "#7c3aed",
-    vert: "#22c55e", green: "#22c55e",
-    beige: "#d4b896",
-    rouge: "#ef4444", red: "#ef4444",
+    noir: "#000", black: "#000", blanc: "#fff", white: "#fff",
+    gris: "#888", grey: "#888", bleu: "#3b82f6", blue: "#3b82f6",
+    violet: "#7c3aed", purple: "#7c3aed", vert: "#22c55e", green: "#22c55e",
+    beige: "#d4b896", rouge: "#ef4444", red: "#ef4444",
     "noir v2": "#111", "noir/gris": "#444",
   }
   return map[name.toLowerCase()] || name.toLowerCase()
@@ -112,26 +125,16 @@ function useHasHover() {
 // ── Bottom Sheet (mobile) ──
 
 function QuickAddBottomSheet({
-  product,
-  colors,
-  sizes,
-  variants,
-  isOpen,
-  onClose,
+  product, colors, sizes, variants, isOpen, onClose,
 }: {
-  product: Product
-  colors: ColorOption[]
-  sizes: SizeOption[]
-  variants: VariantInfo[]
-  isOpen: boolean
-  onClose: () => void
+  product: Product; colors: ColorOption[]; sizes: SizeOption[]
+  variants: VariantInfo[]; isOpen: boolean; onClose: () => void
 }) {
   const { addItem } = useCart()
   const [selectedColor, setSelectedColor] = useState(colors[0]?.value || "")
   const [selectedSize, setSelectedSize] = useState("")
   const [adding, setAdding] = useState(false)
   const [added, setAdded] = useState(false)
-
   const priceData = getProductPrice(product)
 
   const handleAdd = async () => {
@@ -158,11 +161,10 @@ function QuickAddBottomSheet({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 bg-black/40 transition-opacity duration-300" onClick={onClose} />
+      <div className="fixed inset-0 z-50 bg-black/40" onClick={onClose} />
       <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl max-h-[70vh] animate-fade-in">
         <div className="p-6">
           <div className="flex justify-center mb-4"><div className="w-10 h-1 bg-border rounded-full" /></div>
-
           <div className="flex justify-between items-start mb-6">
             <div>
               <h3 className="text-sm font-medium">{product.title}</h3>
@@ -220,7 +222,7 @@ function QuickAddBottomSheet({
   )
 }
 
-// ── Product Card ──
+// ── Product Card — Proposition C (SSENSE × Stone Island) ──
 
 function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart()
@@ -232,6 +234,8 @@ function ProductCard({ product }: { product: Product }) {
   const colorImages = getColorImages(product)
   const hasVariants = sizes.length > 0
   const hasColors = colors.length > 1
+  const categoryLabel = getCategoryLabel(product)
+  const meta = getProductMeta(product)
 
   const [hovered, setHovered] = useState(false)
   const [sizesVisible, setSizesVisible] = useState(false)
@@ -240,19 +244,22 @@ function ProductCard({ product }: { product: Product }) {
   const [addingSize, setAddingSize] = useState<string | null>(null)
   const [addedSize, setAddedSize] = useState<string | null>(null)
 
-  // Image based on active color (from metadata.color_images)
   const activeImage = getImageForColor(product, colorImages, activeColor)
+  const hoverImage = getSecondImage(product, colorImages, activeColor)
   const fallbackImage = product.thumbnail || product.images?.[0]?.url || ""
-  // Second image for hover crossfade: use second image from color set, or product second image
-  const activeImages = colorImages[activeColor]
-  const hoverImage = activeImages?.[1]?.url || product.images?.[1]?.url || ""
 
   const priceData = getProductPrice(product)
   const priceLabel = priceData ? formatPrice(priceData.amount, priceData.currencyCode) : ""
+  const compareLabel = meta.compareAtPrice && priceData
+    ? formatPrice(meta.compareAtPrice, priceData.currencyCode)
+    : null
+  const discountPct = meta.compareAtPrice && priceData
+    ? Math.round((1 - priceData.amount / meta.compareAtPrice) * 100)
+    : null
 
   const productUrl = `/products/${product.handle}`
 
-  // Desktop: quick-add size
+  // Desktop quick-add
   const handleDesktopAddSize = useCallback(async (size: string) => {
     const color = activeColor || colors[0]?.value || ""
     const variantId = findVariantId(variants, color, size)
@@ -260,29 +267,28 @@ function ProductCard({ product }: { product: Product }) {
     setAddingSize(size)
     try {
       await addItem(variantId, 1)
-      setAddingSize(null)
-      setAddedSize(size)
+      setAddingSize(null); setAddedSize(size)
       setTimeout(() => { setAddedSize(null); setSizesVisible(false) }, 1200)
     } catch { setAddingSize(null) }
   }, [activeColor, colors, variants, addItem])
 
-  // No-variant: direct add
+  // Direct add (no-variant)
   const handleDirectAdd = useCallback(async () => {
     const variantId = product.variants?.[0]?.id
     if (!variantId) return
     setAddingSize("direct")
     try {
       await addItem(variantId, 1)
-      setAddingSize(null)
-      setAddedSize("direct")
+      setAddingSize(null); setAddedSize("direct")
       setTimeout(() => setAddedSize(null), 1200)
     } catch { setAddingSize(null) }
   }, [product.variants, addItem])
 
   const handlePlusInteraction = () => {
+    if (meta.isSoldOut) return
     if (!hasVariants) { handleDirectAdd(); return }
-    if (hasHover) { setSizesVisible((v) => !v) }
-    else { setSheetOpen(true) }
+    if (hasHover) setSizesVisible((v) => !v)
+    else setSheetOpen(true)
   }
 
   return (
@@ -292,10 +298,12 @@ function ProductCard({ product }: { product: Product }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => { setHovered(false); setSizesVisible(false) }}
       >
-        {/* ── Image area ── */}
+        {/* ── Image ── */}
         <div className="relative overflow-hidden">
-          <Link href={productUrl} className="block bg-[#f5f5f5] aspect-[3/4] relative overflow-hidden">
-            {/* Primary image — active color */}
+          <Link
+            href={productUrl}
+            className={`block bg-[#f5f5f5] aspect-[3/4] relative overflow-hidden ${meta.isSoldOut ? "opacity-70" : ""}`}
+          >
             <Image
               src={activeImage || fallbackImage}
               alt={product.title}
@@ -305,8 +313,7 @@ function ProductCard({ product }: { product: Product }) {
               sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
               loading="lazy"
             />
-            {/* Hover image — second shot of active color */}
-            {hoverImage && hoverImage !== activeImage && (
+            {hoverImage && hoverImage !== (activeImage || fallbackImage) && (
               <Image
                 src={hoverImage}
                 alt={`${product.title} - vue 2`}
@@ -319,47 +326,56 @@ function ProductCard({ product }: { product: Product }) {
             )}
           </Link>
 
-          {/* ── "+" button — Represent style: no background, always visible ── */}
-          <div
-            className="absolute bottom-0 right-0 z-30"
-            onMouseEnter={() => { if (hasHover && hasVariants) setSizesVisible(true) }}
-          >
-            <button
-              type="button"
-              onClick={(e) => { e.preventDefault(); handlePlusInteraction() }}
-              className="p-[10px] lg:p-[13px] transition-opacity duration-200"
-              aria-label={sizesVisible ? "Masquer les tailles" : "Ajouter rapidement"}
-              aria-expanded={sizesVisible}
-            >
-              {addedSize === "direct" ? (
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M1.5 6l3 3L10.5 3" stroke="black" strokeWidth="0.75" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              ) : (
-                <svg
-                  width="12" height="12" viewBox="0 0 12 12" fill="none"
-                  className="transition-transform duration-300 ease-out"
-                  style={{ transform: sizesVisible ? "rotate(45deg)" : "rotate(0deg)" }}
-                >
-                  <line x1="6" y1="0.5" x2="6" y2="11.5" stroke="black" strokeWidth="0.75" />
-                  <line x1="0.5" y1="6" x2="11.5" y2="6" stroke="black" strokeWidth="0.75" />
-                </svg>
-              )}
-            </button>
+          {/* Badges — top-left */}
+          <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+            {meta.isNew && (
+              <span className="text-[9px] uppercase tracking-[0.2em] font-medium text-black/80">
+                Nouveau
+              </span>
+            )}
+            {meta.isSoldOut && (
+              <span className="text-[9px] uppercase tracking-[0.2em] font-medium text-black/50">
+                Épuisé
+              </span>
+            )}
           </div>
 
-          {/* ── Desktop: size chips — Represent style ── */}
-          {hasHover && hasVariants && (
+          {/* "+" — Represent style: no background, fine cross */}
+          {!meta.isSoldOut && (
             <div
-              className={`absolute inset-x-0 bottom-0 z-20 transition-all duration-200 ease-out ${
-                sizesVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 pointer-events-none"
-              }`}
+              className="absolute bottom-0 right-0 z-30"
+              onMouseEnter={() => { if (hasHover && hasVariants) setSizesVisible(true) }}
             >
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); handlePlusInteraction() }}
+                className="p-[10px] lg:p-[13px]"
+                aria-label={sizesVisible ? "Masquer les tailles" : "Ajouter rapidement"}
+                aria-expanded={sizesVisible}
+              >
+                {addedSize === "direct" ? (
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M1.5 6l3 3L10.5 3" stroke="black" strokeWidth="0.75" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : (
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                    className="transition-transform duration-300 ease-out"
+                    style={{ transform: sizesVisible ? "rotate(45deg)" : "rotate(0deg)" }}>
+                    <line x1="6" y1="0.5" x2="6" y2="11.5" stroke="black" strokeWidth="0.75" />
+                    <line x1="0.5" y1="6" x2="11.5" y2="6" stroke="black" strokeWidth="0.75" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Desktop: size chips — TRANSPARENT bg, border only, Represent style */}
+          {hasHover && hasVariants && !meta.isSoldOut && (
+            <div className={`absolute inset-x-0 bottom-0 z-20 transition-all duration-200 ease-out ${
+              sizesVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 pointer-events-none"
+            }`}>
               <div className="flex items-center justify-center px-2 pb-[10px]">
-                <div
-                  className="flex gap-[2px] overflow-x-auto scrollbar-hide"
-                  style={{ scrollbarWidth: "none" }}
-                >
+                <div className="flex gap-[2px] overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
                   {sizes.map((s) => {
                     const inStock = isSizeInStock(variants, activeColor, s.value)
                     const isAdding = addingSize === s.value
@@ -372,11 +388,9 @@ function ProductCard({ product }: { product: Product }) {
                         className={`shrink-0 h-8 min-w-[2rem] px-2 text-[10px] tracking-wide border transition-all duration-150 ${
                           isAdded
                             ? "bg-black text-white border-black"
-                            : isAdding
-                              ? "border-black/30 text-black/30"
-                              : inStock
-                                ? "border-black/20 text-black/70 hover:border-black hover:text-black bg-white/80"
-                                : "border-black/10 text-black/25 line-through cursor-not-allowed bg-white/50"
+                            : inStock
+                              ? "border-black/20 text-black hover:border-black bg-transparent"
+                              : "border-black/10 text-black/25 line-through cursor-not-allowed bg-transparent"
                         }`}
                         aria-label={inStock ? `Ajouter taille ${s.label}` : `Taille ${s.label} épuisée`}
                       >
@@ -390,55 +404,81 @@ function ProductCard({ product }: { product: Product }) {
           )}
         </div>
 
-        {/* ── Product info ── */}
-        <div className="flex flex-col gap-1 pt-4 text-xs px-[10px] lg:px-[14px] lg:flex-row lg:justify-between lg:gap-4">
-          <div className="flex flex-col gap-1 min-w-0">
-            <Link href={productUrl}>
-              <h3 className="font-medium text-xs leading-tight">{product.title}</h3>
-            </Link>
+        {/* ── Product info — Proposition C layout ── */}
+        <div className="pt-4 px-[10px] lg:px-[14px]">
+          {/* Category label */}
+          {categoryLabel && (
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-1">
+              {categoryLabel}
+            </p>
+          )}
 
-            {/* Color dots — interactive on desktop (change image) */}
-            {hasColors && (
-              <div className="flex items-center gap-1.5 mt-0.5">
+          {/* Title */}
+          <Link href={productUrl}>
+            <h3 className="text-[12px] font-medium leading-tight tracking-[0.02em] line-clamp-2">
+              {product.title}
+            </h3>
+          </Link>
+
+          {/* Color selector — rectangular bars + active color name */}
+          {hasColors && (
+            <div className="flex items-center gap-2 mt-2 overflow-visible">
+              <div className="flex gap-[6px]">
                 {colors.map((c) => (
                   <button
                     key={c.value}
                     type="button"
                     onMouseEnter={() => { if (hasHover) setActiveColor(c.value) }}
                     onClick={() => setActiveColor(c.value)}
-                    className={`w-2.5 h-2.5 rounded-full border transition-all ${
-                      activeColor === c.value
-                        ? "ring-1 ring-black ring-offset-1 scale-110"
-                        : colorToCSS(c.value) === "#fff"
-                          ? "border-black/20"
-                          : "border-transparent"
-                    }`}
-                    style={{ backgroundColor: colorToCSS(c.value) }}
+                    className="relative group"
                     aria-label={c.label}
-                  />
+                  >
+                    {/* Rectangular bar */}
+                    <span
+                      className={`block w-7 h-[10px] border transition-all ${
+                        activeColor === c.value
+                          ? "border-black"
+                          : "border-black/15 group-hover:border-black/40"
+                      }`}
+                      style={{ backgroundColor: colorToCSS(c.value) }}
+                    />
+                  </button>
                 ))}
-                <span className="text-[10px] text-muted-foreground ml-0.5">
-                  {colors.length} couleurs
-                </span>
               </div>
-            )}
-          </div>
+              <span className="text-[10px] text-muted-foreground tracking-[0.05em]">
+                {activeColor}
+              </span>
+            </div>
+          )}
 
-          <div className="flex-shrink-0">
-            {priceLabel && <span className="text-xs font-normal">{priceLabel}</span>}
+          {/* Price line */}
+          <div className="flex items-center gap-2 mt-2">
+            {priceLabel && (
+              <span className="text-[12px] tracking-[0.03em]">
+                {priceLabel}
+              </span>
+            )}
+            {compareLabel && (
+              <>
+                <span className="text-[11px] text-muted-foreground line-through tracking-[0.03em]">
+                  {compareLabel}
+                </span>
+                {discountPct && (
+                  <span className="text-[10px] text-muted-foreground tracking-[0.05em]">
+                    -{discountPct}%
+                  </span>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* Mobile bottom sheet */}
-      {!hasHover && (
+      {!hasHover && !meta.isSoldOut && (
         <QuickAddBottomSheet
-          product={product}
-          colors={colors}
-          sizes={sizes}
-          variants={variants}
-          isOpen={sheetOpen}
-          onClose={() => setSheetOpen(false)}
+          product={product} colors={colors} sizes={sizes}
+          variants={variants} isOpen={sheetOpen} onClose={() => setSheetOpen(false)}
         />
       )}
     </>

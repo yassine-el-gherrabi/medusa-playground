@@ -452,7 +452,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       category_ids: [catMap["Hauts"]],
       collection_id: colMap["Seamless Bi-Material"],
       images: flattenImages(productImages.tshirtSeamless),
-      metadata: { color_images: productImages.tshirtSeamless },
+      metadata: { color_images: productImages.tshirtSeamless, is_new: true },
       weight: 200,
       options: [
         { title: "Couleur", values: ["Bleu", "Blanc", "Beige"] },
@@ -482,7 +482,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       category_ids: [catMap["Vestes & Manteaux"]],
       collection_id: colMap["Seamless Bi-Material"],
       images: flattenImages(productImages.vesteSeamless),
-      metadata: { color_images: productImages.vesteSeamless },
+      metadata: { color_images: productImages.vesteSeamless, compare_at_price: 160, is_new: true },
       weight: 500,
       options: [
         { title: "Couleur", values: ["Noir", "Bleu", "Violet"] },
@@ -542,6 +542,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       category_ids: [catMap["Hauts"]],
       collection_id: colMap["Oscura"],
       images: productImages.sweatOscura,
+      metadata: { is_sold_out: true },
       weight: 550,
       options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
       variants: sizeVariants(105, "ICE-SHO"),
@@ -566,6 +567,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       category_ids: [catMap["Vestes & Manteaux"]],
       collection_id: colMap["Abyss"],
       images: productImages.doudouneIceVest,
+      metadata: { compare_at_price: 300 },
       weight: 350,
       options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
       variants: sizeVariants(240, "ICE-VEST"),

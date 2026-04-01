@@ -3,7 +3,7 @@ import { TAGS } from "@/lib/constants"
 import type { Product } from "@/types"
 
 const PRODUCT_FIELDS =
-  "*variants.calculated_price,+variants.inventory_quantity"
+  "*variants.calculated_price,+variants.inventory_quantity,+metadata,+categories.name"
 
 export async function getProducts(params: {
   limit?: number
