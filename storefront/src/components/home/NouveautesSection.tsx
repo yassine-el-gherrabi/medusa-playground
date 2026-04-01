@@ -263,7 +263,7 @@ function ProductCard({ product }: { product: Product }) {
           >
             {colors.map((c) => (
               <button key={c.value} type="button" onClick={() => setActiveColor(c.value)}
-                className="shrink-0 flex flex-col items-center gap-[3px] py-1"
+                className="shrink-0 flex flex-col items-center gap-[3px] py-1 cursor-pointer"
                 style={{ width: "calc((100% - 24px) / 5)" }}
                 aria-label={c.label}>
                 <span className={`block w-full h-[10px] border transition-all ${
@@ -302,8 +302,8 @@ function ProductCard({ product }: { product: Product }) {
               return (
                 <button key={s.value} onClick={() => { if (inStock) setSelectedSize(s.value) }} disabled={!inStock}
                   className={`text-[12px] tracking-wide transition-all duration-150 relative pb-1 ${
-                    isSelected ? "text-foreground font-medium"
-                    : inStock ? "text-muted-foreground hover:text-foreground"
+                    isSelected ? "text-foreground font-medium cursor-pointer"
+                    : inStock ? "text-muted-foreground hover:text-foreground cursor-pointer"
                     : "text-black/30 line-through cursor-not-allowed"
                   }`}
                   aria-label={inStock ? `Taille ${s.label}` : `Taille ${s.label} épuisée`}>
