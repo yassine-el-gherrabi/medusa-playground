@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useCart } from "@/providers/CartProvider"
@@ -13,8 +13,14 @@ export default function CartDrawer() {
   const { cart, drawerOpen, closeDrawer, error } = useCart()
   const pathname = usePathname()
 
-  // Close on route change
-  useEffect(() => { closeDrawer() }, [pathname, closeDrawer])
+  // Close on route change (not on initial render)
+  const prevPathname = useRef(pathname)
+  useEffect(() => {
+    if (prevPathname.current !== pathname) {
+      prevPathname.current = pathname
+      closeDrawer()
+    }
+  }, [pathname, closeDrawer])
 
   // Body scroll lock
   useEffect(() => {
