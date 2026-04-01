@@ -152,18 +152,14 @@ function ProductCard({ product }: { product: Product }) {
     setTimeout(checkColorScroll, 300)
   }
 
-  // Delayed reset on mouse leave — preserves user intent for 2.5s
-  const leaveTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const [cardHovered, setCardHovered] = useState(false)
 
-  const handleMouseEnterCard = () => {
-    if (leaveTimerRef.current) { clearTimeout(leaveTimerRef.current); leaveTimerRef.current = null }
-  }
+  const handleMouseEnterCard = () => setCardHovered(true)
 
   const handleMouseLeave = () => {
-    leaveTimerRef.current = setTimeout(() => {
-      setSizesOpen(false)
-      setSelectedSize(null)
-    }, 2500) // 2.5s delay before reset
+    setCardHovered(false)
+    setSizesOpen(false)
+    setSelectedSize(null)
   }
 
   // Add to cart flow
@@ -248,7 +244,7 @@ function ProductCard({ product }: { product: Product }) {
 
         {/* Title */}
         <Link href={productUrl} className="block mt-1.5">
-          <h3 className="text-[13px] font-medium leading-tight tracking-[0.02em] line-clamp-2">{product.title}</h3>
+          <h3 className={`text-[13px] font-medium leading-tight tracking-[0.02em] line-clamp-2 transition-colors duration-200 ${cardHovered ? "text-black/60" : "text-foreground"}`}>{product.title}</h3>
         </Link>
 
         {/* Price */}
