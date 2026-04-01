@@ -321,10 +321,10 @@ function ProductCard({ product }: { product: Product }) {
         {!meta.isSoldOut && (
           <div className="mt-3 mb-2">
             <button onClick={handleAddToCart} disabled={buttonDisabled}
-              className={`text-[11px] font-medium uppercase tracking-[0.12em] transition-all group ${
+              className={`text-[11px] font-medium uppercase tracking-[0.12em] transition-colors duration-200 ${
                 buttonDisabled
                   ? "text-black/45 cursor-not-allowed"
-                  : "text-foreground"
+                  : "text-foreground hover:text-black/60"
               }`}>
               <span className="relative">
                 {buttonLabel}
