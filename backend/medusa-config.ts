@@ -18,6 +18,9 @@ module.exports = defineConfig({
       resolve: "./src/modules/newsletter",
     },
     {
+      resolve: "./src/modules/related-products",
+    },
+    {
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
