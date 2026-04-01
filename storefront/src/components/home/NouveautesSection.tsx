@@ -265,18 +265,24 @@ function ProductCard({ product }: { product: Product }) {
           )}
         </div>
 
-        {/* Row 3: Color bars — no text, just bars */}
+        {/* Row 3: Color bars — fixed size, 5 max visible then scroll */}
         <div className="mt-2.5">
           <div
             ref={colorScrollRef}
             onScroll={checkColorScroll}
-            className="flex gap-[6px] overflow-x-auto scrollbar-hide"
-            style={{ scrollbarWidth: "none" }}
+            className={`flex gap-[6px] ${colors.length > 5 ? "overflow-x-auto scrollbar-hide" : ""}`}
+            style={{
+              scrollbarWidth: "none",
+              /* 5 bars = full width: each bar = (100% - 4 gaps of 6px) / 5 */
+              ...(colors.length === 5 ? { gap: "6px" } : {}),
+            }}
           >
             {colors.map((c) => (
               <button key={c.value} type="button" onClick={() => setActiveColor(c.value)}
-                className="shrink-0 flex flex-col items-center gap-[3px]" aria-label={c.label}>
-                <span className={`block w-10 h-[10px] border transition-all ${
+                className="shrink-0 flex flex-col items-center gap-[3px]"
+                style={{ width: colors.length === 5 ? "calc((100% - 24px) / 5)" : "40px" }}
+                aria-label={c.label}>
+                <span className={`block w-full h-[10px] border transition-all ${
                   activeColor === c.value ? "border-black/30" : "border-black/10 hover:border-black/25"
                 }`} style={{ backgroundColor: colorToCSS(c.value) }} />
                 <span className={`block h-px w-full transition-all duration-200 ${
