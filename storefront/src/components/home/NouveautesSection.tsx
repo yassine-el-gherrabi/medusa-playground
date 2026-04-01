@@ -110,7 +110,6 @@ function ProductCard({ product }: { product: Product }) {
   const sizes = extractSizes(product)
   const variants = buildVariantMap(product)
   const colorImages = getColorImages(product)
-  const hasMultipleColors = colors.length > 1
   const hasVariants = sizes.length > 0
   const categoryLabel = getCategoryLabel(product)
   const meta = getProductMeta(product)
@@ -129,7 +128,6 @@ function ProductCard({ product }: { product: Product }) {
   const priceData = getProductPrice(product)
   const priceLabel = priceData ? formatPrice(priceData.amount, priceData.currencyCode) : ""
   const compareLabel = meta.compareAtPrice && priceData ? formatPrice(meta.compareAtPrice, priceData.currencyCode) : null
-  const discountPct = meta.compareAtPrice && priceData ? Math.round((1 - priceData.amount / meta.compareAtPrice) * 100) : null
 
   const productUrl = `/products/${product.handle}`
 
@@ -154,10 +152,18 @@ function ProductCard({ product }: { product: Product }) {
     setTimeout(checkColorScroll, 300)
   }
 
-  // Reset on mouse leave
+  // Delayed reset on mouse leave — preserves user intent for 2.5s
+  const leaveTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleMouseEnterCard = () => {
+    if (leaveTimerRef.current) { clearTimeout(leaveTimerRef.current); leaveTimerRef.current = null }
+  }
+
   const handleMouseLeave = () => {
-    setSizesOpen(false)
-    setSelectedSize(null)
+    leaveTimerRef.current = setTimeout(() => {
+      setSizesOpen(false)
+      setSelectedSize(null)
+    }, 2500) // 2.5s delay before reset
   }
 
   // Add to cart flow
@@ -204,6 +210,7 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <div
       className="flex-shrink-0 w-[calc(100%/2.09)] md:w-[calc(100%/3.33)] lg:w-[calc(100%/4.44)] xl:w-[calc(100%/5.33)]"
+      onMouseEnter={handleMouseEnterCard}
       onMouseLeave={handleMouseLeave}
     >
       {/* ── Image ── */}
@@ -230,27 +237,52 @@ function ProductCard({ product }: { product: Product }) {
         )}
       </Link>
 
-      {/* ── Product info ── */}
-      <div className="pt-4 px-[10px] lg:px-[14px]">
-        {/* Row 1: Category (left) + Price (right) */}
-        <div className="flex items-baseline justify-between gap-2">
-          {categoryLabel ? (
-            <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">{categoryLabel}</span>
-          ) : <span />}
-          <div className="flex items-baseline gap-1.5 shrink-0">
-            {priceLabel && <span className="text-[12px] tracking-[0.03em]">{priceLabel}</span>}
-            {compareLabel && <span className="text-[11px] text-muted-foreground line-through tracking-[0.03em]">{compareLabel}</span>}
-            {discountPct != null && discountPct > 0 && <span className="text-[10px] text-muted-foreground tracking-[0.05em]">-{discountPct}%</span>}
-          </div>
+      {/* ── Product info — vertical stack (luxury standard) ── */}
+      <div className="pt-5 px-[10px] lg:px-[14px]">
+        {/* Category label */}
+        {categoryLabel && (
+          <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+            {categoryLabel}
+          </p>
+        )}
+
+        {/* Title */}
+        <Link href={productUrl} className="block mt-1.5">
+          <h3 className="text-[13px] font-medium leading-tight tracking-[0.02em] line-clamp-2">{product.title}</h3>
+        </Link>
+
+        {/* Price */}
+        <div className="flex items-baseline gap-2 mt-1.5">
+          {priceLabel && <span className="text-[12px] tracking-[0.03em]">{priceLabel}</span>}
+          {compareLabel && <span className="text-[11px] text-muted-foreground line-through tracking-[0.03em]">{compareLabel}</span>}
         </div>
 
-        {/* Row 2: Title (left) + Chevrons (right, at title level) */}
-        <div className="flex items-start justify-between gap-2 mt-1">
-          <Link href={productUrl} className="block min-w-0">
-            <h3 className="text-[12px] font-medium leading-tight tracking-[0.02em] line-clamp-2">{product.title}</h3>
-          </Link>
+        {/* Color bars + chevrons */}
+        <div className="flex items-center gap-2 mt-3">
+          <div
+            ref={colorScrollRef}
+            onScroll={checkColorScroll}
+            className="flex gap-[6px] overflow-x-auto scrollbar-hide flex-1 min-w-0"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {colors.map((c) => (
+              <button key={c.value} type="button" onClick={() => setActiveColor(c.value)}
+                className="shrink-0 flex flex-col items-center gap-[3px] py-1"
+                style={{ width: "calc((100% - 24px) / 5)" }}
+                aria-label={c.label}>
+                <span className={`block w-full h-[10px] border transition-all ${
+                  activeColor === c.value ? "border-black/50" : "border-black/15 hover:border-black/30"
+                }`} style={{ backgroundColor: colorToCSS(c.value) }} />
+                <span className={`block h-px w-full transition-all duration-200 ${
+                  activeColor === c.value ? "bg-black" : "bg-transparent"
+                }`} />
+              </button>
+            ))}
+          </div>
+
+          {/* Chevrons — only for 6+ colors, next to bars */}
           {colors.length > 5 && (
-            <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button onClick={() => scrollColors("left")} disabled={!canScrollLeft}
                 className={`transition-colors ${canScrollLeft ? "text-foreground" : "text-black/15"}`}
                 aria-label="Couleurs précédentes">
@@ -265,42 +297,18 @@ function ProductCard({ product }: { product: Product }) {
           )}
         </div>
 
-        {/* Row 3: Color bars — all bars same size, 5 = full width, 6+ scrolls */}
-        <div className="mt-2.5">
-          <div
-            ref={colorScrollRef}
-            onScroll={checkColorScroll}
-            className="flex gap-[6px] overflow-x-auto scrollbar-hide"
-            style={{ scrollbarWidth: "none" }}
-          >
-            {colors.map((c) => (
-              <button key={c.value} type="button" onClick={() => setActiveColor(c.value)}
-                className="shrink-0 flex flex-col items-center gap-[3px]"
-                style={{ width: "calc((100% - 24px) / 5)" }}
-                aria-label={c.label}>
-                <span className={`block w-full h-[10px] border transition-all ${
-                  activeColor === c.value ? "border-black/30" : "border-black/10 hover:border-black/25"
-                }`} style={{ backgroundColor: colorToCSS(c.value) }} />
-                <span className={`block h-px w-full transition-all duration-200 ${
-                  activeColor === c.value ? "bg-black" : "bg-transparent"
-                }`} />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Row 4: Sizes (when open) */}
+        {/* Sizes (when open) */}
         {sizesOpen && hasVariants && (
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide mt-2.5 animate-fade-in" style={{ scrollbarWidth: "none" }}>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide mt-3 animate-fade-in" style={{ scrollbarWidth: "none" }}>
             {sizes.map((s) => {
               const inStock = isSizeInStock(variants, activeColor, s.value)
               const isSelected = selectedSize === s.value
               return (
                 <button key={s.value} onClick={() => { if (inStock) setSelectedSize(s.value) }} disabled={!inStock}
-                  className={`text-[11px] tracking-wide transition-all duration-150 relative pb-0.5 ${
+                  className={`text-[12px] tracking-wide transition-all duration-150 relative pb-1 ${
                     isSelected ? "text-foreground font-medium"
                     : inStock ? "text-muted-foreground hover:text-foreground"
-                    : "text-black/20 line-through cursor-not-allowed"
+                    : "text-black/30 line-through cursor-not-allowed"
                   }`}
                   aria-label={inStock ? `Taille ${s.label}` : `Taille ${s.label} épuisée`}>
                   {s.label}
@@ -313,14 +321,22 @@ function ProductCard({ product }: { product: Product }) {
           </div>
         )}
 
-        {/* Row 5: Add to cart */}
+        {/* Add to cart CTA */}
         {!meta.isSoldOut && (
           <div className="mt-3 mb-2">
             <button onClick={handleAddToCart} disabled={buttonDisabled}
-              className={`text-[10px] uppercase tracking-[0.12em] transition-colors ${
-                buttonDisabled ? "text-black/25 cursor-not-allowed" : "text-foreground hover:text-foreground/70"
+              className={`text-[11px] font-medium uppercase tracking-[0.12em] transition-all group ${
+                buttonDisabled
+                  ? "text-black/45 cursor-not-allowed"
+                  : "text-foreground"
               }`}>
-              {buttonLabel}
+              <span className="relative">
+                {buttonLabel}
+                {/* Underline on hover — only when active */}
+                {!buttonDisabled && (
+                  <span className="absolute left-0 right-0 bottom-[-2px] h-px bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                )}
+              </span>
             </button>
           </div>
         )}
