@@ -332,10 +332,10 @@ function ProductCard({ product }: { product: Product }) {
               }`}>
               <span className="relative">
                 {buttonLabel}
-                {/* Underline on hover — only when active */}
-                {!buttonDisabled && (
-                  <span className="absolute left-0 right-0 bottom-[-2px] h-px bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-                )}
+                {/* Underline always visible when active, hidden when disabled */}
+                <span className={`absolute left-0 right-0 bottom-[-2px] h-px transition-colors duration-200 ${
+                  buttonDisabled ? "bg-transparent" : "bg-black"
+                }`} />
               </span>
             </button>
           </div>
