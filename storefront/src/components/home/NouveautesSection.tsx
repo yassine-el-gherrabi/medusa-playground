@@ -85,7 +85,7 @@ function colorToCSS(name: string): string {
   return map[name.toLowerCase()] || name.toLowerCase()
 }
 
-// ── Product Card — Proposition 2 (Stone Island adapted) ──
+// ── Product Card ──
 
 function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart()
@@ -94,7 +94,8 @@ function ProductCard({ product }: { product: Product }) {
   const sizes = extractSizes(product)
   const variants = buildVariantMap(product)
   const colorImages = getColorImages(product)
-  const hasColors = colors.length > 1
+  const hasColors = colors.length > 0
+  const hasMultipleColors = colors.length > 1
   const hasVariants = sizes.length > 0
   const categoryLabel = getCategoryLabel(product)
   const meta = getProductMeta(product)
@@ -102,9 +103,9 @@ function ProductCard({ product }: { product: Product }) {
   const [hovered, setHovered] = useState(false)
   const [activeColor, setActiveColor] = useState(colors[0]?.value || "")
   const [sizesOpen, setSizesOpen] = useState(false)
-  const [addedSizes, setAddedSizes] = useState<Set<string>>(new Set())
-  const [addingSize, setAddingSize] = useState<string | null>(null)
-  const [directAdded, setDirectAdded] = useState(false)
+  const [selectedSize, setSelectedSize] = useState<string | null>(null)
+  const [adding, setAdding] = useState(false)
+  const [justAdded, setJustAdded] = useState(false)
 
   const activeImage = getImageForColor(product, colorImages, activeColor)
   const hoverImage = getSecondImage(product, colorImages, activeColor)
@@ -118,7 +119,7 @@ function ProductCard({ product }: { product: Product }) {
 
   const productUrl = `/products/${product.handle}`
 
-  // ── Color chevron navigation ──
+  // ── Color chevrons ──
   const colorScrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
@@ -139,36 +140,55 @@ function ProductCard({ product }: { product: Product }) {
     setTimeout(checkColorScroll, 300)
   }
 
-  // ── Quick-add ──
-  const handleAddSize = useCallback(async (size: string) => {
+  // ── Quick-add: select size first, then confirm with "Ajouter au panier" ──
+  const handleAddToCart = useCallback(async () => {
+    if (!hasVariants) {
+      // No-size product: direct add
+      const variantId = product.variants?.[0]?.id
+      if (!variantId) return
+      setAdding(true)
+      try {
+        await addItem(variantId, 1)
+        setJustAdded(true)
+        setTimeout(() => setJustAdded(false), 2000) // 2s feedback
+      } catch { /* cart provider handles */ }
+      finally { setAdding(false) }
+      return
+    }
+
+    if (!sizesOpen) {
+      // First click: reveal sizes
+      setSizesOpen(true)
+      setSelectedSize(null)
+      return
+    }
+
+    if (!selectedSize) return // no size selected yet
+
+    // Add the selected size+color to cart
     const color = activeColor || colors[0]?.value || ""
-    const variantId = findVariantId(variants, color, size)
+    const variantId = findVariantId(variants, color, selectedSize)
     if (!variantId) return
-    setAddingSize(size)
+
+    setAdding(true)
     try {
       await addItem(variantId, 1)
-      setAddingSize(null)
-      setAddedSizes((prev) => new Set(prev).add(size))
-      // Don't close sizes — user can add more
-    } catch { setAddingSize(null) }
-  }, [activeColor, colors, variants, addItem])
+      setJustAdded(true)
+      setSelectedSize(null) // reset selection for next add
+      setTimeout(() => setJustAdded(false), 1500)
+    } catch { /* cart provider handles */ }
+    finally { setAdding(false) }
+  }, [hasVariants, sizesOpen, selectedSize, activeColor, colors, variants, product.variants, addItem])
 
-  const handleDirectAdd = useCallback(async () => {
-    const variantId = product.variants?.[0]?.id
-    if (!variantId) return
-    setAddingSize("direct")
-    try {
-      await addItem(variantId, 1)
-      setAddingSize(null); setDirectAdded(true)
-      setTimeout(() => setDirectAdded(false), 2000)
-    } catch { setAddingSize(null) }
-  }, [product.variants, addItem])
-
-  const handleAddClick = () => {
-    if (!hasVariants) { handleDirectAdd(); return }
-    setSizesOpen(true)
-    setAddedSizes(new Set()) // reset on re-open
+  // Button label logic
+  const getButtonLabel = () => {
+    if (adding) return "Ajout..."
+    if (justAdded) return "✓ Ajouté"
+    if (sizesOpen && !selectedSize) return "Sélectionnez une taille"
+    return "Ajouter au panier"
   }
+
+  const isButtonDisabled = adding || (sizesOpen && !selectedSize && !justAdded)
 
   return (
     <div className="flex-shrink-0 w-[calc(100%/2.09)] md:w-[calc(100%/3.33)] lg:w-[calc(100%/4.44)] xl:w-[calc(100%/5.33)]">
@@ -219,22 +239,24 @@ function ProductCard({ product }: { product: Product }) {
           <h3 className="text-[12px] font-medium leading-tight tracking-[0.02em] line-clamp-2">{product.title}</h3>
         </Link>
 
-        {/* Row 3: Color bars with chevrons */}
+        {/* Row 3: Color bars + count (no color name) */}
         {hasColors && (
           <div className="flex items-center mt-2.5">
-            {/* Left chevron — greyed when can't scroll left */}
-            <button
-              onClick={() => scrollColors("left")}
-              disabled={!canScrollLeft}
-              className={`shrink-0 mr-1.5 transition-colors ${canScrollLeft ? "text-foreground" : "text-black/15"}`}
-              aria-label="Couleurs précédentes"
-            >
-              <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
-                <path d="M5 1L1 5l4 4" stroke="currentColor" strokeWidth="0.75" />
-              </svg>
-            </button>
+            {/* Left chevron */}
+            {hasMultipleColors && (
+              <button
+                onClick={() => scrollColors("left")}
+                disabled={!canScrollLeft}
+                className={`shrink-0 mr-1.5 transition-colors ${canScrollLeft ? "text-foreground" : "text-black/15"}`}
+                aria-label="Couleurs précédentes"
+              >
+                <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+                  <path d="M5 1L1 5l4 4" stroke="currentColor" strokeWidth="0.75" />
+                </svg>
+              </button>
+            )}
 
-            {/* Color bars — no partial visibility, clean edges */}
+            {/* Color bars */}
             <div
               ref={colorScrollRef}
               onScroll={checkColorScroll}
@@ -261,74 +283,76 @@ function ProductCard({ product }: { product: Product }) {
               ))}
             </div>
 
-            {/* Right chevron — greyed when can't scroll right */}
-            <button
-              onClick={() => scrollColors("right")}
-              disabled={!canScrollRight}
-              className={`shrink-0 ml-1.5 transition-colors ${canScrollRight ? "text-foreground" : "text-black/15"}`}
-              aria-label="Couleurs suivantes"
-            >
-              <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
-                <path d="M1 1l4 4-4 4" stroke="currentColor" strokeWidth="0.75" />
-              </svg>
-            </button>
+            {/* Right chevron */}
+            {hasMultipleColors && (
+              <button
+                onClick={() => scrollColors("right")}
+                disabled={!canScrollRight}
+                className={`shrink-0 ml-1.5 transition-colors ${canScrollRight ? "text-foreground" : "text-black/15"}`}
+                aria-label="Couleurs suivantes"
+              >
+                <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+                  <path d="M1 1l4 4-4 4" stroke="currentColor" strokeWidth="0.75" />
+                </svg>
+              </button>
+            )}
 
-            {/* Color name + count */}
-            <span className="text-[10px] text-muted-foreground tracking-[0.05em] shrink-0 ml-2">
-              {activeColor} · {colors.length} couleurs
-            </span>
+            {/* Count only — no color name */}
+            {hasMultipleColors && (
+              <span className="text-[10px] text-muted-foreground tracking-[0.05em] shrink-0 ml-2">
+                {colors.length} couleurs
+              </span>
+            )}
           </div>
         )}
 
-        {/* Row 4: Quick-add */}
+        {/* Row 4: Sizes (when open) */}
+        {sizesOpen && hasVariants && (
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide mt-2.5 animate-fade-in" style={{ scrollbarWidth: "none" }}>
+            {sizes.map((s) => {
+              const inStock = isSizeInStock(variants, activeColor, s.value)
+              const isSelected = selectedSize === s.value
+              return (
+                <button
+                  key={s.value}
+                  onClick={() => { if (inStock) setSelectedSize(s.value) }}
+                  disabled={!inStock}
+                  className={`text-[11px] tracking-wide transition-all duration-150 relative pb-0.5 ${
+                    isSelected
+                      ? "text-foreground font-medium"
+                      : inStock
+                        ? "text-muted-foreground hover:text-foreground"
+                        : "text-black/20 line-through cursor-not-allowed"
+                  }`}
+                  aria-label={inStock ? `Taille ${s.label}` : `Taille ${s.label} épuisée`}
+                >
+                  {s.label}
+                  {/* Underline on selected */}
+                  <span className={`absolute bottom-0 left-0 right-0 h-px transition-all duration-200 ${
+                    isSelected ? "bg-black" : "bg-transparent"
+                  }`} />
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Row 5: Add to cart button */}
         {!meta.isSoldOut && (
           <div className="mt-3 mb-2">
-            {!sizesOpen ? (
-              <button
-                onClick={handleAddClick}
-                className={`text-[10px] uppercase tracking-[0.12em] transition-colors ${
-                  directAdded ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {directAdded ? "✓ Ajouté au panier" : "Ajouter au panier"}
-              </button>
-            ) : (
-              /* Sizes — text style like Stone Island, no borders */
-              <div className="animate-fade-in">
-                <div className="flex gap-3 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
-                  {sizes.map((s) => {
-                    const inStock = isSizeInStock(variants, activeColor, s.value)
-                    const isAdding = addingSize === s.value
-                    const isAdded = addedSizes.has(s.value)
-                    return (
-                      <button
-                        key={s.value}
-                        onClick={() => { if (inStock && !isAdding) handleAddSize(s.value) }}
-                        disabled={!inStock || isAdding}
-                        className={`text-[11px] tracking-wide transition-all duration-150 relative pb-0.5 ${
-                          isAdded
-                            ? "text-foreground font-medium"
-                            : isAdding
-                              ? "text-foreground/50"
-                              : inStock
-                                ? "text-muted-foreground hover:text-foreground"
-                                : "text-black/20 line-through cursor-not-allowed"
-                        }`}
-                        aria-label={inStock ? `Ajouter taille ${s.label}` : `Taille ${s.label} épuisée`}
-                      >
-                        {isAdded ? `${s.label} ✓` : s.label}
-                      </button>
-                    )
-                  })}
-                </div>
-                <button
-                  onClick={() => setSizesOpen(false)}
-                  className="text-[9px] text-muted-foreground hover:text-foreground mt-2 uppercase tracking-[0.1em]"
-                >
-                  Fermer
-                </button>
-              </div>
-            )}
+            <button
+              onClick={handleAddToCart}
+              disabled={isButtonDisabled && !justAdded}
+              className={`text-[10px] uppercase tracking-[0.12em] transition-colors ${
+                justAdded
+                  ? "text-foreground"
+                  : isButtonDisabled
+                    ? "text-black/25 cursor-not-allowed"
+                    : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {getButtonLabel()}
+            </button>
           </div>
         )}
       </div>
