@@ -250,16 +250,16 @@ function ProductCard({ product }: { product: Product }) {
             <h3 className="text-[12px] font-medium leading-tight tracking-[0.02em] line-clamp-2">{product.title}</h3>
           </Link>
           {hasMultipleColors && (
-            <div className="flex items-center gap-1 shrink-0 pt-0.5">
+            <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
               <button onClick={() => scrollColors("left")} disabled={!canScrollLeft}
                 className={`transition-colors ${canScrollLeft ? "text-foreground" : "text-black/15"}`}
                 aria-label="Couleurs précédentes">
-                <svg width="5" height="8" viewBox="0 0 5 8" fill="none"><path d="M4 1L1 4l3 3" stroke="currentColor" strokeWidth="0.75" /></svg>
+                <svg width="7" height="10" viewBox="0 0 7 10" fill="none"><path d="M5.5 1L1.5 5l4 4" stroke="currentColor" strokeWidth="1" /></svg>
               </button>
               <button onClick={() => scrollColors("right")} disabled={!canScrollRight}
                 className={`transition-colors ${canScrollRight ? "text-foreground" : "text-black/15"}`}
                 aria-label="Couleurs suivantes">
-                <svg width="5" height="8" viewBox="0 0 5 8" fill="none"><path d="M1 1l3 3-3 3" stroke="currentColor" strokeWidth="0.75" /></svg>
+                <svg width="7" height="10" viewBox="0 0 7 10" fill="none"><path d="M1.5 1l4 4-4 4" stroke="currentColor" strokeWidth="1" /></svg>
               </button>
             </div>
           )}
