@@ -13,18 +13,10 @@ import {
   createStockLocationsWorkflow,
 } from "@medusajs/medusa/core-flows"
 
-const IMG = "https://medusa-public-images.s3.eu-west-1.amazonaws.com"
+const ICE = "https://iceindustry.fr/wp-content/uploads"
 const UNS = "https://images.unsplash.com"
 
-const images = {
-  teeBlack: [{ url: `${IMG}/tee-black-front.png` }, { url: `${IMG}/tee-black-back.png` }],
-  teeWhite: [{ url: `${IMG}/tee-white-front.png` }, { url: `${IMG}/tee-white-back.png` }],
-  sweatshirt: [{ url: `${IMG}/sweatshirt-vintage-front.png` }, { url: `${IMG}/sweatshirt-vintage-back.png` }],
-  sweatpants: [{ url: `${IMG}/sweatpants-gray-front.png` }, { url: `${IMG}/sweatpants-gray-back.png` }],
-  shorts: [{ url: `${IMG}/shorts-vintage-front.png` }, { url: `${IMG}/shorts-vintage-back.png` }],
-}
-
-// Unsplash hero images for collections (dark, streetwear-friendly)
+// ── Hero images for collections ──
 const heroImages = {
   lineaNebula: `${UNS}/photo-1523398002811-999ca8dec234?w=1600&q=80`,
   oscura: `${UNS}/photo-1509631179647-0177331693ae?w=1600&q=80`,
@@ -35,7 +27,6 @@ const heroImages = {
   concrete: `${UNS}/photo-1483985988355-763728e1935b?w=1600&q=80`,
 }
 
-// Category images
 const catImages = {
   vetements: `${UNS}/photo-1490481651871-ab68de25d43d?w=800&q=80`,
   accessoires: `${UNS}/photo-1556306535-0f09a537f0a3?w=800&q=80`,
@@ -43,6 +34,34 @@ const catImages = {
   iceForGirls: `${UNS}/photo-1483985988355-763728e1935b?w=800&q=80`,
 }
 
+// ── Variant helpers ──
+
+type ColorImages = Record<string, { url: string }[]>
+
+/** Create variants for each Couleur × Taille combination */
+function colorSizeVariants(
+  price: number,
+  prefix: string,
+  colors: string[],
+  sizes = ["S", "M", "L", "XL"]
+) {
+  const variants: any[] = []
+  for (let ci = 0; ci < colors.length; ci++) {
+    const color = colors[ci]
+    const colorCode = `C${ci + 1}` // C1, C2, C3 — avoids duplicates
+    for (const size of sizes) {
+      variants.push({
+        title: `${color} / ${size}`,
+        sku: `${prefix}-${colorCode}-${size}`,
+        options: { Couleur: color, Taille: size },
+        prices: [{ amount: price, currency_code: "eur" }],
+      })
+    }
+  }
+  return variants
+}
+
+/** Single-color size variants */
 function sizeVariants(price: number, prefix: string, sizes = ["S", "M", "L", "XL"]) {
   return sizes.map((size) => ({
     title: size,
@@ -52,25 +71,134 @@ function sizeVariants(price: number, prefix: string, sizes = ["S", "M", "L", "XL
   }))
 }
 
-function shoeVariants(price: number, prefix: string) {
-  const sizes = ["39", "40", "41", "42", "43", "44", "45"]
-  return sizes.map((size) => ({
-    title: `EU ${size}`,
-    sku: `${prefix}-${size}`,
-    options: { Pointure: size },
+/** Accessory with color variants but no size */
+function colorOnlyVariants(price: number, prefix: string, colors: string[]) {
+  return colors.map((color, i) => ({
+    title: color,
+    sku: `${prefix}-C${i + 1}`,
+    options: { Couleur: color },
     prices: [{ amount: price, currency_code: "eur" }],
   }))
 }
 
+/** Single variant (one-size accessories) */
 function oneVariant(price: number, sku: string) {
-  return [
-    {
-      title: "Default",
-      sku,
-      options: { Type: "Default" },
-      prices: [{ amount: price, currency_code: "eur" }],
-    },
-  ]
+  return [{ title: "Default", sku, options: { Type: "Default" }, prices: [{ amount: price, currency_code: "eur" }] }]
+}
+
+/** Flatten color_images map into product-level images array */
+function flattenImages(colorImages: ColorImages): { url: string }[] {
+  const seen = new Set<string>()
+  const result: { url: string }[] = []
+  for (const imgs of Object.values(colorImages)) {
+    for (const img of imgs) {
+      if (!seen.has(img.url)) {
+        seen.add(img.url)
+        result.push(img)
+      }
+    }
+  }
+  return result
+}
+
+// ── Real product images from iceindustry.fr ──
+
+const productImages = {
+  tshirtSeamless: {
+    Bleu: [
+      { url: `${ICE}/2026/02/IMG_0764-Photoroom-1500x1500.jpeg` },
+      { url: `${ICE}/2026/02/IMG_0772-Photoroom-1500x1500.jpeg` },
+    ],
+    Blanc: [
+      { url: `${ICE}/2026/02/IMG_0775-Photoroom-1500x1500.jpeg` },
+    ],
+    Beige: [
+      { url: `${ICE}/2026/02/IMG_0761-Photoroom-1500x1500.jpeg` },
+      { url: `${ICE}/2026/02/IMG_0771-Photoroom-1500x1500.jpeg` },
+    ],
+  },
+  pantalonSeamless: {
+    Noir: [
+      { url: `${ICE}/2026/02/fbb51479-bfcc-4d7e-861c-0067aaf28200-1500x1500.jpeg` },
+      { url: `${ICE}/2026/02/7313c95c-42d4-43e3-9754-c912b7609254-1500x1500.jpeg` },
+    ],
+    Violet: [
+      { url: `${ICE}/2026/02/98e1988b-6df1-4aaf-83b9-265fed70750e-1500x1500.jpeg` },
+      { url: `${ICE}/2026/02/7b665908-f36d-4343-9976-ab8f71b25f5d-1500x1500.jpeg` },
+    ],
+  },
+  vesteSeamless: {
+    Noir: [
+      { url: `${ICE}/2026/02/a8b5d91b-6d66-4610-8433-46768eb81d8d-1-1500x1500.jpeg` },
+      { url: `${ICE}/2026/02/d4584ecf-7bf1-45cc-8051-ac04258fa23e-1500x1500.jpeg` },
+    ],
+    Bleu: [
+      { url: `${ICE}/2026/02/d09c7fa2-1cc1-495e-bc80-f8ded7d14445-1500x1500.jpeg` },
+      { url: `${ICE}/2026/02/2266dc9e-528d-4452-88e2-5a474568fcab-1500x1500.jpeg` },
+    ],
+    Violet: [
+      { url: `${ICE}/2026/02/3a7dbc1b-23f1-4bbd-9046-698c8dc637c9-1500x1500.jpeg` },
+      { url: `${ICE}/2026/02/575596a4-35ed-42e5-a139-728327ad1cf9-1500x1500.jpeg` },
+    ],
+  },
+  vesteLineaNebula: {
+    Noir: [
+      { url: `${ICE}/2025/12/Jacket_Black_0-1500x1500.png` },
+      { url: `${ICE}/2025/12/Jacket_Black_6-1500x1500.png` },
+    ],
+    Gris: [
+      { url: `${ICE}/2025/12/Jacket_8-1500x1500.png` },
+      { url: `${ICE}/2025/12/Jacket_13-1500x1500.png` },
+    ],
+  },
+  pantalonLineaNebula: {
+    Noir: [
+      { url: `${ICE}/2025/12/pants_0-1500x1500.png` },
+      { url: `${ICE}/2025/12/pants_7-1500x1500.png` },
+    ],
+    Gris: [
+      { url: `${ICE}/2025/12/trouser_grey_0-1500x1500.png` },
+      { url: `${ICE}/2025/12/trouser_grey_5-1500x1500.png` },
+    ],
+    Vert: [
+      { url: `${ICE}/2025/12/trouser_green_0-1500x1500.png` },
+      { url: `${ICE}/2025/12/trouser_green_7-1500x1500.png` },
+    ],
+  },
+  tshirtMLLineaNebula: [
+    { url: `${ICE}/2025/12/long-sleeve_1-1500x1500.png` },
+    { url: `${ICE}/2025/12/long-sleeve_6-1500x1500.png` },
+  ],
+  sweatOscura: [
+    { url: `${ICE}/2025/12/IMG-20251202-WA0019-Photoroom-1500x1500.jpg` },
+    { url: `${ICE}/2025/12/IMG-20251202-WA0004-Photoroom-1500x1500.jpg` },
+  ],
+  joggingOscura: [
+    { url: `${ICE}/2025/12/IMG-20251202-WA0012-Photoroom-1500x1500.jpg` },
+    { url: `${ICE}/2025/12/IMG-20251202-WA0013-Photoroom-1500x1500.jpg` },
+  ],
+  doudouneIceVest: [
+    { url: `${ICE}/2026/02/0dd7989f-67af-48f9-b6df-6f34d0f9d6b2-1500x1500.jpeg` },
+    { url: `${ICE}/2026/02/bd0a40e7-a023-4a46-a392-b47fe87319a5-1500x1500.jpeg` },
+  ],
+  downJacketPolaris: [
+    { url: `${ICE}/2026/01/b760e0ed-aef2-49bb-93d5-f23442c84a9e-1500x1500.jpeg` },
+    { url: `${ICE}/2026/01/4d401a97-6490-45e9-97df-263e4ddde926-1500x1500.jpeg` },
+  ],
+  casquetteMountain: [
+    { url: `${ICE}/2026/02/ID9W0018-Photoroom-1500x1500.jpg` },
+    { url: `${ICE}/2026/02/ID9W0019-Photoroom-1500x1500.jpg` },
+  ],
+  casquetteReflect: {
+    "Noir V2": [
+      { url: `${ICE}/2026/02/ID9W0008-Photoroom-1500x1500.jpg` },
+      { url: `${ICE}/2026/02/ID9W0009-Photoroom-1500x1500.jpg` },
+    ],
+    "Noir/Gris": [
+      { url: `${ICE}/2025/11/990f628a-7e20-4174-916c-8c495f2f729f.jpeg` },
+      { url: `${ICE}/2025/11/9a67d195-efc1-4be1-96c1-250d90b3c202.jpeg` },
+    ],
+  },
 }
 
 export default async function seedIceData({ container }: ExecArgs) {
@@ -111,7 +239,7 @@ export default async function seedIceData({ container }: ExecArgs) {
         {
           name: "Boutique Ice Industry Marseille",
           address: {
-            address_1: "42 Rue de la République",
+            address_1: "2 Rue Grignan",
             city: "Marseille",
             postal_code: "13001",
             country_code: "fr",
@@ -127,12 +255,10 @@ export default async function seedIceData({ container }: ExecArgs) {
 
   logger.info("Updating shipping options...")
 
-  // Find existing fulfillment sets
   const fulfillmentSets = await fulfillmentModuleService.listFulfillmentSets({})
   let fulfillmentSetId = fulfillmentSets[0]?.id
 
   if (!fulfillmentSetId) {
-    logger.info("No fulfillment set found, creating one...")
     const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
       name: "Ice Industry Shipping",
       type: "shipping",
@@ -140,7 +266,6 @@ export default async function seedIceData({ container }: ExecArgs) {
     fulfillmentSetId = fulfillmentSet.id
   }
 
-  // Find existing service zones or create one
   const serviceZones = await fulfillmentModuleService.listServiceZones({
     fulfillment_set: { id: fulfillmentSetId },
   })
@@ -155,70 +280,54 @@ export default async function seedIceData({ container }: ExecArgs) {
     serviceZoneId = serviceZone.id
   }
 
-  // Find shipping option providers
   const providers = await fulfillmentModuleService.listFulfillmentProviders({})
   const manualProvider = providers.find((p: any) => p.id.includes("manual")) || providers[0]
 
   if (manualProvider) {
-    // Create Click & Collect shipping option
     try {
       await createShippingOptionsWorkflow(container).run({
-        input: [
-          {
-            name: "Retrait en boutique (Click & Collect)",
-            price_type: "flat",
-            service_zone_id: serviceZoneId,
-            shipping_profile_id: shippingProfile.id,
-            provider_id: manualProvider.id,
-            type: { label: "Click & Collect", description: "Retrait en boutique", code: "click-collect" },
-            prices: [{ currency_code: "eur", amount: 0 }],
-          },
-        ],
+        input: [{
+          name: "Retrait en boutique (Click & Collect)",
+          price_type: "flat",
+          service_zone_id: serviceZoneId,
+          shipping_profile_id: shippingProfile.id,
+          provider_id: manualProvider.id,
+          type: { label: "Click & Collect", description: "Retrait en boutique", code: "click-collect" },
+          prices: [{ currency_code: "eur", amount: 0 }],
+        }],
       })
       logger.info("Created Click & Collect shipping option")
-    } catch (e: any) {
-      logger.warn(`Click & Collect shipping option: ${e.message}`)
-    }
+    } catch (e: any) { logger.warn(`Click & Collect: ${e.message}`) }
 
-    // Create Standard shipping
     try {
       await createShippingOptionsWorkflow(container).run({
-        input: [
-          {
-            name: "Livraison Standard (3-5 jours)",
-            price_type: "flat",
-            service_zone_id: serviceZoneId,
-            shipping_profile_id: shippingProfile.id,
-            provider_id: manualProvider.id,
-            type: { label: "Standard", description: "Livraison standard", code: "standard" },
-            prices: [{ currency_code: "eur", amount: 5.9 }],
-          },
-        ],
+        input: [{
+          name: "Livraison Standard (3-5 jours)",
+          price_type: "flat",
+          service_zone_id: serviceZoneId,
+          shipping_profile_id: shippingProfile.id,
+          provider_id: manualProvider.id,
+          type: { label: "Standard", description: "Livraison standard", code: "standard" },
+          prices: [{ currency_code: "eur", amount: 5.9 }],
+        }],
       })
-      logger.info("Created Standard shipping option (5.90 EUR)")
-    } catch (e: any) {
-      logger.warn(`Standard shipping: ${e.message}`)
-    }
+      logger.info("Created Standard shipping (5.90 EUR)")
+    } catch (e: any) { logger.warn(`Standard shipping: ${e.message}`) }
 
-    // Create Express shipping
     try {
       await createShippingOptionsWorkflow(container).run({
-        input: [
-          {
-            name: "Livraison Express (1-2 jours)",
-            price_type: "flat",
-            service_zone_id: serviceZoneId,
-            shipping_profile_id: shippingProfile.id,
-            provider_id: manualProvider.id,
-            type: { label: "Express", description: "Livraison express", code: "express" },
-            prices: [{ currency_code: "eur", amount: 9.9 }],
-          },
-        ],
+        input: [{
+          name: "Livraison Express (1-2 jours)",
+          price_type: "flat",
+          service_zone_id: serviceZoneId,
+          shipping_profile_id: shippingProfile.id,
+          provider_id: manualProvider.id,
+          type: { label: "Express", description: "Livraison express", code: "express" },
+          prices: [{ currency_code: "eur", amount: 9.9 }],
+        }],
       })
-      logger.info("Created Express shipping option (9.90 EUR)")
-    } catch (e: any) {
-      logger.warn(`Express shipping: ${e.message}`)
-    }
+      logger.info("Created Express shipping (9.90 EUR)")
+    } catch (e: any) { logger.warn(`Express shipping: ${e.message}`) }
   }
 
   // ─── CATEGORIES ────────────────────────────────────────────────
@@ -242,11 +351,9 @@ export default async function seedIceData({ container }: ExecArgs) {
   const { result: children } = await createProductCategoriesWorkflow(container).run({
     input: {
       product_categories: [
-        // Vêtements subcategories
         { name: "Hauts", handle: "hauts", is_active: true, parent_category_id: parentMap["Vêtements"] },
         { name: "Bas", handle: "bas", is_active: true, parent_category_id: parentMap["Vêtements"] },
         { name: "Vestes & Manteaux", handle: "vestes-manteaux", is_active: true, parent_category_id: parentMap["Vêtements"] },
-        // Accessoires subcategories
         { name: "Lunettes de soleil", handle: "lunettes-de-soleil", is_active: true, parent_category_id: parentMap["Accessoires"] },
         { name: "Casquettes", handle: "casquettes", is_active: true, parent_category_id: parentMap["Accessoires"] },
         { name: "Cache-cou", handle: "cache-cou", is_active: true, parent_category_id: parentMap["Accessoires"] },
@@ -260,7 +367,7 @@ export default async function seedIceData({ container }: ExecArgs) {
 
   logger.info(`Created ${parents.length} parent + ${children.length} sub categories.`)
 
-  // ─── COLLECTIONS (CAPSULES) ────────────────────────────────────
+  // ─── COLLECTIONS ───────────────────────────────────────────────
 
   logger.info("Creating capsule collections...")
 
@@ -268,12 +375,19 @@ export default async function seedIceData({ container }: ExecArgs) {
     input: {
       collections: [
         {
+          title: "Seamless Bi-Material",
+          handle: "seamless-bi-material",
+          metadata: {
+            hero_image: heroImages.seamless,
+            description: "La fusion parfaite. Deux matières, zéro couture visible. Une collection technique qui repense les bases du streetwear.",
+          },
+        },
+        {
           title: "Linea Nebula",
           handle: "linea-nebula",
           metadata: {
             hero_image: heroImages.lineaNebula,
-            description: "La dernière capsule Ice Industry. Inspirée par les étoiles et la nuit marseillaise, Linea Nebula repousse les limites du streetwear avec des matières techniques et un design avant-gardiste.",
-            shoot_gallery: [heroImages.lineaNebula, heroImages.oscura, heroImages.seamless],
+            description: "Inspirée par les étoiles et la nuit marseillaise, Linea Nebula repousse les limites du streetwear avec des matières techniques et un design avant-gardiste.",
           },
         },
         {
@@ -281,17 +395,7 @@ export default async function seedIceData({ container }: ExecArgs) {
           handle: "oscura",
           metadata: {
             hero_image: heroImages.oscura,
-            description: "L'obscurité comme source d'inspiration. Des pièces sombres et élégantes pour ceux qui vivent la nuit, avec des détails réflectifs et des coupes modernes.",
-            shoot_gallery: [heroImages.oscura, heroImages.abyss, heroImages.shadow],
-          },
-        },
-        {
-          title: "Seamless Bi-Material",
-          handle: "seamless-bi-material",
-          metadata: {
-            hero_image: heroImages.seamless,
-            description: "La fusion parfaite. Deux matières, zéro couture visible. Une collection technique qui repense les bases du streetwear avec une approche minimaliste.",
-            shoot_gallery: [heroImages.seamless, heroImages.concrete, heroImages.iceReflect],
+            description: "L'obscurité comme source d'inspiration. Des pièces sombres et élégantes pour ceux qui vivent la nuit.",
           },
         },
         {
@@ -299,8 +403,7 @@ export default async function seedIceData({ container }: ExecArgs) {
           handle: "abyss",
           metadata: {
             hero_image: heroImages.abyss,
-            description: "Plongée dans les profondeurs. Des teintes profondes, des coupes oversize et une identité visuelle brute. La collection pour ceux qui assument l'intensité.",
-            shoot_gallery: [heroImages.abyss, heroImages.oscura, heroImages.shadow],
+            description: "Plongée dans les profondeurs. Des teintes profondes, des coupes oversize et une identité visuelle brute.",
           },
         },
         {
@@ -308,8 +411,7 @@ export default async function seedIceData({ container }: ExecArgs) {
           handle: "ice-reflect",
           metadata: {
             hero_image: heroImages.iceReflect,
-            description: "Reflets urbains. Des pièces aux finitions réfléchissantes qui captent la lumière de la ville. Du jour à la nuit, ICE Reflect vous accompagne.",
-            shoot_gallery: [heroImages.iceReflect, heroImages.lineaNebula, heroImages.concrete],
+            description: "Reflets urbains. Des pièces aux finitions réfléchissantes qui captent la lumière de la ville.",
           },
         },
         {
@@ -317,8 +419,7 @@ export default async function seedIceData({ container }: ExecArgs) {
           handle: "capsule-shadow",
           metadata: {
             hero_image: heroImages.shadow,
-            description: "Dans l'ombre naît le style. Une capsule monochrome aux coupes affirmées, pensée pour le quotidien marseillais.",
-            shoot_gallery: [heroImages.shadow, heroImages.abyss, heroImages.oscura],
+            description: "Dans l'ombre naît le style. Une capsule monochrome aux coupes affirmées.",
           },
         },
         {
@@ -326,232 +427,189 @@ export default async function seedIceData({ container }: ExecArgs) {
           handle: "capsule-concrete",
           metadata: {
             hero_image: heroImages.concrete,
-            description: "Née du béton. Inspirée par l'architecture brute de Marseille, cette capsule mêle robustesse et élégance streetwear.",
-            shoot_gallery: [heroImages.concrete, heroImages.seamless, heroImages.lineaNebula],
+            description: "Née du béton. Inspirée par l'architecture brute de Marseille.",
           },
         },
       ],
     },
   })
 
-  const collectionMap: Record<string, string> = {}
-  for (const c of collections) collectionMap[c.title] = c.id
+  const colMap: Record<string, string> = {}
+  for (const c of collections) colMap[c.title] = c.id
 
-  logger.info(`Created ${collections.length} capsule collections.`)
+  logger.info(`Created ${collections.length} collections.`)
 
-  // ─── PRODUCTS ──────────────────────────────────────────────────
+  // ─── PRODUCTS (real Ice Industry catalog) ──────────────────────
 
   logger.info("Creating Ice Industry products...")
 
   const products: any[] = [
-    // ── Vetements ──
+    // ── SEAMLESS BI-MATERIAL ──
     {
-      title: "Hoodie Ice Classic",
-      handle: "hoodie-ice-classic",
-      description: "Le hoodie signature Ice Industry. Coton epais 400g, coupe oversize, broderie logo sur la poitrine. Un incontournable du streetwear marseillais.",
-      category_ids: [catMap["Vêtements"]],
-      collection_id: collectionMap["Linea Nebula"],
-      images: images.sweatshirt,
+      title: "T-shirt Seamless Bi-Material",
+      handle: "tshirt-seamless-bi-material",
+      description: "T-shirt bi-matière sans couture avec coupe technique. Un essentiel du streetwear revisité avec des matières premium.",
+      category_ids: [catMap["Hauts"]],
+      collection_id: colMap["Seamless Bi-Material"],
+      images: flattenImages(productImages.tshirtSeamless),
+      metadata: { color_images: productImages.tshirtSeamless },
+      weight: 200,
+      options: [
+        { title: "Couleur", values: ["Bleu", "Blanc", "Beige"] },
+        { title: "Taille", values: ["S", "M", "L", "XL"] },
+      ],
+      variants: colorSizeVariants(79.9, "ICE-TSB", ["Bleu", "Blanc", "Beige"]),
+    },
+    {
+      title: "Pantalon Seamless",
+      handle: "pantalon-seamless",
+      description: "Pantalon technique sans couture. Coupe droite, taille élastiquée, finitions premium.",
+      category_ids: [catMap["Bas"]],
+      collection_id: colMap["Seamless Bi-Material"],
+      images: flattenImages(productImages.pantalonSeamless),
+      metadata: { color_images: productImages.pantalonSeamless },
+      weight: 400,
+      options: [
+        { title: "Couleur", values: ["Noir", "Violet"] },
+        { title: "Taille", values: ["S", "M", "L", "XL"] },
+      ],
+      variants: colorSizeVariants(100, "ICE-PS", ["Noir", "Violet"]),
+    },
+    {
+      title: "Veste Seamless",
+      handle: "veste-seamless",
+      description: "Veste technique sans couture apparente. Zip intégral, poches zippées, coupe ajustée.",
+      category_ids: [catMap["Vestes & Manteaux"]],
+      collection_id: colMap["Seamless Bi-Material"],
+      images: flattenImages(productImages.vesteSeamless),
+      metadata: { color_images: productImages.vesteSeamless },
+      weight: 500,
+      options: [
+        { title: "Couleur", values: ["Noir", "Bleu", "Violet"] },
+        { title: "Taille", values: ["S", "M", "L", "XL"] },
+      ],
+      variants: colorSizeVariants(120, "ICE-VS", ["Noir", "Bleu", "Violet"]),
+    },
+
+    // ── LINEA NEBULA ──
+    {
+      title: "Veste Linea Nebula",
+      handle: "veste-linea-nebula",
+      description: "Veste signature de la collection Linea Nebula. Matières techniques, design avant-gardiste, détails réfléchissants.",
+      category_ids: [catMap["Vestes & Manteaux"]],
+      collection_id: colMap["Linea Nebula"],
+      images: flattenImages(productImages.vesteLineaNebula),
+      metadata: { color_images: productImages.vesteLineaNebula },
+      weight: 550,
+      options: [
+        { title: "Couleur", values: ["Noir", "Gris"] },
+        { title: "Taille", values: ["S", "M", "L", "XL"] },
+      ],
+      variants: colorSizeVariants(150, "ICE-VLN", ["Noir", "Gris"]),
+    },
+    {
+      title: "Pantalon Linea Nebula",
+      handle: "pantalon-linea-nebula",
+      description: "Pantalon de la collection Linea Nebula. Coupe technique, poches cargo, finitions premium.",
+      category_ids: [catMap["Bas"]],
+      collection_id: colMap["Linea Nebula"],
+      images: flattenImages(productImages.pantalonLineaNebula),
+      metadata: { color_images: productImages.pantalonLineaNebula },
+      weight: 450,
+      options: [
+        { title: "Couleur", values: ["Noir", "Gris", "Vert"] },
+        { title: "Taille", values: ["S", "M", "L", "XL"] },
+      ],
+      variants: colorSizeVariants(145, "ICE-PLN", ["Noir", "Gris", "Vert"]),
+    },
+    {
+      title: "T-shirt Manche Longue Linea Nebula",
+      handle: "tshirt-ml-linea-nebula",
+      description: "T-shirt manche longue de la collection Linea Nebula. Coton premium, coupe regular, logo brodé.",
+      category_ids: [catMap["Hauts"]],
+      collection_id: colMap["Linea Nebula"],
+      images: productImages.tshirtMLLineaNebula,
+      weight: 250,
+      options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
+      variants: sizeVariants(95, "ICE-TMLN"),
+    },
+
+    // ── OSCURA ──
+    {
+      title: "Sweat à Capuche Oscura",
+      handle: "sweat-capuche-oscura",
+      description: "Sweat à capuche de la collection Oscura. Molleton épais, coupe oversize, broderie logo ton sur ton.",
+      category_ids: [catMap["Hauts"]],
+      collection_id: colMap["Oscura"],
+      images: productImages.sweatOscura,
       weight: 550,
       options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
-      variants: sizeVariants(69, "ICE-HOOD"),
+      variants: sizeVariants(105, "ICE-SHO"),
     },
     {
-      title: "T-shirt Logo Ice",
-      handle: "t-shirt-logo-ice",
-      description: "T-shirt 100% coton organique avec le logo Ice Industry serigraphie. Coupe regular, col rond renforce.",
-      category_ids: [catMap["Vêtements"]],
-      collection_id: collectionMap["Linea Nebula"],
-      images: images.teeBlack,
-      weight: 200,
-      options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
-      variants: sizeVariants(35, "ICE-TEE"),
-    },
-    {
-      title: "Pantalon Cargo Ice",
-      handle: "pantalon-cargo-ice",
-      description: "Cargo en toile resistante avec poches laterales et broderie Ice. Coupe large, taille ajustable par cordon.",
-      category_ids: [catMap["Vêtements"]],
-      collection_id: collectionMap["Seamless Bi-Material"],
-      images: images.sweatpants,
-      weight: 500,
-      options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
-      variants: sizeVariants(79, "ICE-CARGO"),
-    },
-    {
-      title: "Veste Coupe-vent Ice",
-      handle: "veste-coupe-vent-ice",
-      description: "Coupe-vent leger impermeable avec capuche escamotable. Bandes reflechissantes et logo Ice brode.",
-      category_ids: [catMap["Vêtements"]],
-      collection_id: collectionMap["Oscura"],
-      images: images.sweatshirt,
-      weight: 350,
-      options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
-      variants: sizeVariants(99, "ICE-WIND"),
-    },
-    {
-      title: "Jogging Essential Ice",
-      handle: "jogging-essential-ice",
-      description: "Jogging en molleton brosse, coupe slim avec chevilles resserrees. Logo Ice Industry brode sur la cuisse.",
-      category_ids: [catMap["Vêtements"]],
-      collection_id: collectionMap["Abyss"],
-      images: images.sweatpants,
+      title: "Jogging Oscura",
+      handle: "jogging-oscura",
+      description: "Jogging de la collection Oscura. Molleton brossé, coupe slim, chevilles resserrées.",
+      category_ids: [catMap["Bas"]],
+      collection_id: colMap["Oscura"],
+      images: productImages.joggingOscura,
       weight: 420,
       options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
-      variants: sizeVariants(59, "ICE-JOG"),
+      variants: sizeVariants(95, "ICE-JO"),
     },
 
-    // ── Ice for Girls ──
+    // ── PIÈCES STANDALONE ──
     {
-      title: "Robe Ice Flow",
-      handle: "robe-ice-flow",
-      description: "Robe mi-longue en jersey stretch avec logo Ice subtil. Coupe fluide et confortable, parfaite du matin au soir.",
-      category_ids: [catMap["Ice for Girls"]],
-      collection_id: collectionMap["Seamless Bi-Material"],
-      images: images.teeWhite,
-      weight: 250,
-      options: [{ title: "Taille", values: ["XS", "S", "M", "L"] }],
-      variants: sizeVariants(65, "ICE-ROBE", ["XS", "S", "M", "L"]),
+      title: "Doudoune Ice Vest",
+      handle: "doudoune-ice-vest",
+      description: "Doudoune sans manches matelassée. Garnissage synthétique, col montant, fermeture zip.",
+      category_ids: [catMap["Vestes & Manteaux"]],
+      collection_id: colMap["Abyss"],
+      images: productImages.doudouneIceVest,
+      weight: 350,
+      options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
+      variants: sizeVariants(240, "ICE-VEST"),
     },
     {
-      title: "Crop Top Ice",
-      handle: "crop-top-ice",
-      description: "Crop top en coton cotelee avec logo Ice brode. Coupe ajustee, finitions soignees.",
-      category_ids: [catMap["Ice for Girls"]],
-      collection_id: collectionMap["Seamless Bi-Material"],
-      images: images.teeWhite,
-      weight: 120,
-      options: [{ title: "Taille", values: ["XS", "S", "M", "L"] }],
-      variants: sizeVariants(29, "ICE-CROP", ["XS", "S", "M", "L"]),
-    },
-    {
-      title: "Jupe Ice Street",
-      handle: "jupe-ice-street",
-      description: "Mini-jupe cargo avec poches a rabat et logo Ice. Toile stretch pour un confort optimal.",
-      category_ids: [catMap["Ice for Girls"]],
-      collection_id: collectionMap["Oscura"],
-      images: images.shorts,
-      weight: 220,
-      options: [{ title: "Taille", values: ["XS", "S", "M", "L"] }],
-      variants: sizeVariants(45, "ICE-JUPE", ["XS", "S", "M", "L"]),
-    },
-    {
-      title: "Hoodie Ice for Girls",
-      handle: "hoodie-ice-for-girls",
-      description: "Hoodie oversized adapte a la morphologie feminine. Coton 400g, broderie Ice for Girls exclusive.",
-      category_ids: [catMap["Ice for Girls"]],
-      collection_id: collectionMap["Linea Nebula"],
-      images: images.sweatshirt,
-      weight: 500,
-      options: [{ title: "Taille", values: ["XS", "S", "M", "L"] }],
-      variants: sizeVariants(69, "ICE-HOODG", ["XS", "S", "M", "L"]),
+      title: "Down Jacket Polaris",
+      handle: "down-jacket-polaris",
+      description: "Doudoune longue Polaris. Garnissage duvet, capuche amovible, coupe oversize. La pièce ultime pour l'hiver.",
+      category_ids: [catMap["Vestes & Manteaux"]],
+      collection_id: colMap["Abyss"],
+      images: productImages.downJacketPolaris,
+      weight: 800,
+      options: [{ title: "Taille", values: ["S", "M", "L", "XL"] }],
+      variants: sizeVariants(300, "ICE-POL"),
     },
 
-    // ── Accessoires / Lunettes ──
+    // ── ACCESSOIRES ──
     {
-      title: "Lunettes Ice Shade",
-      handle: "lunettes-ice-shade",
-      description: "Lunettes de soleil polarisees monture acetate. Protection UV400. Logo Ice grave sur les branches.",
-      category_ids: [catMap["Lunettes de soleil"]],
-      collection_id: collectionMap["Seamless Bi-Material"],
-      images: images.teeBlack,
-      weight: 35,
-      options: [{ title: "Type", values: ["Default"] }],
-      variants: oneVariant(45, "ICE-SHADE"),
-    },
-    {
-      title: "Lunettes Ice Mirror",
-      handle: "lunettes-ice-mirror",
-      description: "Lunettes de soleil verres miroir avec monture metallique fine. Style aviateur revisite par Ice Industry.",
-      category_ids: [catMap["Lunettes de soleil"]],
-      images: images.teeBlack,
-      weight: 30,
-      options: [{ title: "Type", values: ["Default"] }],
-      variants: oneVariant(55, "ICE-MIRROR"),
-    },
-
-    // ── Accessoires / Casquettes ──
-    {
-      title: "Casquette Logo Ice",
-      handle: "casquette-logo-ice",
-      description: "Casquette 6 panels en coton brosse avec logo Ice Industry brode en facade. Fermeture boucle metal.",
+      title: "Casquette ICE Mountain",
+      handle: "casquette-ice-mountain",
+      description: "Casquette structurée avec broderie ICE Mountain. Fermeture boucle métal, visière courbée.",
       category_ids: [catMap["Casquettes"]],
-      collection_id: collectionMap["Abyss"],
-      images: images.teeBlack,
+      collection_id: colMap["ICE Reflect"],
+      images: productImages.casquetteMountain,
       weight: 80,
       options: [{ title: "Type", values: ["Default"] }],
-      variants: oneVariant(35, "ICE-CAP"),
+      variants: oneVariant(74.99, "ICE-CMTN"),
     },
     {
-      title: "Casquette Snapback Ice",
-      handle: "casquette-snapback-ice",
-      description: "Snapback structuree avec visiere plate. Broderie 3D du logo Ice et fermeture snap reglable.",
+      title: "Casquette ICE Reflect",
+      handle: "casquette-ice-reflect",
+      description: "Casquette ICE Reflect avec détails réfléchissants. Disponible en deux coloris.",
       category_ids: [catMap["Casquettes"]],
-      collection_id: collectionMap["Oscura"],
-      images: images.teeBlack,
-      weight: 90,
-      options: [{ title: "Type", values: ["Default"] }],
-      variants: oneVariant(39, "ICE-SNAP"),
-    },
-
-    // ── Accessoires / Cache-cou ──
-    {
-      title: "Cache-cou Polar Ice",
-      handle: "cache-cou-polar-ice",
-      description: "Cache-cou en polaire douce avec logo Ice Industry. Polyvalent : tour de cou, bonnet, bandeau. Parfait pour le mistral.",
-      category_ids: [catMap["Cache-cou"]],
-      collection_id: collectionMap["Linea Nebula"],
-      images: images.sweatshirt,
-      weight: 60,
-      options: [{ title: "Type", values: ["Default"] }],
-      variants: oneVariant(25, "ICE-NECK"),
-    },
-
-    // ── Chaussures ──
-    {
-      title: "Nike Air Max Ice Edition",
-      handle: "nike-air-max-ice",
-      description: "Air Max exclusivite Ice Industry. Coloris glacier unique, semelle Air visible, details glaces sur le talon.",
-      category_ids: [catMap["Chaussures"]],
-      images: images.shorts,
-      weight: 400,
-      options: [{ title: "Pointure", values: ["39", "40", "41", "42", "43", "44", "45"] }],
-      variants: shoeVariants(159, "ICE-AMAX"),
-    },
-    {
-      title: "Jordan 1 Ice Edition",
-      handle: "jordan-1-ice",
-      description: "Jordan 1 High en collaboration Ice Industry. Cuir premium blanc et bleu glacier, swoosh glace.",
-      category_ids: [catMap["Chaussures"]],
-      images: images.shorts,
-      weight: 450,
-      options: [{ title: "Pointure", values: ["39", "40", "41", "42", "43", "44", "45"] }],
-      variants: shoeVariants(189, "ICE-J1"),
-    },
-    {
-      title: "New Balance 550 Ice Edition",
-      handle: "nb-550-ice",
-      description: "New Balance 550 revisitee par Ice Industry. Cuir blanc, accents bleu polaire, semelle gomme.",
-      category_ids: [catMap["Chaussures"]],
-      images: images.shorts,
-      weight: 380,
-      options: [{ title: "Pointure", values: ["39", "40", "41", "42", "43", "44", "45"] }],
-      variants: shoeVariants(149, "ICE-NB550"),
-    },
-    {
-      title: "Nike Dunk Low Ice Edition",
-      handle: "nike-dunk-low-ice",
-      description: "Dunk Low aux couleurs Ice Industry. Cuir tumbled, double branding, lacets assortis inclus.",
-      category_ids: [catMap["Chaussures"]],
-      images: images.shorts,
-      weight: 370,
-      options: [{ title: "Pointure", values: ["39", "40", "41", "42", "43", "44", "45"] }],
-      variants: shoeVariants(129, "ICE-DUNK"),
+      collection_id: colMap["ICE Reflect"],
+      images: flattenImages(productImages.casquetteReflect),
+      metadata: { color_images: productImages.casquetteReflect },
+      weight: 80,
+      options: [{ title: "Couleur", values: ["Noir V2", "Noir/Gris"] }],
+      variants: colorOnlyVariants(74.99, "ICE-CREF", ["Noir V2", "Noir/Gris"]),
     },
   ]
 
-  // Create products in batches of 5
-  const batchSize = 5
+  // Create products in batches
+  const batchSize = 4
   for (let i = 0; i < products.length; i += batchSize) {
     const batch = products.slice(i, i + batchSize)
     await createProductsWorkflow(container).run({
@@ -578,7 +636,6 @@ export default async function seedIceData({ container }: ExecArgs) {
     fields: ["id"],
   })
 
-  // Set inventory for default location
   const { data: existingLevels } = await query.graph({
     entity: "inventory_level",
     fields: ["inventory_item_id"],
@@ -591,7 +648,7 @@ export default async function seedIceData({ container }: ExecArgs) {
     if (!existingItemIds.has(item.id)) {
       newLevels.push({
         location_id: defaultStockLocation.id,
-        stocked_quantity: 100,
+        stocked_quantity: 50,
         inventory_item_id: item.id,
       })
     }
@@ -604,10 +661,9 @@ export default async function seedIceData({ container }: ExecArgs) {
     logger.info(`Created ${newLevels.length} inventory levels (default location).`)
   }
 
-  // Set inventory for boutique location
   const boutiqueLevels: CreateInventoryLevelInput[] = inventoryItems.map((item: any) => ({
     location_id: boutiqueLocation.id,
-    stocked_quantity: 20,
+    stocked_quantity: 10,
     inventory_item_id: item.id,
   }))
 

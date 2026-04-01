@@ -2,7 +2,7 @@ export const SITE_NAME = "Ice Industry"
 export const SITE_DESCRIPTION =
   "Marque de streetwear basée à Marseille. Capsules exclusives, accessoires et chaussures multi-marques."
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://iceindustry.fr"
-export const DEFAULT_REGION = "reg_01KN1XMQGDFKZGWSR0KHF5JRGW"
+export const DEFAULT_REGION = "reg_01KN4JXC0Y4W3V7DJ445G3EC1N"
 export const DEFAULT_CURRENCY = "eur"
 export const DEFAULT_COUNTRY = "fr"
 
