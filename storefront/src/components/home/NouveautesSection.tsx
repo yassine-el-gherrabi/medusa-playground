@@ -85,7 +85,7 @@ function colorToCSS(name: string): string {
   return map[name.toLowerCase()] || name.toLowerCase()
 }
 
-// ── Product Card ──
+// ── Product Card — Proposition 2 (Stone Island adapted) ──
 
 function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart()
@@ -102,8 +102,9 @@ function ProductCard({ product }: { product: Product }) {
   const [hovered, setHovered] = useState(false)
   const [activeColor, setActiveColor] = useState(colors[0]?.value || "")
   const [sizesOpen, setSizesOpen] = useState(false)
+  const [addedSizes, setAddedSizes] = useState<Set<string>>(new Set())
   const [addingSize, setAddingSize] = useState<string | null>(null)
-  const [addedSize, setAddedSize] = useState<string | null>(null)
+  const [directAdded, setDirectAdded] = useState(false)
 
   const activeImage = getImageForColor(product, colorImages, activeColor)
   const hoverImage = getSecondImage(product, colorImages, activeColor)
@@ -117,26 +118,28 @@ function ProductCard({ product }: { product: Product }) {
 
   const productUrl = `/products/${product.handle}`
 
-  // Color overflow detection
+  // ── Color chevron navigation ──
   const colorScrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
-  const checkScroll = useCallback(() => {
+  const checkColorScroll = useCallback(() => {
     const el = colorScrollRef.current
     if (!el) return
+    setCanScrollLeft(el.scrollLeft > 2)
     setCanScrollRight(el.scrollWidth > el.clientWidth + el.scrollLeft + 2)
   }, [])
 
-  useEffect(() => { checkScroll() }, [colors, checkScroll])
+  useEffect(() => { checkColorScroll() }, [colors, checkColorScroll])
 
-  const scrollColorsRight = () => {
+  const scrollColors = (dir: "left" | "right") => {
     const el = colorScrollRef.current
     if (!el) return
-    el.scrollBy({ left: 80, behavior: "smooth" })
-    setTimeout(checkScroll, 300)
+    el.scrollBy({ left: dir === "left" ? -80 : 80, behavior: "smooth" })
+    setTimeout(checkColorScroll, 300)
   }
 
-  // Quick-add
+  // ── Quick-add ──
   const handleAddSize = useCallback(async (size: string) => {
     const color = activeColor || colors[0]?.value || ""
     const variantId = findVariantId(variants, color, size)
@@ -144,22 +147,28 @@ function ProductCard({ product }: { product: Product }) {
     setAddingSize(size)
     try {
       await addItem(variantId, 1)
-      setAddingSize(null); setAddedSize(size)
-      setTimeout(() => { setAddedSize(null); setSizesOpen(false) }, 1200)
+      setAddingSize(null)
+      setAddedSizes((prev) => new Set(prev).add(size))
+      // Don't close sizes — user can add more
     } catch { setAddingSize(null) }
   }, [activeColor, colors, variants, addItem])
 
-  // Direct add for no-size products
   const handleDirectAdd = useCallback(async () => {
     const variantId = product.variants?.[0]?.id
     if (!variantId) return
     setAddingSize("direct")
     try {
       await addItem(variantId, 1)
-      setAddingSize(null); setAddedSize("direct")
-      setTimeout(() => setAddedSize(null), 1200)
+      setAddingSize(null); setDirectAdded(true)
+      setTimeout(() => setDirectAdded(false), 2000)
     } catch { setAddingSize(null) }
   }, [product.variants, addItem])
+
+  const handleAddClick = () => {
+    if (!hasVariants) { handleDirectAdd(); return }
+    setSizesOpen(true)
+    setAddedSizes(new Set()) // reset on re-open
+  }
 
   return (
     <div className="flex-shrink-0 w-[calc(100%/2.09)] md:w-[calc(100%/3.33)] lg:w-[calc(100%/4.44)] xl:w-[calc(100%/5.33)]">
@@ -171,9 +180,7 @@ function ProductCard({ product }: { product: Product }) {
         className={`block bg-[#f5f5f5] aspect-[3/4] relative overflow-hidden ${meta.isSoldOut ? "opacity-70" : ""}`}
       >
         <Image
-          src={displayImage}
-          alt={product.title}
-          fill
+          src={displayImage} alt={product.title} fill
           className="object-cover transition-opacity duration-500 ease-in-out"
           style={{ opacity: hovered && hoverImage ? 0 : 1 }}
           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
@@ -181,9 +188,7 @@ function ProductCard({ product }: { product: Product }) {
         />
         {hoverImage && hoverImage !== displayImage && (
           <Image
-            src={hoverImage}
-            alt={`${product.title} - vue 2`}
-            fill
+            src={hoverImage} alt={`${product.title} - vue 2`} fill
             className="object-cover transition-opacity duration-500 ease-in-out"
             style={{ opacity: hovered ? 1 : 0 }}
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
@@ -191,15 +196,13 @@ function ProductCard({ product }: { product: Product }) {
           />
         )}
         {meta.isSoldOut && (
-          <span className="absolute top-3 left-3 text-[9px] uppercase tracking-[0.2em] font-medium text-black/50">
-            Épuisé
-          </span>
+          <span className="absolute top-3 left-3 text-[9px] uppercase tracking-[0.2em] font-medium text-black/50">Épuisé</span>
         )}
       </Link>
 
       {/* ── Product info ── */}
       <div className="pt-4 px-[10px] lg:px-[14px]">
-        {/* Row 1: Category (left) + Price (right) */}
+        {/* Row 1: Category + Price */}
         <div className="flex items-baseline justify-between gap-2">
           {categoryLabel ? (
             <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">{categoryLabel}</span>
@@ -216,111 +219,111 @@ function ProductCard({ product }: { product: Product }) {
           <h3 className="text-[12px] font-medium leading-tight tracking-[0.02em] line-clamp-2">{product.title}</h3>
         </Link>
 
-        {/* Row 3: Color bars — single chevron right, last color partially visible */}
+        {/* Row 3: Color bars with chevrons */}
         {hasColors && (
-          <div className="flex items-center gap-1.5 mt-2.5">
-            {/* Scrollable color bars with fade mask when overflowing */}
-            <div className="relative flex-1 min-w-0">
-              <div
-                ref={colorScrollRef}
-                onScroll={checkScroll}
-                className="flex gap-[6px] overflow-x-auto scrollbar-hide"
-                style={{
-                  scrollbarWidth: "none",
-                  maskImage: canScrollRight ? "linear-gradient(to right, black 80%, transparent 100%)" : undefined,
-                  WebkitMaskImage: canScrollRight ? "linear-gradient(to right, black 80%, transparent 100%)" : undefined,
-                }}
-              >
-                {colors.map((c) => (
-                  <button
-                    key={c.value}
-                    type="button"
-                    onClick={() => setActiveColor(c.value)}
-                    className="shrink-0 flex flex-col items-center gap-[3px]"
-                    aria-label={c.label}
-                  >
-                    <span
-                      className={`block w-10 h-[10px] border transition-all ${
-                        activeColor === c.value ? "border-black/30" : "border-black/10 hover:border-black/25"
-                      }`}
-                      style={{ backgroundColor: colorToCSS(c.value) }}
-                    />
-                    <span className={`block h-px w-full transition-all duration-200 ${
-                      activeColor === c.value ? "bg-black" : "bg-transparent"
-                    }`} />
-                  </button>
-                ))}
-              </div>
+          <div className="flex items-center mt-2.5">
+            {/* Left chevron — greyed when can't scroll left */}
+            <button
+              onClick={() => scrollColors("left")}
+              disabled={!canScrollLeft}
+              className={`shrink-0 mr-1.5 transition-colors ${canScrollLeft ? "text-foreground" : "text-black/15"}`}
+              aria-label="Couleurs précédentes"
+            >
+              <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+                <path d="M5 1L1 5l4 4" stroke="currentColor" strokeWidth="0.75" />
+              </svg>
+            </button>
+
+            {/* Color bars — no partial visibility, clean edges */}
+            <div
+              ref={colorScrollRef}
+              onScroll={checkColorScroll}
+              className="flex gap-[6px] overflow-x-auto scrollbar-hide flex-1 min-w-0"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {colors.map((c) => (
+                <button
+                  key={c.value} type="button"
+                  onClick={() => setActiveColor(c.value)}
+                  className="shrink-0 flex flex-col items-center gap-[3px]"
+                  aria-label={c.label}
+                >
+                  <span
+                    className={`block w-10 h-[10px] border transition-all ${
+                      activeColor === c.value ? "border-black/30" : "border-black/10 hover:border-black/25"
+                    }`}
+                    style={{ backgroundColor: colorToCSS(c.value) }}
+                  />
+                  <span className={`block h-px w-full transition-all duration-200 ${
+                    activeColor === c.value ? "bg-black" : "bg-transparent"
+                  }`} />
+                </button>
+              ))}
             </div>
 
-            {/* Single chevron right — only when more colors to see */}
-            {canScrollRight && (
-              <button
-                onClick={scrollColorsRight}
-                className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Plus de couleurs"
-              >
-                <svg width="7" height="10" viewBox="0 0 7 10" fill="none">
-                  <path d="M1 1l4 4-4 4" stroke="currentColor" strokeWidth="0.75" />
-                </svg>
-              </button>
-            )}
+            {/* Right chevron — greyed when can't scroll right */}
+            <button
+              onClick={() => scrollColors("right")}
+              disabled={!canScrollRight}
+              className={`shrink-0 ml-1.5 transition-colors ${canScrollRight ? "text-foreground" : "text-black/15"}`}
+              aria-label="Couleurs suivantes"
+            >
+              <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+                <path d="M1 1l4 4-4 4" stroke="currentColor" strokeWidth="0.75" />
+              </svg>
+            </button>
 
-            {/* Active color name */}
-            <span className="text-[10px] text-muted-foreground tracking-[0.05em] shrink-0">
-              {activeColor}
+            {/* Color name + count */}
+            <span className="text-[10px] text-muted-foreground tracking-[0.05em] shrink-0 ml-2">
+              {activeColor} · {colors.length} couleurs
             </span>
           </div>
         )}
 
-        {/* Row 4: Quick-add — "Ajouter au panier" button + size chips */}
+        {/* Row 4: Quick-add */}
         {!meta.isSoldOut && (
-          <div className="mt-3">
+          <div className="mt-3 mb-2">
             {!sizesOpen ? (
               <button
-                onClick={() => {
-                  if (!hasVariants) handleDirectAdd()
-                  else setSizesOpen(true)
-                }}
+                onClick={handleAddClick}
                 className={`text-[10px] uppercase tracking-[0.12em] transition-colors ${
-                  addedSize === "direct"
-                    ? "text-black"
-                    : "text-muted-foreground hover:text-foreground"
+                  directAdded ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {addedSize === "direct" ? "✓ Ajouté" : "Ajouter au panier"}
+                {directAdded ? "✓ Ajouté au panier" : "Ajouter au panier"}
               </button>
             ) : (
-              /* Size chips — inline below colors */
+              /* Sizes — text style like Stone Island, no borders */
               <div className="animate-fade-in">
-                <div className="flex gap-[3px] overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+                <div className="flex gap-3 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
                   {sizes.map((s) => {
                     const inStock = isSizeInStock(variants, activeColor, s.value)
                     const isAdding = addingSize === s.value
-                    const isAdded = addedSize === s.value
+                    const isAdded = addedSizes.has(s.value)
                     return (
                       <button
                         key={s.value}
                         onClick={() => { if (inStock && !isAdding) handleAddSize(s.value) }}
                         disabled={!inStock || isAdding}
-                        className={`shrink-0 h-7 min-w-[1.75rem] px-1.5 text-[10px] tracking-wide border transition-all duration-150 ${
+                        className={`text-[11px] tracking-wide transition-all duration-150 relative pb-0.5 ${
                           isAdded
-                            ? "bg-black text-white border-black"
-                            : inStock
-                              ? "border-black/20 text-black hover:border-black bg-transparent"
-                              : "border-black/10 text-black/25 line-through cursor-not-allowed"
+                            ? "text-foreground font-medium"
+                            : isAdding
+                              ? "text-foreground/50"
+                              : inStock
+                                ? "text-muted-foreground hover:text-foreground"
+                                : "text-black/20 line-through cursor-not-allowed"
                         }`}
                         aria-label={inStock ? `Ajouter taille ${s.label}` : `Taille ${s.label} épuisée`}
                       >
-                        {isAdded ? "✓" : s.label}
+                        {isAdded ? `${s.label} ✓` : s.label}
                       </button>
                     )
                   })}
                 </div>
-                {/* Close sizes */}
                 <button
                   onClick={() => setSizesOpen(false)}
-                  className="text-[9px] text-muted-foreground hover:text-foreground mt-1.5 uppercase tracking-[0.1em]"
+                  className="text-[9px] text-muted-foreground hover:text-foreground mt-2 uppercase tracking-[0.1em]"
                 >
                   Fermer
                 </button>
