@@ -482,13 +482,22 @@ export default async function seedIceData({ container }: ExecArgs) {
       category_ids: [catMap["Vestes & Manteaux"]],
       collection_id: colMap["Seamless Bi-Material"],
       images: flattenImages(productImages.vesteSeamless),
-      metadata: { color_images: productImages.vesteSeamless, compare_at_price: 160, is_new: true },
+      metadata: {
+        color_images: {
+          ...productImages.vesteSeamless,
+          // Extra colors reusing images for 6+ color fixture
+          Gris: productImages.vesteSeamless.Noir,
+          Beige: productImages.vesteSeamless.Bleu,
+          Rouge: productImages.vesteSeamless.Violet,
+        },
+        compare_at_price: 160,
+      },
       weight: 500,
       options: [
-        { title: "Couleur", values: ["Noir", "Bleu", "Violet"] },
+        { title: "Couleur", values: ["Noir", "Bleu", "Violet", "Gris", "Beige", "Rouge"] },
         { title: "Taille", values: ["S", "M", "L", "XL"] },
       ],
-      variants: colorSizeVariants(120, "ICE-VS", ["Noir", "Bleu", "Violet"]),
+      variants: colorSizeVariants(120, "ICE-VS", ["Noir", "Bleu", "Violet", "Gris", "Beige", "Rouge"]),
     },
 
     // ── LINEA NEBULA ──

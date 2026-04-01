@@ -110,12 +110,12 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <div
       className="flex-shrink-0 w-[calc(100%/2.09)] md:w-[calc(100%/3.33)] lg:w-[calc(100%/4.44)] xl:w-[calc(100%/5.33)]"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
-      {/* ── Image ── */}
+      {/* ── Image — hover scoped to image only ── */}
       <Link
         href={productUrl}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         className={`block bg-[#f5f5f5] aspect-[3/4] relative overflow-hidden ${meta.isSoldOut ? "opacity-70" : ""}`}
       >
         <Image
@@ -225,7 +225,7 @@ function ProductCard({ product }: { product: Product }) {
                   />
                   {/* Active underline */}
                   <span
-                    className={`block h-[1.5px] w-full transition-all duration-200 ${
+                    className={`block h-px w-full transition-all duration-200 ${
                       activeColor === c.value ? "bg-black" : "bg-transparent"
                     }`}
                   />
