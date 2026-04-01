@@ -105,10 +105,16 @@ async function getHomeData() {
       new Date(a.created_at || 0).getTime()
   )
 
+  // Filter out fully sold-out products (all variants at 0 inventory)
+  const availableProducts = productsResult.products.filter((p) => {
+    if (!p.variants?.length) return true
+    return p.variants.some((v) => (v.inventory_quantity ?? 1) > 0)
+  })
+
   return {
     collections: sorted,
     latestCollection: sorted[0] ?? null,
-    products: productsResult.products,
+    products: availableProducts,
   }
 }
 

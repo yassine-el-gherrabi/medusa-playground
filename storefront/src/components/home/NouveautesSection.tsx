@@ -88,7 +88,7 @@ function getCategoryLabel(product: Product): string {
 
 function getProductMeta(product: Product) {
   const meta = (product.metadata as Record<string, unknown>) || {}
-  return { isSoldOut: !!meta.is_sold_out, compareAtPrice: (meta.compare_at_price as number) || null }
+  return { compareAtPrice: (meta.compare_at_price as number) || null }
 }
 
 function colorToCSS(name: string): string {
@@ -214,7 +214,7 @@ function ProductCard({ product }: { product: Product }) {
         href={productUrl}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className={`block bg-[#f5f5f5] aspect-[3/4] relative overflow-hidden ${meta.isSoldOut ? "opacity-70" : ""}`}
+        className="block bg-[#f5f5f5] aspect-[3/4] relative overflow-hidden"
       >
         <Image src={displayImage} alt={product.title} fill
           className="object-cover transition-opacity duration-500 ease-in-out"
@@ -227,9 +227,6 @@ function ProductCard({ product }: { product: Product }) {
             style={{ opacity: hovered ? 1 : 0 }}
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
             loading="lazy" />
-        )}
-        {meta.isSoldOut && (
-          <span className="absolute top-3 left-3 text-[9px] uppercase tracking-[0.2em] font-medium text-black/50">Épuisé</span>
         )}
       </Link>
 
@@ -318,7 +315,7 @@ function ProductCard({ product }: { product: Product }) {
         )}
 
         {/* Add to cart CTA */}
-        {!meta.isSoldOut && (
+        {(
           <div className="mt-3 mb-2">
             <button onClick={handleAddToCart} disabled={buttonDisabled}
               className={`text-[11px] font-medium uppercase tracking-[0.12em] transition-colors duration-200 group/cta ${
