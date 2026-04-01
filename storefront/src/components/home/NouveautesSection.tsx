@@ -265,37 +265,27 @@ function ProductCard({ product }: { product: Product }) {
           )}
         </div>
 
-        {/* Row 3: Color bars — max 5 visible, scroll beyond */}
+        {/* Row 3: Color bars — all bars same size, 5 = full width, 6+ scrolls */}
         <div className="mt-2.5">
           <div
             ref={colorScrollRef}
             onScroll={checkColorScroll}
             className="flex gap-[6px] overflow-x-auto scrollbar-hide"
-            style={{
-              scrollbarWidth: "none",
-              /* Constrain width so max 5 bars visible: 5 bars + 4 gaps */
-              ...(colors.length > 5 ? { maxWidth: "calc(100%)" } : {}),
-            }}
+            style={{ scrollbarWidth: "none" }}
           >
-            {colors.map((c) => {
-              // ≤5 colors: bars stretch to fill width. >5: fixed size for scrolling.
-              const barWidth = colors.length <= 5
-                ? `calc((100% - ${(colors.length - 1) * 6}px) / ${colors.length})`
-                : `calc((100% - 24px) / 5)` // size each bar as if 5 fit = forces scroll for 6+
-              return (
-                <button key={c.value} type="button" onClick={() => setActiveColor(c.value)}
-                  className="shrink-0 flex flex-col items-center gap-[3px]"
-                  style={{ width: barWidth }}
-                  aria-label={c.label}>
-                  <span className={`block w-full h-[10px] border transition-all ${
-                    activeColor === c.value ? "border-black/30" : "border-black/10 hover:border-black/25"
-                  }`} style={{ backgroundColor: colorToCSS(c.value) }} />
-                  <span className={`block h-px w-full transition-all duration-200 ${
-                    activeColor === c.value ? "bg-black" : "bg-transparent"
-                  }`} />
-                </button>
-              )
-            })}
+            {colors.map((c) => (
+              <button key={c.value} type="button" onClick={() => setActiveColor(c.value)}
+                className="shrink-0 flex flex-col items-center gap-[3px]"
+                style={{ width: "calc((100% - 24px) / 5)" }}
+                aria-label={c.label}>
+                <span className={`block w-full h-[10px] border transition-all ${
+                  activeColor === c.value ? "border-black/30" : "border-black/10 hover:border-black/25"
+                }`} style={{ backgroundColor: colorToCSS(c.value) }} />
+                <span className={`block h-px w-full transition-all duration-200 ${
+                  activeColor === c.value ? "bg-black" : "bg-transparent"
+                }`} />
+              </button>
+            ))}
           </div>
         </div>
 
