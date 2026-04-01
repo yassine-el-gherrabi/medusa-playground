@@ -324,13 +324,17 @@ function ProductCard({ product }: { product: Product }) {
               className={`text-[11px] font-medium uppercase tracking-[0.12em] transition-colors duration-200 group/cta ${
                 buttonDisabled
                   ? "text-black/45 cursor-not-allowed"
-                  : "text-foreground hover:text-black/60"
+                  : "text-foreground"
               }`}>
-              <span className="relative">
+              <span className="relative inline-block">
                 {buttonLabel}
-                <span className={`absolute left-0 right-0 bottom-[-2px] h-px transition-colors duration-200 ${
-                  buttonDisabled ? "bg-transparent" : "bg-black group-hover/cta:bg-black/60"
-                }`} />
+                {/* Wipe underline effect — same as AnimatedLink */}
+                {!buttonDisabled && (
+                  <>
+                    <span className="absolute left-0 right-0 bottom-[-2px] h-px bg-current origin-right transition-transform duration-300 group-hover/cta:scale-x-0" />
+                    <span className="absolute left-0 right-0 bottom-[-2px] h-px bg-current scale-x-0 origin-left transition-transform duration-300 delay-200 group-hover/cta:scale-x-100" />
+                  </>
+                )}
               </span>
             </button>
           </div>
