@@ -232,28 +232,11 @@ function ProductCard({ product }: { product: Product }) {
 
       {/* ── Product info ── */}
       <div className="pt-4 px-[10px] lg:px-[14px]">
-        {/* Row 1: Category + chevrons (right) + Price */}
+        {/* Row 1: Category (left) + Price (right) */}
         <div className="flex items-baseline justify-between gap-2">
-          <div className="flex items-center gap-1.5">
-            {categoryLabel && (
-              <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">{categoryLabel}</span>
-            )}
-            {/* Color chevrons — next to category label, Stone Island style */}
-            {hasMultipleColors && (
-              <div className="flex items-center gap-1">
-                <button onClick={() => scrollColors("left")} disabled={!canScrollLeft}
-                  className={`transition-colors ${canScrollLeft ? "text-foreground" : "text-black/15"}`}
-                  aria-label="Couleurs précédentes">
-                  <svg width="5" height="8" viewBox="0 0 5 8" fill="none"><path d="M4 1L1 4l3 3" stroke="currentColor" strokeWidth="0.75" /></svg>
-                </button>
-                <button onClick={() => scrollColors("right")} disabled={!canScrollRight}
-                  className={`transition-colors ${canScrollRight ? "text-foreground" : "text-black/15"}`}
-                  aria-label="Couleurs suivantes">
-                  <svg width="5" height="8" viewBox="0 0 5 8" fill="none"><path d="M1 1l3 3-3 3" stroke="currentColor" strokeWidth="0.75" /></svg>
-                </button>
-              </div>
-            )}
-          </div>
+          {categoryLabel ? (
+            <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">{categoryLabel}</span>
+          ) : <span />}
           <div className="flex items-baseline gap-1.5 shrink-0">
             {priceLabel && <span className="text-[12px] tracking-[0.03em]">{priceLabel}</span>}
             {compareLabel && <span className="text-[11px] text-muted-foreground line-through tracking-[0.03em]">{compareLabel}</span>}
@@ -261,17 +244,33 @@ function ProductCard({ product }: { product: Product }) {
           </div>
         </div>
 
-        {/* Row 2: Title */}
-        <Link href={productUrl} className="block mt-1">
-          <h3 className="text-[12px] font-medium leading-tight tracking-[0.02em] line-clamp-2">{product.title}</h3>
-        </Link>
+        {/* Row 2: Title (left) + Chevrons (right, at title level) */}
+        <div className="flex items-start justify-between gap-2 mt-1">
+          <Link href={productUrl} className="block min-w-0">
+            <h3 className="text-[12px] font-medium leading-tight tracking-[0.02em] line-clamp-2">{product.title}</h3>
+          </Link>
+          {hasMultipleColors && (
+            <div className="flex items-center gap-1 shrink-0 pt-0.5">
+              <button onClick={() => scrollColors("left")} disabled={!canScrollLeft}
+                className={`transition-colors ${canScrollLeft ? "text-foreground" : "text-black/15"}`}
+                aria-label="Couleurs précédentes">
+                <svg width="5" height="8" viewBox="0 0 5 8" fill="none"><path d="M4 1L1 4l3 3" stroke="currentColor" strokeWidth="0.75" /></svg>
+              </button>
+              <button onClick={() => scrollColors("right")} disabled={!canScrollRight}
+                className={`transition-colors ${canScrollRight ? "text-foreground" : "text-black/15"}`}
+                aria-label="Couleurs suivantes">
+                <svg width="5" height="8" viewBox="0 0 5 8" fill="none"><path d="M1 1l3 3-3 3" stroke="currentColor" strokeWidth="0.75" /></svg>
+              </button>
+            </div>
+          )}
+        </div>
 
-        {/* Row 3: Color bars */}
-        <div className="flex items-center mt-2.5">
+        {/* Row 3: Color bars — no text, just bars */}
+        <div className="mt-2.5">
           <div
             ref={colorScrollRef}
             onScroll={checkColorScroll}
-            className="flex gap-[6px] overflow-x-auto scrollbar-hide flex-1 min-w-0"
+            className="flex gap-[6px] overflow-x-auto scrollbar-hide"
             style={{ scrollbarWidth: "none" }}
           >
             {colors.map((c) => (
@@ -286,12 +285,6 @@ function ProductCard({ product }: { product: Product }) {
               </button>
             ))}
           </div>
-
-          {hasMultipleColors && (
-            <span className="text-[10px] text-muted-foreground tracking-[0.05em] shrink-0 ml-2">
-              {colors.length} couleurs
-            </span>
-          )}
         </div>
 
         {/* Row 4: Sizes (when open) */}
@@ -323,7 +316,7 @@ function ProductCard({ product }: { product: Product }) {
           <div className="mt-3 mb-2">
             <button onClick={handleAddToCart} disabled={buttonDisabled}
               className={`text-[10px] uppercase tracking-[0.12em] transition-colors ${
-                buttonDisabled ? "text-black/25 cursor-not-allowed" : "text-muted-foreground hover:text-foreground"
+                buttonDisabled ? "text-black/25 cursor-not-allowed" : "text-foreground hover:text-foreground/70"
               }`}>
               {buttonLabel}
             </button>
