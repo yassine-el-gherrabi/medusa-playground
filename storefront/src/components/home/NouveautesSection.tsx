@@ -324,7 +324,7 @@ function ProductCard({ product }: { product: Product }) {
               className={`text-[11px] font-medium uppercase tracking-[0.12em] transition-colors duration-200 group/cta ${
                 buttonDisabled
                   ? "text-black/45 cursor-not-allowed"
-                  : "text-foreground"
+                  : "text-foreground cursor-pointer"
               }`}>
               <span className="relative inline-block">
                 {buttonLabel}
