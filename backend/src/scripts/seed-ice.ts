@@ -689,5 +689,58 @@ export default async function seedIceData({ container }: ExecArgs) {
     logger.info(`Created ${boutiqueLevels.length} inventory levels (boutique Marseille).`)
   }
 
-  logger.info(`=== Ice Industry Seed Complete: ${products.length} products, ${parents.length + children.length} categories, ${collections.length} collections ===`)
+  // ─── RELATED PRODUCTS (Complete the Look) ───────────────────
+
+  logger.info("Setting up related products (Complete the Look)...")
+
+  const relatedProductsService = container.resolve("relatedProducts")
+
+  // Get all products by handle for association
+  const { data: allProducts } = await query.graph({
+    entity: "product",
+    fields: ["id", "handle"],
+  })
+
+  const handleToId: Record<string, string> = {}
+  for (const p of allProducts) handleToId[p.handle] = p.id
+
+  // Define "Complete the Look" associations
+  const looks: [string, string[]][] = [
+    ["veste-seamless", ["pantalon-seamless", "tshirt-seamless-bi-material"]],
+    ["pantalon-seamless", ["veste-seamless", "tshirt-seamless-bi-material"]],
+    ["tshirt-seamless-bi-material", ["pantalon-seamless", "casquette-ice-mountain"]],
+    ["veste-linea-nebula", ["pantalon-linea-nebula", "tshirt-ml-linea-nebula"]],
+    ["pantalon-linea-nebula", ["veste-linea-nebula", "tshirt-ml-linea-nebula"]],
+    ["tshirt-ml-linea-nebula", ["veste-linea-nebula", "pantalon-linea-nebula"]],
+    ["sweat-capuche-oscura", ["jogging-oscura", "casquette-ice-reflect"]],
+    ["jogging-oscura", ["sweat-capuche-oscura", "casquette-ice-mountain"]],
+    ["doudoune-ice-vest", ["down-jacket-polaris", "pantalon-linea-nebula"]],
+    ["down-jacket-polaris", ["doudoune-ice-vest", "veste-linea-nebula"]],
+  ]
+
+  let relCount = 0
+  for (const [sourceHandle, targetHandles] of looks) {
+    const sourceId = handleToId[sourceHandle]
+    if (!sourceId) continue
+
+    for (const targetHandle of targetHandles) {
+      const targetId = handleToId[targetHandle]
+      if (!targetId) continue
+
+      try {
+        await relatedProductsService.createRelatedProducts({
+          product_id: sourceId,
+          related_product_id: targetId,
+          type: "complete_the_look",
+        })
+        relCount++
+      } catch (e: any) {
+        logger.warn(`Related product ${sourceHandle} → ${targetHandle}: ${e.message}`)
+      }
+    }
+  }
+
+  logger.info(`Created ${relCount} related product associations.`)
+
+  logger.info(`=== Ice Industry Seed Complete: ${products.length} products, ${parents.length + children.length} categories, ${collections.length} collections, ${relCount} related ===`)
 }

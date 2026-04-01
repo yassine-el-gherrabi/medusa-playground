@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { useCart } from "@/providers/CartProvider"
 import CartItem from "./CartItem"
 import FreeShippingBar from "./FreeShippingBar"
+import CartCrossSell from "./CartCrossSell"
 import { formatPrice } from "@/lib/utils"
 
 export default function CartDrawer() {
@@ -123,8 +124,8 @@ export default function CartDrawer() {
                 Paiement
               </Link>
 
-              {/* Cross-sell placeholder — will be filled when Related Products module is ready */}
-              {/* <CartCrossSell cartItems={items} /> */}
+              {/* Cross-sell — "Complétez le look" */}
+              <CartCrossSell cartItems={items} />
             </div>
           </>
         )}
