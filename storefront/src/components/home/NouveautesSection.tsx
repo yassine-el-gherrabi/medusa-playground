@@ -249,7 +249,7 @@ function ProductCard({ product }: { product: Product }) {
           <Link href={productUrl} className="block min-w-0">
             <h3 className="text-[12px] font-medium leading-tight tracking-[0.02em] line-clamp-2">{product.title}</h3>
           </Link>
-          {hasMultipleColors && (
+          {colors.length > 5 && (
             <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
               <button onClick={() => scrollColors("left")} disabled={!canScrollLeft}
                 className={`transition-colors ${canScrollLeft ? "text-foreground" : "text-black/15"}`}
