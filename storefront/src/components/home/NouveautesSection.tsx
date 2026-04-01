@@ -321,16 +321,15 @@ function ProductCard({ product }: { product: Product }) {
         {!meta.isSoldOut && (
           <div className="mt-3 mb-2">
             <button onClick={handleAddToCart} disabled={buttonDisabled}
-              className={`text-[11px] font-medium uppercase tracking-[0.12em] transition-colors duration-200 ${
+              className={`text-[11px] font-medium uppercase tracking-[0.12em] transition-colors duration-200 group/cta ${
                 buttonDisabled
                   ? "text-black/45 cursor-not-allowed"
                   : "text-foreground hover:text-black/60"
               }`}>
               <span className="relative">
                 {buttonLabel}
-                {/* Underline always visible when active, hidden when disabled */}
                 <span className={`absolute left-0 right-0 bottom-[-2px] h-px transition-colors duration-200 ${
-                  buttonDisabled ? "bg-transparent" : "bg-black"
+                  buttonDisabled ? "bg-transparent" : "bg-black group-hover/cta:bg-black/60"
                 }`} />
               </span>
             </button>
