@@ -154,7 +154,7 @@ export default function CartCrossSell({ cartItems }: { cartItems: LineItem[] }) 
           const isAdding = addingId === product.id
 
           return (
-            <div key={product.id} className="shrink-0 w-[120px]">
+            <div key={product.id} className="shrink-0 w-[140px]">
               {/* Image */}
               <Link href={`/products/${product.handle}`} className="block">
                 <div className="aspect-[3/4] relative bg-[#f5f5f5] overflow-hidden">
@@ -164,7 +164,7 @@ export default function CartCrossSell({ cartItems }: { cartItems: LineItem[] }) 
                       alt={product.title}
                       fill
                       className="object-cover"
-                      sizes="120px"
+                      sizes="140px"
                       loading="lazy"
                     />
                   )}
@@ -173,9 +173,9 @@ export default function CartCrossSell({ cartItems }: { cartItems: LineItem[] }) 
 
               {/* Info */}
               <div className="mt-2">
-                <p className="text-[10px] leading-tight line-clamp-1">{product.title}</p>
+                <p className="text-[11px] leading-tight line-clamp-1">{product.title}</p>
                 {priceData && (
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
                     {formatPrice(priceData.amount, priceData.currencyCode)}
                   </p>
                 )}
@@ -184,7 +184,7 @@ export default function CartCrossSell({ cartItems }: { cartItems: LineItem[] }) 
                 <button
                   onClick={() => handleQuickAdd(product)}
                   disabled={isAdding}
-                  className="text-[9px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground transition-colors mt-1 cursor-pointer disabled:opacity-50"
+                  className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground transition-colors mt-1.5 cursor-pointer disabled:opacity-50"
                 >
                   {isAdding ? "Ajout..." : "+ Ajouter"}
                 </button>

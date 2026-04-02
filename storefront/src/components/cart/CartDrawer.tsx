@@ -48,7 +48,7 @@ export default function CartDrawer() {
       {/* Backdrop */}
       <div
         className={`fixed inset-0 z-[60] transition-colors duration-300 ${
-          drawerOpen ? "bg-black/40 pointer-events-auto" : "bg-transparent pointer-events-none"
+          drawerOpen ? "bg-black/50 pointer-events-auto" : "bg-transparent pointer-events-none"
         }`}
         onClick={closeDrawer}
         aria-hidden="true"
