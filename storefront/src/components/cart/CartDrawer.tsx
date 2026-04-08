@@ -22,11 +22,19 @@ export default function CartDrawer() {
     }
   }, [pathname, closeDrawer])
 
-  // Body scroll lock
+  // Body scroll lock — proper iOS fix
   useEffect(() => {
     if (drawerOpen) {
-      document.body.style.overflow = "hidden"
-      return () => { document.body.style.overflow = "" }
+      const scrollY = window.scrollY
+      document.body.style.position = "fixed"
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = "100%"
+      return () => {
+        document.body.style.position = ""
+        document.body.style.top = ""
+        document.body.style.width = ""
+        window.scrollTo(0, scrollY)
+      }
     }
   }, [drawerOpen])
 
@@ -111,7 +119,7 @@ export default function CartDrawer() {
             </div>
 
             {/* ── Footer ── */}
-            <div className="shrink-0 px-6 pb-6">
+            <div className="shrink-0 px-6 pb-24 sm:pb-6">
               {/* Free shipping bar */}
               <FreeShippingBar subtotal={subtotal} currencyCode={currencyCode} />
 
@@ -121,17 +129,30 @@ export default function CartDrawer() {
                 <span className="font-medium">{formatPrice(subtotal, currencyCode)}</span>
               </div>
 
-              {/* Checkout CTA */}
-              <Link
-                href="/checkout"
-                onClick={closeDrawer}
-                className="block w-full text-center py-3.5 bg-foreground text-background text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-foreground/90 transition-colors"
-              >
-                Paiement
-              </Link>
+              {/* Checkout CTA — inline on desktop */}
+              <div className="hidden sm:block">
+                <Link
+                  href="/checkout"
+                  onClick={closeDrawer}
+                  className="block w-full text-center py-3.5 bg-foreground text-background text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-foreground/90 transition-colors"
+                >
+                  Paiement
+                </Link>
+              </div>
 
               {/* Cross-sell — "Complétez le look" */}
               <CartCrossSell cartItems={items} />
+            </div>
+
+            {/* Checkout CTA — sticky bottom on mobile */}
+            <div className="sm:hidden fixed bottom-0 left-0 right-0 z-[62] bg-white border-t border-border px-6 py-4">
+              <Link
+                href="/checkout"
+                onClick={closeDrawer}
+                className="block w-full text-center py-3.5 bg-foreground text-background text-[11px] font-medium uppercase tracking-[0.15em]"
+              >
+                Paiement — {formatPrice(subtotal, currencyCode)}
+              </Link>
             </div>
           </>
         )}

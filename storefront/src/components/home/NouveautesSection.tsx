@@ -230,67 +230,85 @@ function ProductCard({ product }: { product: Product }) {
         )}
       </Link>
 
-      {/* ── Product info — vertical stack (luxury standard) ── */}
-      <div className="pt-5 px-[10px] lg:px-[14px]">
-        {/* Category label */}
-        {categoryLabel && (
-          <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
-            {categoryLabel}
-          </p>
-        )}
+      {/* ── Product info ── */}
+      <div className="pt-4 md:pt-5 px-[10px] lg:px-[14px]">
 
-        {/* Title */}
-        <Link href={productUrl} className="block mt-1.5">
-          <h3 className={`text-[13px] font-medium leading-tight tracking-[0.02em] line-clamp-2 transition-colors duration-200 ${cardHovered ? "text-black/60" : "text-foreground"}`}>{product.title}</h3>
-        </Link>
-
-        {/* Price */}
-        <div className="flex items-baseline gap-2 mt-1.5">
-          {priceLabel && <span className="text-[12px] tracking-[0.03em]">{priceLabel}</span>}
-          {compareLabel && <span className="text-[11px] text-muted-foreground line-through tracking-[0.03em]">{compareLabel}</span>}
-        </div>
-
-        {/* Color bars + chevrons */}
-        <div className="flex items-center gap-2 mt-3">
-          <div
-            ref={colorScrollRef}
-            onScroll={checkColorScroll}
-            className="flex gap-[6px] overflow-x-auto scrollbar-hide flex-1 min-w-0"
-            style={{ scrollbarWidth: "none" }}
-          >
-            {colors.map((c) => (
-              <button key={c.value} type="button" onClick={() => setActiveColor(c.value)}
-                className="shrink-0 flex flex-col items-center gap-[3px] py-1 cursor-pointer"
-                style={{ width: "calc((100% - 24px) / 5)" }}
-                aria-label={c.label}>
-                <span className={`block w-full h-[10px] border transition-all ${
-                  activeColor === c.value ? "border-black/50" : "border-black/15 hover:border-black/30"
-                }`} style={{ backgroundColor: colorToCSS(c.value) }} />
-                <span className={`block h-px w-full transition-all duration-200 ${
-                  activeColor === c.value ? "bg-black" : "bg-transparent"
-                }`} />
-              </button>
-            ))}
+        {/* ── MOBILE: simplified — title + price + color count. Tap = PDP ── */}
+        <div className="md:hidden">
+          <Link href={productUrl} className="block">
+            <h3 className="text-[12px] font-medium leading-tight tracking-[0.02em] line-clamp-2">{product.title}</h3>
+          </Link>
+          <div className="flex items-baseline gap-2 mt-1">
+            {priceLabel && <span className="text-[12px] tracking-[0.03em]">{priceLabel}</span>}
+            {compareLabel && <span className="text-[11px] text-muted-foreground line-through">{compareLabel}</span>}
           </div>
-
-          {/* Chevrons — only for 6+ colors, next to bars */}
-          {colors.length > 5 && (
-            <div className="flex items-center gap-1.5 shrink-0">
-              <button onClick={() => scrollColors("left")} disabled={!canScrollLeft}
-                className={`transition-colors ${canScrollLeft ? "text-foreground" : "text-black/15"}`}
-                aria-label="Couleurs précédentes">
-                <svg width="7" height="10" viewBox="0 0 7 10" fill="none"><path d="M5.5 1L1.5 5l4 4" stroke="currentColor" strokeWidth="1" /></svg>
-              </button>
-              <button onClick={() => scrollColors("right")} disabled={!canScrollRight}
-                className={`transition-colors ${canScrollRight ? "text-foreground" : "text-black/15"}`}
-                aria-label="Couleurs suivantes">
-                <svg width="7" height="10" viewBox="0 0 7 10" fill="none"><path d="M1.5 1l4 4-4 4" stroke="currentColor" strokeWidth="1" /></svg>
-              </button>
-            </div>
+          {colors.length > 1 && (
+            <p className="text-[10px] text-muted-foreground mt-1">+ {colors.length} couleurs</p>
           )}
         </div>
 
-        {/* Sizes (when open) */}
+        {/* ── DESKTOP: full card — category, title, price, color bars, quick-add ── */}
+        <div className="hidden md:block">
+          {/* Category label */}
+          {categoryLabel && (
+            <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+              {categoryLabel}
+            </p>
+          )}
+
+          {/* Title */}
+          <Link href={productUrl} className="block mt-1.5">
+            <h3 className={`text-[13px] font-medium leading-tight tracking-[0.02em] line-clamp-2 transition-colors duration-200 ${cardHovered ? "text-black/60" : "text-foreground"}`}>{product.title}</h3>
+          </Link>
+
+          {/* Price */}
+          <div className="flex items-baseline gap-2 mt-1.5">
+            {priceLabel && <span className="text-[12px] tracking-[0.03em]">{priceLabel}</span>}
+            {compareLabel && <span className="text-[11px] text-muted-foreground line-through tracking-[0.03em]">{compareLabel}</span>}
+          </div>
+
+          {/* Color bars + chevrons */}
+          <div className="flex items-center gap-2 mt-3">
+            <div
+              ref={colorScrollRef}
+              onScroll={checkColorScroll}
+              className="flex gap-[6px] overflow-x-auto scrollbar-hide flex-1 min-w-0"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {colors.map((c) => (
+                <button key={c.value} type="button" onClick={() => setActiveColor(c.value)}
+                  className="shrink-0 flex flex-col items-center gap-[3px] py-1 cursor-pointer"
+                  style={{ width: "calc((100% - 24px) / 5)" }}
+                  aria-label={c.label}>
+                  <span className={`block w-full h-[10px] border transition-all ${
+                    activeColor === c.value ? "border-black/50" : "border-black/15 hover:border-black/30"
+                  }`} style={{ backgroundColor: colorToCSS(c.value) }} />
+                  <span className={`block h-px w-full transition-all duration-200 ${
+                    activeColor === c.value ? "bg-black" : "bg-transparent"
+                  }`} />
+                </button>
+              ))}
+            </div>
+
+            {/* Chevrons — only for 6+ colors */}
+            {colors.length > 5 && (
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button onClick={() => scrollColors("left")} disabled={!canScrollLeft}
+                  className={`transition-colors ${canScrollLeft ? "text-foreground" : "text-black/15"}`}
+                  aria-label="Couleurs précédentes">
+                  <svg width="7" height="10" viewBox="0 0 7 10" fill="none"><path d="M5.5 1L1.5 5l4 4" stroke="currentColor" strokeWidth="1" /></svg>
+                </button>
+                <button onClick={() => scrollColors("right")} disabled={!canScrollRight}
+                  className={`transition-colors ${canScrollRight ? "text-foreground" : "text-black/15"}`}
+                  aria-label="Couleurs suivantes">
+                  <svg width="7" height="10" viewBox="0 0 7 10" fill="none"><path d="M1.5 1l4 4-4 4" stroke="currentColor" strokeWidth="1" /></svg>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sizes + CTA — desktop only */}
         {sizesOpen && hasVariants && (
           <div className="flex gap-3 overflow-x-auto scrollbar-hide mt-3 animate-fade-in" style={{ scrollbarWidth: "none" }}>
             {sizes.map((s) => {
@@ -314,8 +332,8 @@ function ProductCard({ product }: { product: Product }) {
           </div>
         )}
 
-        {/* Add to cart CTA */}
-        {(
+        {/* Add to cart CTA — desktop only */}
+        <div className="hidden md:block">
           <div className="mt-3 mb-2">
             <button onClick={handleAddToCart} disabled={buttonDisabled}
               className={`text-[11px] font-medium uppercase tracking-[0.12em] transition-colors duration-200 group/cta ${
@@ -335,7 +353,7 @@ function ProductCard({ product }: { product: Product }) {
               </span>
             </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
