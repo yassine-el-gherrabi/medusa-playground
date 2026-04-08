@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, useCallback } from "react"
+import { createPortal } from "react-dom"
 import Link from "next/link"
 import Image from "next/image"
 import type { Product } from "@/types"
@@ -248,8 +249,8 @@ function ProductCard({ product }: { product: Product }) {
         </button>
       </div>
 
-      {/* Mobile bottom sheet — rendered with fixed positioning relative to viewport */}
-      {sheetOpen && (
+      {/* Mobile bottom sheet — Portal to escape transform containing block */}
+      {sheetOpen && typeof document !== "undefined" && createPortal(
         <>
           <div className="md:hidden fixed inset-0 z-[100] bg-black/50" onClick={() => setSheetOpen(false)} />
           <div className="md:hidden fixed inset-x-0 bottom-0 z-[101] bg-white rounded-t-2xl max-h-[85vh] overflow-y-auto animate-fade-in">
@@ -353,7 +354,8 @@ function ProductCard({ product }: { product: Product }) {
               </button>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
 
       {/* ── Product info ── */}
