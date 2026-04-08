@@ -315,16 +315,22 @@ function ProductCard({ product }: { product: Product }) {
               {sizes.length > 0 && (
                 <div className="mb-6">
                   <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-3">Taille</p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-4">
                     {sizes.map((s) => {
                       const inStock = isSizeInStock(variants, sheetColor || colors[0]?.value || "", s.value)
+                      const isSelected = sheetSize === s.value
                       return (
                         <button key={s.value} onClick={() => inStock && setSheetSize(s.value)} disabled={!inStock}
-                          className={`h-11 min-w-[2.75rem] px-4 text-sm border transition-all cursor-pointer ${
-                            sheetSize === s.value ? "bg-foreground text-background border-foreground"
-                            : inStock ? "border-border hover:border-foreground"
-                            : "border-border/50 text-muted-foreground/40 line-through cursor-not-allowed"
-                          }`}>{s.label}</button>
+                          className={`relative text-sm pb-1 transition-colors cursor-pointer ${
+                            isSelected ? "text-foreground font-medium"
+                            : inStock ? "text-muted-foreground"
+                            : "text-black/20 line-through cursor-not-allowed"
+                          }`}>
+                          {s.label}
+                          <span className={`absolute bottom-0 left-0 right-0 h-px transition-all duration-200 ${
+                            isSelected ? "bg-black" : "bg-transparent"
+                          }`} />
+                        </button>
                       )
                     })}
                   </div>
