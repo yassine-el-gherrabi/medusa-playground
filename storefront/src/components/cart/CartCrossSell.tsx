@@ -11,7 +11,7 @@ import { DEFAULT_REGION } from "@/lib/constants"
 import type { Product, LineItem } from "@/types"
 
 const MEDUSA_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
-const TARGET_COUNT = 3
+const MIN_COUNT = 3 // minimum to show via fallback if no manual associations
 
 async function fetchRelatedIds(productId: string): Promise<string[]> {
   try {
@@ -43,9 +43,9 @@ async function getRecommendations(cartItems: LineItem[], regionId: string): Prom
   const results: Product[] = []
   const seenIds = new Set<string>()
 
-  const addIfNew = (products: Product[]) => {
+  const addIfNew = (products: Product[], max?: number) => {
     for (const p of products) {
-      if (results.length >= TARGET_COUNT) break
+      if (max && results.length >= max) break
       if (!seenIds.has(p.id) && !inCartProductIds.has(p.id)) {
         const hasStock = p.variants?.some((v) => (v.inventory_quantity ?? 1) > 0)
         if (hasStock !== false) { seenIds.add(p.id); results.push(p) }
@@ -53,27 +53,33 @@ async function getRecommendations(cartItems: LineItem[], regionId: string): Prom
     }
   }
 
+  // 1. All manually associated products (no limit — show everything the client curated)
   const firstItem = cartItems[0]
+  let hasManualAssociations = false
   if (firstItem) {
     const productId = (firstItem as unknown as Record<string, string>).product_id
     if (productId) {
       const relatedIds = await fetchRelatedIds(productId)
-      if (relatedIds.length > 0) addIfNew(await fetchProductsByIds(relatedIds, regionId))
+      if (relatedIds.length > 0) {
+        hasManualAssociations = true
+        addIfNew(await fetchProductsByIds(relatedIds, regionId))
+      }
     }
   }
 
-  if (results.length < TARGET_COUNT) {
+  // 2. Fallback: only if NO manual associations, fill up to MIN_COUNT with newest products
+  if (!hasManualAssociations && results.length < MIN_COUNT) {
     try {
       const { products } = await sdk.store.product.list({
         region_id: regionId,
         fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata,*options.values",
         limit: 10, order: "-created_at",
       })
-      addIfNew((products as Product[]) || [])
+      addIfNew((products as Product[]) || [], MIN_COUNT)
     } catch { /* */ }
   }
 
-  return results.slice(0, TARGET_COUNT)
+  return results
 }
 
 // ── Extract sizes from product ──
