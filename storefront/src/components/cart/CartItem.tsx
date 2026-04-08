@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 import { useCart } from "@/providers/CartProvider"
 import { formatPrice } from "@/lib/utils"
 import type { LineItem } from "@/types"
@@ -30,7 +31,12 @@ export default function CartItem({ item, currencyCode = "eur" }: { item: LineIte
       <div className="flex-1 min-w-0 flex flex-col justify-between">
         <div>
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-[12px] font-medium leading-tight truncate">{item.product_title || item.title}</h3>
+            <Link
+              href={`/products/${(item as unknown as Record<string, string>).product_handle || item.variant?.product?.handle || ""}`}
+              className="text-[12px] font-medium leading-tight truncate hover:text-black/60 transition-colors"
+            >
+              {item.product_title || item.title}
+            </Link>
             {/* Remove — small X icon */}
             <button
               onClick={() => removeItem(item.id)}
