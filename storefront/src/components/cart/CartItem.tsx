@@ -9,10 +9,9 @@ export default function CartItem({ item, currencyCode = "eur" }: { item: LineIte
   const { updateItem, removeItem } = useCart()
   const thumbnail = item.thumbnail || item.variant?.product?.thumbnail
 
-  // Extract variant info (e.g. "Noir / M")
-  const variantLabel = item.variant?.title && item.variant.title !== "Default"
-    ? item.variant.title
-    : null
+  // Extract variant info (e.g. "Noir / M") — Medusa uses variant_title on line items
+  const rawTitle = (item as unknown as Record<string, string>).variant_title || item.variant?.title || ""
+  const variantLabel = rawTitle && rawTitle !== "Default" ? rawTitle : null
 
   return (
     <div className="flex gap-4 py-5 border-b border-border">
