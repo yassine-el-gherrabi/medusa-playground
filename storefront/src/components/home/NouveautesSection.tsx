@@ -278,8 +278,8 @@ function ProductCard({ product }: { product: Product }) {
                 return allImages.length > 0 ? (
                   <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-5 -mx-6 px-6" style={{ scrollbarWidth: "none" }}>
                     {allImages.map((img, i) => (
-                      <div key={i} className="shrink-0 w-[120px] aspect-[3/4] relative bg-[#f5f5f5] overflow-hidden rounded">
-                        <Image src={img.url} alt={`${product.title} ${i + 1}`} fill className="object-cover" sizes="120px" />
+                      <div key={i} className="shrink-0 w-[160px] aspect-[3/4] relative bg-[#f5f5f5] overflow-hidden rounded">
+                        <Image src={img.url} alt={`${product.title} ${i + 1}`} fill className="object-cover" sizes="160px" />
                       </div>
                     ))}
                   </div>
