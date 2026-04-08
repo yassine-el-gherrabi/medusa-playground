@@ -234,11 +234,11 @@ function ProductCard({ product }: { product: Product }) {
           )}
         </Link>
 
-        {/* Mobile "+" quick-add — outside Link to prevent navigation */}
+        {/* Mobile "+" quick-add — no background, just the cross */}
         <button
           type="button"
-          onClick={() => { setSheetOpen(true); setSheetColor(colors[0]?.value || ""); setSheetSize("") }}
-          className="md:hidden absolute bottom-2 right-2 z-10 w-9 h-9 flex items-center justify-center bg-white/90 backdrop-blur-sm cursor-pointer"
+          onClick={() => { setSheetOpen(true); setSheetColor(activeColor || colors[0]?.value || ""); setSheetSize("") }}
+          className="md:hidden absolute bottom-2 right-2 z-10 p-2 cursor-pointer"
           aria-label="Ajout rapide"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -248,14 +248,16 @@ function ProductCard({ product }: { product: Product }) {
         </button>
       </div>
 
-      {/* Mobile bottom sheet */}
+      {/* Mobile bottom sheet — rendered with fixed positioning relative to viewport */}
       {sheetOpen && (
         <>
-          <div className="md:hidden fixed inset-0 z-50 bg-black/40" onClick={() => setSheetOpen(false)} />
-          <div className="md:hidden fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl max-h-[70vh] animate-fade-in">
+          <div className="md:hidden fixed inset-0 z-[100] bg-black/50" onClick={() => setSheetOpen(false)} />
+          <div className="md:hidden fixed inset-x-0 bottom-0 z-[101] bg-white rounded-t-2xl max-h-[85vh] overflow-y-auto animate-fade-in">
             <div className="p-6">
+              {/* Handle bar */}
               <div className="flex justify-center mb-4"><div className="w-10 h-1 bg-border rounded-full" /></div>
 
+              {/* Header: title + price + close */}
               <div className="flex justify-between items-start mb-5">
                 <div>
                   <h3 className="text-sm font-medium">{product.title}</h3>
@@ -266,21 +268,49 @@ function ProductCard({ product }: { product: Product }) {
                 </button>
               </div>
 
-              {/* Color selector */}
+              {/* Product images — horizontal scroll gallery */}
+              {(() => {
+                const currentColorImages = colorImages[sheetColor] || colorImages[colors[0]?.value || ""] || []
+                const allImages = currentColorImages.length > 0
+                  ? currentColorImages
+                  : (product.images || []).map((img) => ({ url: img.url }))
+                return allImages.length > 0 ? (
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-5 -mx-6 px-6" style={{ scrollbarWidth: "none" }}>
+                    {allImages.map((img, i) => (
+                      <div key={i} className="shrink-0 w-[120px] aspect-[3/4] relative bg-[#f5f5f5] overflow-hidden rounded">
+                        <Image src={img.url} alt={`${product.title} ${i + 1}`} fill className="object-cover" sizes="120px" />
+                      </div>
+                    ))}
+                  </div>
+                ) : null
+              })()}
+
+              {/* Color selector — rectangular bars like desktop */}
               {colors.length > 1 && (
                 <div className="mb-5">
-                  <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-3">Couleur</p>
-                  <div className="flex gap-3">
+                  <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-3">
+                    Couleur — {sheetColor}
+                  </p>
+                  <div className="flex gap-2">
                     {colors.map((c) => (
                       <button key={c.value} onClick={() => { setSheetColor(c.value); setSheetSize("") }}
-                        className={`w-8 h-8 rounded-full border-2 transition-all cursor-pointer ${sheetColor === c.value ? "border-foreground scale-110" : "border-border"}`}
-                        style={{ backgroundColor: colorToCSS(c.value) }} aria-label={c.label} />
+                        className="shrink-0 flex flex-col items-center gap-[3px] cursor-pointer" aria-label={c.label}>
+                        <span
+                          className={`block w-12 h-[12px] border transition-all ${
+                            sheetColor === c.value ? "border-black/50" : "border-black/15"
+                          }`}
+                          style={{ backgroundColor: colorToCSS(c.value) }}
+                        />
+                        <span className={`block h-px w-full transition-all duration-200 ${
+                          sheetColor === c.value ? "bg-black" : "bg-transparent"
+                        }`} />
+                      </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Size selector */}
+              {/* Size selector — large touch targets */}
               {sizes.length > 0 && (
                 <div className="mb-6">
                   <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-3">Taille</p>
@@ -316,7 +346,7 @@ function ProductCard({ product }: { product: Product }) {
                 className={`w-full h-[52px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all cursor-pointer ${
                   adding || (sizes.length > 0 && !sheetSize)
                     ? "bg-muted text-muted-foreground cursor-not-allowed"
-                    : "bg-foreground text-background hover:bg-foreground/90"
+                    : "bg-foreground text-background"
                 }`}
               >
                 {adding ? "Ajout..." : sizes.length > 0 && !sheetSize ? "Sélectionnez une taille" : "Ajouter au panier"}
