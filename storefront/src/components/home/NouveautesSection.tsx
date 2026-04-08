@@ -119,6 +119,9 @@ function ProductCard({ product }: { product: Product }) {
   const [sizesOpen, setSizesOpen] = useState(false)
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetColor, setSheetColor] = useState(colors[0]?.value || "")
+  const [sheetSize, setSheetSize] = useState("")
 
   const activeImage = getImageForColor(product, colorImages, activeColor)
   const hoverImage = getSecondImage(product, colorImages, activeColor)
@@ -209,26 +212,119 @@ function ProductCard({ product }: { product: Product }) {
       onMouseEnter={handleMouseEnterCard}
       onMouseLeave={handleMouseLeave}
     >
-      {/* ── Image ── */}
-      <Link
-        href={productUrl}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        className="block bg-[#f5f5f5] aspect-[3/4] relative overflow-hidden"
-      >
-        <Image src={displayImage} alt={product.title} fill
-          className="object-cover transition-opacity duration-500 ease-in-out"
-          style={{ opacity: hovered && hoverImage ? 0 : 1 }}
-          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-          loading="lazy" />
-        {hoverImage && hoverImage !== displayImage && (
-          <Image src={hoverImage} alt={`${product.title} - vue 2`} fill
+      {/* ── Image area ── */}
+      <div className="relative">
+        <Link
+          href={productUrl}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          className="block bg-[#f5f5f5] aspect-[3/4] relative overflow-hidden"
+        >
+          <Image src={displayImage} alt={product.title} fill
             className="object-cover transition-opacity duration-500 ease-in-out"
-            style={{ opacity: hovered ? 1 : 0 }}
+            style={{ opacity: hovered && hoverImage ? 0 : 1 }}
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
             loading="lazy" />
-        )}
-      </Link>
+          {hoverImage && hoverImage !== displayImage && (
+            <Image src={hoverImage} alt={`${product.title} - vue 2`} fill
+              className="object-cover transition-opacity duration-500 ease-in-out"
+              style={{ opacity: hovered ? 1 : 0 }}
+              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+              loading="lazy" />
+          )}
+        </Link>
+
+        {/* Mobile "+" quick-add — outside Link to prevent navigation */}
+        <button
+          type="button"
+          onClick={() => { setSheetOpen(true); setSheetColor(colors[0]?.value || ""); setSheetSize("") }}
+          className="md:hidden absolute bottom-2 right-2 z-10 w-9 h-9 flex items-center justify-center bg-white/90 backdrop-blur-sm cursor-pointer"
+          aria-label="Ajout rapide"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <line x1="6" y1="0.5" x2="6" y2="11.5" stroke="black" strokeWidth="0.75" />
+            <line x1="0.5" y1="6" x2="11.5" y2="6" stroke="black" strokeWidth="0.75" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Mobile bottom sheet */}
+      {sheetOpen && (
+        <>
+          <div className="md:hidden fixed inset-0 z-50 bg-black/40" onClick={() => setSheetOpen(false)} />
+          <div className="md:hidden fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl max-h-[70vh] animate-fade-in">
+            <div className="p-6">
+              <div className="flex justify-center mb-4"><div className="w-10 h-1 bg-border rounded-full" /></div>
+
+              <div className="flex justify-between items-start mb-5">
+                <div>
+                  <h3 className="text-sm font-medium">{product.title}</h3>
+                  {priceLabel && <p className="text-sm text-muted-foreground mt-1">{priceLabel}</p>}
+                </div>
+                <button onClick={() => setSheetOpen(false)} className="p-2 -mr-2 -mt-1 cursor-pointer" aria-label="Fermer">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.5" /></svg>
+                </button>
+              </div>
+
+              {/* Color selector */}
+              {colors.length > 1 && (
+                <div className="mb-5">
+                  <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-3">Couleur</p>
+                  <div className="flex gap-3">
+                    {colors.map((c) => (
+                      <button key={c.value} onClick={() => { setSheetColor(c.value); setSheetSize("") }}
+                        className={`w-8 h-8 rounded-full border-2 transition-all cursor-pointer ${sheetColor === c.value ? "border-foreground scale-110" : "border-border"}`}
+                        style={{ backgroundColor: colorToCSS(c.value) }} aria-label={c.label} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Size selector */}
+              {sizes.length > 0 && (
+                <div className="mb-6">
+                  <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-3">Taille</p>
+                  <div className="flex flex-wrap gap-2">
+                    {sizes.map((s) => {
+                      const inStock = isSizeInStock(variants, sheetColor || colors[0]?.value || "", s.value)
+                      return (
+                        <button key={s.value} onClick={() => inStock && setSheetSize(s.value)} disabled={!inStock}
+                          className={`h-11 min-w-[2.75rem] px-4 text-sm border transition-all cursor-pointer ${
+                            sheetSize === s.value ? "bg-foreground text-background border-foreground"
+                            : inStock ? "border-border hover:border-foreground"
+                            : "border-border/50 text-muted-foreground/40 line-through cursor-not-allowed"
+                          }`}>{s.label}</button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Add to bag */}
+              <button
+                onClick={async () => {
+                  const color = sheetColor || colors[0]?.value || ""
+                  const variantId = sizes.length > 0
+                    ? findVariantId(variants, color, sheetSize)
+                    : product.variants?.[0]?.id || null
+                  if (!variantId) return
+                  setAdding(true)
+                  try { await addItem(variantId, 1); setSheetOpen(false) }
+                  catch { /* */ } finally { setAdding(false) }
+                }}
+                disabled={adding || (sizes.length > 0 && !sheetSize)}
+                className={`w-full h-[52px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all cursor-pointer ${
+                  adding || (sizes.length > 0 && !sheetSize)
+                    ? "bg-muted text-muted-foreground cursor-not-allowed"
+                    : "bg-foreground text-background hover:bg-foreground/90"
+                }`}
+              >
+                {adding ? "Ajout..." : sizes.length > 0 && !sheetSize ? "Sélectionnez une taille" : "Ajouter au panier"}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Product info ── */}
       <div className="pt-4 md:pt-5 px-[10px] lg:px-[14px]">
