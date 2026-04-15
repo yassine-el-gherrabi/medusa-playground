@@ -12,6 +12,7 @@ import type { Product, LineItem } from "@/types"
 
 const MEDUSA_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
 const MIN_COUNT = 3 // minimum to show via fallback if no manual associations
+const MAX_COUNT = 3 // cap cross-sell to avoid overwhelming the cart drawer
 
 async function fetchRelatedIds(productId: string): Promise<string[]> {
   try {
@@ -79,7 +80,7 @@ async function getRecommendations(cartItems: LineItem[], regionId: string): Prom
     } catch { /* */ }
   }
 
-  return results
+  return results.slice(0, MAX_COUNT)
 }
 
 // ── Extract sizes from product ──

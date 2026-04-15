@@ -104,8 +104,8 @@ export default function CartDrawer() {
           </div>
         ) : (
           <>
-            {/* ── Items ── */}
-            <div className="flex-1 overflow-y-auto px-6">
+            {/* ── Scrollable area: shipping bar + items + subtotal + cross-sell ── */}
+            <div className="flex-1 overflow-y-auto px-6 pb-24 sm:pb-6">
               {/* Error message */}
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-600 text-[11px] rounded px-3 py-2 mt-3">
@@ -113,43 +113,32 @@ export default function CartDrawer() {
                 </div>
               )}
 
+              {/* Free shipping bar — top of scroll for max visibility */}
+              <div className="pt-4 pb-2">
+                <FreeShippingBar subtotal={subtotal} currencyCode={currencyCode} />
+              </div>
+
+              {/* Cart items */}
               {items.map((item) => (
                 <CartItem key={item.id} item={item} currencyCode={currencyCode} />
               ))}
-            </div>
-
-            {/* ── Footer ── */}
-            <div className="shrink-0 px-6 pb-24 sm:pb-6">
-              {/* Free shipping bar */}
-              <FreeShippingBar subtotal={subtotal} currencyCode={currencyCode} />
 
               {/* Subtotal */}
-              <div className="flex justify-between text-sm py-3">
+              <div className="flex justify-between text-sm py-4 border-t border-border">
                 <span className="text-muted-foreground">Sous-total</span>
                 <span className="font-medium">{formatPrice(subtotal, currencyCode)}</span>
               </div>
 
-              {/* Checkout CTA — inline on desktop */}
-              <div className="hidden sm:block">
-                <Link
-                  href="/checkout"
-                  onClick={closeDrawer}
-                  className="block w-full text-center py-3.5 bg-foreground text-background text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-foreground/90 transition-colors"
-                >
-                  Paiement
-                </Link>
-              </div>
-
-              {/* Cross-sell — "Complétez le look" */}
+              {/* Cross-sell — at the bottom of scroll area */}
               <CartCrossSell cartItems={items} />
             </div>
 
-            {/* Checkout CTA — sticky bottom on mobile */}
-            <div className="sm:hidden fixed bottom-0 left-0 right-0 z-[62] bg-white border-t border-border px-6 py-4">
+            {/* ── Fixed bottom CTA — always visible ── */}
+            <div className="shrink-0 border-t border-border px-6 py-4 bg-white">
               <Link
                 href="/checkout"
                 onClick={closeDrawer}
-                className="block w-full text-center py-3.5 bg-foreground text-background text-[11px] font-medium uppercase tracking-[0.15em]"
+                className="block w-full text-center py-3.5 bg-foreground text-background text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-foreground/90 transition-colors"
               >
                 Paiement — {formatPrice(subtotal, currencyCode)}
               </Link>
