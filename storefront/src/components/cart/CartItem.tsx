@@ -97,7 +97,12 @@ export default function CartItem({ item, currencyCode = "eur" }: { item: LineIte
           <div className="flex items-center gap-3">
             <button
               onClick={() => debouncedUpdate(localQty - 1)}
-              className="text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              disabled={localQty <= 1}
+              className={`text-[11px] transition-colors ${
+                localQty <= 1
+                  ? "text-black/20 cursor-not-allowed"
+                  : "text-muted-foreground hover:text-foreground cursor-pointer"
+              }`}
               aria-label="Diminuer la quantité"
             >
               −
