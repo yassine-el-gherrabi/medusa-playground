@@ -203,7 +203,7 @@ export default function Header({
           <div className="lg:hidden flex items-center ml-auto">
             <button
               onClick={openDrawer}
-              className="p-2 hover:opacity-70"
+              className="relative p-2 hover:opacity-70"
               aria-label="Panier"
             >
               <svg
@@ -221,7 +221,7 @@ export default function Header({
                 />
               </svg>
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-foreground text-background text-[9px] rounded-full flex items-center justify-center">
+                <span className="absolute top-0.5 -right-0.5 text-[10px] font-medium leading-none">
                   {cartCount}
                 </span>
               )}
