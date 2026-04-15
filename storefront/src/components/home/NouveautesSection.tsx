@@ -254,10 +254,7 @@ function ProductCard({ product }: { product: Product }) {
         <>
           <div className="md:hidden fixed inset-0 z-[100] bg-black/50" onClick={() => setSheetOpen(false)} />
           <div className="md:hidden fixed inset-x-0 bottom-0 z-[101] bg-white rounded-t-2xl max-h-[85vh] overflow-y-auto animate-fade-in">
-            <div className="p-6">
-              {/* Handle bar */}
-              <div className="flex justify-center mb-4"><div className="w-10 h-1 bg-border rounded-full" /></div>
-
+            <div className="px-6 pt-5 pb-8">
               {/* Header: title + price + close */}
               <div className="flex justify-between items-start mb-5">
                 <div>
