@@ -105,17 +105,23 @@ export default function ShoesSection({ images }: ShoesSectionProps) {
         </Link>
       </div>
 
-      {/* Slide indicators — bottom-right */}
+      {/* Slide indicators — bottom-right, with progress fill */}
       <div className="absolute bottom-6 right-6 md:right-10 flex gap-2 z-10">
         {images.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`w-8 h-0.5 transition-colors duration-300 ${
-              index === current ? "bg-white" : "bg-white/30"
-            }`}
+            className="relative w-8 h-0.5 bg-white/30 overflow-hidden"
             aria-label={`Slide ${index + 1}`}
-          />
+          >
+            <span
+              key={index === current ? `active-${current}` : `idle-${index}`}
+              className={`absolute inset-y-0 left-0 bg-white ${
+                index === current ? "animate-progress-bar" : "w-0"
+              }`}
+              style={index === current ? { animationDuration: "6000ms" } : undefined}
+            />
+          </button>
         ))}
       </div>
     </section>

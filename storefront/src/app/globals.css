@@ -61,6 +61,11 @@ body {
   to { transform: scaleX(1); }
 }
 
+@keyframes progressBar {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
 /* ── Utility Classes ── */
 .shiny-text {
   background: linear-gradient(120deg, #d4d4d4 0%, #d4d4d4 40%, #ffffff 50%, #d4d4d4 60%, #d4d4d4 100%);
@@ -106,6 +111,10 @@ body {
 
 .animate-slide-progress {
   animation: slideProgress 6s linear forwards;
+}
+
+.animate-progress-bar {
+  animation: progressBar 6s linear forwards;
 }
 
 .scrollbar-hide {
