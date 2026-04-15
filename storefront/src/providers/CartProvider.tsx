@@ -51,20 +51,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
     },
     enabled: !!cartId,
-    staleTime: 0,
+    staleTime: 1000 * 30, // 30s — optimistic updates keep UI fresh between refetches
   })
 
-  // Create cart if needed, verify existing cart is still valid
+  // Create cart if needed — skip validation retrieve, let addItem fail and recover
   const ensureCart = useCallback(async (): Promise<string> => {
-    if (cartId) {
-      try {
-        await sdk.store.cart.retrieve(cartId)
-        return cartId
-      } catch {
-        localStorage.removeItem("cart_id")
-        setCartId(null)
-      }
-    }
+    if (cartId) return cartId
 
     const { cart } = await sdk.store.cart.create({ region_id: regionId })
     localStorage.setItem("cart_id", cart.id)
@@ -95,6 +87,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setDrawerOpen(true)
     },
     onError: (err) => {
+      // If cart was expired/invalid, clear it so next attempt creates a fresh one
+      const msg = err instanceof Error ? err.message : ""
+      if (msg.includes("not found") || msg.includes("404") || msg.includes("invalid")) {
+        localStorage.removeItem("cart_id")
+        setCartId(null)
+      }
       setError(
         err instanceof Error
           ? err.message
@@ -114,14 +112,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (!cartId) return
       await sdk.store.cart.updateLineItem(cartId, lineItemId, { quantity })
     },
-    onSuccess: invalidateCart,
-    onError: (err) => {
+    onMutate: async ({ lineItemId, quantity }) => {
+      await queryClient.cancelQueries({ queryKey: ["cart"] })
+      const previous = queryClient.getQueryData<Cart>(["cart", cartId])
+      if (previous) {
+        queryClient.setQueryData<Cart>(["cart", cartId], {
+          ...previous,
+          items: previous.items?.map((item) =>
+            item.id === lineItemId ? { ...item, quantity } : item
+          ),
+          subtotal: previous.items?.reduce((sum, item) =>
+            sum + (item.id === lineItemId ? item.unit_price * quantity : item.unit_price * item.quantity), 0
+          ) ?? previous.subtotal,
+        })
+      }
+      return { previous }
+    },
+    onError: (err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["cart", cartId], context.previous)
+      }
       setError(
         err instanceof Error
           ? err.message
           : "Impossible de modifier la quantité."
       )
     },
+    onSettled: invalidateCart,
   })
 
   const removeMutation = useMutation({
@@ -129,7 +146,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (!cartId) return
       await sdk.store.cart.deleteLineItem(cartId, lineItemId)
     },
-    onSuccess: invalidateCart,
+    onMutate: async (lineItemId) => {
+      await queryClient.cancelQueries({ queryKey: ["cart"] })
+      const previous = queryClient.getQueryData<Cart>(["cart", cartId])
+      if (previous) {
+        const filtered = previous.items?.filter((item) => item.id !== lineItemId)
+        queryClient.setQueryData<Cart>(["cart", cartId], {
+          ...previous,
+          items: filtered,
+          subtotal: filtered?.reduce((sum, item) => sum + item.unit_price * item.quantity, 0) ?? 0,
+        })
+      }
+      return { previous }
+    },
+    onError: (_err, _lineItemId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["cart", cartId], context.previous)
+      }
+    },
+    onSettled: invalidateCart,
   })
 
   return (

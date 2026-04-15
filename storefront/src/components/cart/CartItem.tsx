@@ -1,21 +1,58 @@
 "use client"
 
+import { useRef, useState, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useCart } from "@/providers/CartProvider"
 import { formatPrice } from "@/lib/utils"
 import type { LineItem } from "@/types"
 
+const DEBOUNCE_MS = 400
+
 export default function CartItem({ item, currencyCode = "eur" }: { item: LineItem; currencyCode?: string }) {
   const { updateItem, removeItem } = useCart()
   const thumbnail = item.thumbnail || item.variant?.product?.thumbnail
+
+  // Optimistic local quantity for instant feedback during debounce
+  const [localQty, setLocalQty] = useState(item.quantity)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [removing, setRemoving] = useState(false)
+
+  // Sync localQty when server value changes (after mutation settles)
+  if (localQty !== item.quantity && !debounceRef.current) {
+    setLocalQty(item.quantity)
+  }
+
+  const debouncedUpdate = useCallback(
+    (newQty: number) => {
+      setLocalQty(newQty)
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(() => {
+        debounceRef.current = null
+        if (newQty <= 0) {
+          setRemoving(true)
+          removeItem(item.id)
+        } else {
+          updateItem(item.id, newQty)
+        }
+      }, DEBOUNCE_MS)
+    },
+    [item.id, updateItem, removeItem]
+  )
+
+  const handleRemove = useCallback(() => {
+    setRemoving(true)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = null
+    removeItem(item.id)
+  }, [item.id, removeItem])
 
   // Extract variant info (e.g. "Noir / M") — Medusa uses variant_title on line items
   const rawTitle = (item as unknown as Record<string, string>).variant_title || item.variant?.title || ""
   const variantLabel = rawTitle && rawTitle !== "Default" ? rawTitle : null
 
   return (
-    <div className="flex gap-4 py-5 border-b border-border">
+    <div className={`flex gap-4 py-5 border-b border-border transition-opacity duration-200 ${removing ? "opacity-30 pointer-events-none" : ""}`}>
       {/* Thumbnail — 3:4 ratio like product cards */}
       <div className="relative w-[72px] h-[96px] flex-shrink-0 overflow-hidden bg-[#f5f5f5]">
         {thumbnail ? (
@@ -39,7 +76,7 @@ export default function CartItem({ item, currencyCode = "eur" }: { item: LineIte
             </Link>
             {/* Remove — small X icon */}
             <button
-              onClick={() => removeItem(item.id)}
+              onClick={handleRemove}
               className="shrink-0 p-0.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               aria-label="Supprimer"
             >
@@ -59,18 +96,15 @@ export default function CartItem({ item, currencyCode = "eur" }: { item: LineIte
           {/* Quantity — minimal style */}
           <div className="flex items-center gap-3">
             <button
-              onClick={() => {
-                if (item.quantity <= 1) removeItem(item.id)
-                else updateItem(item.id, item.quantity - 1)
-              }}
+              onClick={() => debouncedUpdate(localQty - 1)}
               className="text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               aria-label="Diminuer la quantité"
             >
               −
             </button>
-            <span className="text-[11px] w-4 text-center">{item.quantity}</span>
+            <span className="text-[11px] w-4 text-center tabular-nums">{localQty}</span>
             <button
-              onClick={() => updateItem(item.id, item.quantity + 1)}
+              onClick={() => debouncedUpdate(localQty + 1)}
               className="text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               aria-label="Augmenter la quantité"
             >
@@ -78,9 +112,9 @@ export default function CartItem({ item, currencyCode = "eur" }: { item: LineIte
             </button>
           </div>
 
-          {/* Price */}
+          {/* Price — uses local qty for instant feedback */}
           <p className="text-[12px] tracking-[0.03em]">
-            {formatPrice(item.unit_price * item.quantity, currencyCode)}
+            {formatPrice(item.unit_price * localQty, currencyCode)}
           </p>
         </div>
       </div>

@@ -13,7 +13,7 @@ export default function FreeShippingBar({
   const achieved = remaining <= 0
 
   return (
-    <div className="py-4 border-t border-border">
+    <div className="py-4">
       {/* Progress bar — thin, elegant */}
       <div className="h-[2px] bg-border rounded-full overflow-hidden">
         <div

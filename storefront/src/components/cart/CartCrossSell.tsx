@@ -213,8 +213,15 @@ export default function CartCrossSell({ cartItems }: { cartItems: LineItem[] }) 
   const [loading, setLoading] = useState(true)
   const [addingId, setAddingId] = useState<string | null>(null)
 
+  // Stabilize dependency — only re-fetch when the actual product IDs in cart change
+  const cartProductIds = cartItems
+    .map((item) => (item as unknown as Record<string, string>).product_id)
+    .filter(Boolean)
+    .sort()
+    .join(",")
+
   useEffect(() => {
-    if (cartItems.length === 0) { setProducts([]); setLoading(false); return }
+    if (!cartProductIds) { setProducts([]); setLoading(false); return }
     let cancelled = false
     const run = async () => {
       setLoading(true)
@@ -223,7 +230,8 @@ export default function CartCrossSell({ cartItems }: { cartItems: LineItem[] }) 
     }
     run()
     return () => { cancelled = true }
-  }, [cartItems, regionId])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartProductIds, regionId])
 
   const handleAdd = async (productId: string, variantId: string) => {
     setAddingId(productId)

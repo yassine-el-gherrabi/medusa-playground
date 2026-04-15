@@ -105,7 +105,7 @@ export default function CartDrawer() {
         ) : (
           <>
             {/* ── Scrollable area: shipping bar + items + subtotal + cross-sell ── */}
-            <div className="flex-1 overflow-y-auto px-6 pb-24 sm:pb-6">
+            <div className="flex-1 overflow-y-auto px-6 pb-6">
               {/* Error message */}
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-600 text-[11px] rounded px-3 py-2 mt-3">
