@@ -221,7 +221,7 @@ export default function Header({
                 />
               </svg>
               {cartCount > 0 && (
-                <span className="absolute top-0.5 -right-0.5 text-[10px] font-medium leading-none">
+                <span className="absolute top-1 -right-1 text-[10px] font-medium leading-none">
                   {cartCount}
                 </span>
               )}
