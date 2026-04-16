@@ -5,7 +5,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useCart } from "@/providers/CartProvider"
 import CartItem from "./CartItem"
-import FreeShippingBar from "./FreeShippingBar"
 import CartCrossSell from "./CartCrossSell"
 import { formatPrice } from "@/lib/utils"
 
@@ -112,11 +111,6 @@ export default function CartDrawer() {
                   {error}
                 </div>
               )}
-
-              {/* Free shipping bar — top of scroll for max visibility */}
-              <div className="pt-4 pb-2">
-                <FreeShippingBar subtotal={subtotal} currencyCode={currencyCode} />
-              </div>
 
               {/* Cart items */}
               {items.map((item) => (
