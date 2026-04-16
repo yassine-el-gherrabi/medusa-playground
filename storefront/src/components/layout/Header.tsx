@@ -110,7 +110,10 @@ export default function Header({
       : null
 
   const transparent = isOverlay && !scrolled && !megaMenuOpen
-  const textColor = transparent ? "text-white" : "text-foreground"
+  const isProductPage = /^\/products\/.+/.test(pathname)
+  const textColor = transparent
+    ? isProductPage ? "text-foreground" : "text-white"
+    : "text-foreground"
 
   return (
     <>
@@ -170,7 +173,7 @@ export default function Header({
           >
             <Logo
               className="h-24 w-auto"
-              variant={transparent ? "white" : "black"}
+              variant={transparent && !isProductPage ? "white" : "black"}
             />
           </Link>
 

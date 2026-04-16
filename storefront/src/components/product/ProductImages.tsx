@@ -108,9 +108,9 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
             ))}
           </div>
 
-          {/* Counter */}
+          {/* Counter — bottom left, no background */}
           {total > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[11px] text-white/80 tracking-[0.15em] bg-black/30 backdrop-blur-sm px-3 py-1">
+            <div className="absolute bottom-4 left-4 text-[11px] text-black tracking-[0.15em]">
               {current + 1} / {total}
             </div>
           )}

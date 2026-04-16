@@ -32,6 +32,7 @@ const OVERLAY_PATTERNS = [
   /^\/collections\/.+/,
   /^\/boutique$/,
   /^\/categories\/.+/,
+  /^\/products\/.+/,
 ]
 
 export function isOverlayRoute(pathname: string): boolean {
@@ -40,6 +41,7 @@ export function isOverlayRoute(pathname: string): boolean {
 
 export function getHeroHeightFraction(pathname: string): number {
   if (pathname === "/") return 1.0
+  if (/^\/products\/.+/.test(pathname)) return 0.6
   if (isOverlayRoute(pathname)) return 0.7
   return 0
 }
