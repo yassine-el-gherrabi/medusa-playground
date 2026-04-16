@@ -1,7 +1,8 @@
 "use client"
 
-import type { Product } from "@/types"
+import Image from "next/image"
 import Link from "next/link"
+import type { Product } from "@/types"
 
 type ProductOptionsProps = {
   product: Product
@@ -25,6 +26,20 @@ const COLOR_MAP: Record<string, string> = {
   "Rose": "#d4a0a0", "Pink": "#d4a0a0",
   "Jaune": "#c4a82b", "Yellow": "#c4a82b",
   "Kaki": "#5b6b3c", "Khaki": "#5b6b3c",
+}
+
+type ColorImagesMap = Record<string, { url: string }[]>
+
+function getColorImages(product: Product): ColorImagesMap {
+  return ((product.metadata as Record<string, unknown> | null)?.color_images as ColorImagesMap) || {}
+}
+
+function getColorThumbnail(product: Product, colorImages: ColorImagesMap, colorValue: string): string | null {
+  // First try metadata.color_images
+  const ci = colorImages[colorValue]
+  if (ci?.[0]?.url) return ci[0].url
+  // Fallback: product thumbnail
+  return null
 }
 
 function isColorOption(title: string): boolean {
@@ -89,11 +104,13 @@ export default function ProductOptions({
               )}
             </div>
 
-            {/* Color swatches */}
+            {/* Color swatches — product thumbnails when available, color blocks as fallback */}
             {isColor ? (
               <div className="flex flex-wrap gap-2">
                 {option.values?.map((v) => {
                   const isSelected = selectedValue === v.value
+                  const colorImages = getColorImages(product)
+                  const thumbnail = getColorThumbnail(product, colorImages, v.value)
                   const color = COLOR_MAP[v.value] || "#cccccc"
                   const inStock = isOptionInStock(option.id, v.value)
                   return (
@@ -102,14 +119,24 @@ export default function ProductOptions({
                       onClick={() => inStock && onOptionChange(option.id, v.value)}
                       disabled={!inStock}
                       title={v.value}
-                      className={`relative w-8 h-8 transition-all cursor-pointer ${
-                        !inStock ? "opacity-30 cursor-not-allowed" : ""
-                      }`}
+                      className={`relative transition-all cursor-pointer ${
+                        thumbnail ? "w-12 h-16" : "w-8 h-8"
+                      } ${!inStock ? "opacity-30 cursor-not-allowed" : ""}`}
                     >
-                      <span
-                        className="block w-full h-full"
-                        style={{ backgroundColor: color }}
-                      />
+                      {thumbnail ? (
+                        <Image
+                          src={thumbnail}
+                          alt={v.value}
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                        />
+                      ) : (
+                        <span
+                          className="block w-full h-full"
+                          style={{ backgroundColor: color }}
+                        />
+                      )}
                       {/* Underline indicator */}
                       <span
                         className={`absolute -bottom-1.5 left-0 right-0 h-px transition-colors ${
