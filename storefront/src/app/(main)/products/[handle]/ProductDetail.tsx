@@ -194,6 +194,41 @@ export default function ProductDetail({ product }: { product: Product }) {
   const inStock = selectedVariant ? (selectedVariant.inventory_quantity ?? 1) > 0 : true
   const lowStock = selectedVariant && (selectedVariant.inventory_quantity ?? 0) > 0 && (selectedVariant.inventory_quantity ?? 0) <= 3
 
+  // Determine what's missing for the CTA label
+  const missingOptions = useMemo(() => {
+    if (!product.options) return []
+    return product.options
+      .filter((opt) => !selectedOptions[opt.id])
+      .map((opt) => {
+        const t = opt.title?.toLowerCase() || ""
+        if (["color", "couleur"].includes(t)) return "une couleur"
+        if (["size", "taille", "pointure"].includes(t)) return "une taille"
+        return opt.title
+      })
+  }, [product.options, selectedOptions])
+
+  const ctaLabel = addingToCart
+    ? "Ajout..."
+    : addedToCart
+      ? "Ajouté au panier"
+      : !inStock
+        ? "Épuisé"
+        : missingOptions.length > 0
+          ? `Sélectionnez ${missingOptions.join(" et ")}`
+          : "Ajouter au panier"
+
+  const ctaLabelWithPrice = addingToCart
+    ? "Ajout..."
+    : addedToCart
+      ? "Ajouté au panier"
+      : !inStock
+        ? "Épuisé"
+        : missingOptions.length > 0
+          ? `Sélectionnez ${missingOptions.join(" et ")}`
+          : price
+            ? `Ajouter au panier — ${formatPrice(price.calculated_amount!, price.currency_code!)}`
+            : "Ajouter au panier"
+
   return (
     <div className="animate-fade-in">
       {/* ── Layout ── */}
@@ -265,15 +300,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                       : "bg-foreground text-background hover:bg-foreground/90"
                 }`}
               >
-                {addingToCart
-                  ? "Ajout..."
-                  : addedToCart
-                    ? "Ajouté au panier"
-                    : !inStock
-                      ? "Épuisé"
-                      : !canAddToCart
-                        ? "Sélectionnez vos options"
-                        : "Ajouter au panier"}
+                {ctaLabel}
               </button>
             </div>
 
@@ -367,11 +394,11 @@ export default function ProductDetail({ product }: { product: Product }) {
       {/* Sticky mobile CTA — portal to escape transform containing block */}
       {typeof document !== "undefined" &&
         createPortal(
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border px-6 py-4">
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
             <button
               onClick={handleAddToCart}
               disabled={!canAddToCart || addingToCart || !inStock}
-              className={`w-full h-[48px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all ${
+              className={`w-full h-[52px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all ${
                 !canAddToCart || !inStock
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
                   : addedToCart
@@ -379,17 +406,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     : "bg-foreground text-background cursor-pointer"
               }`}
             >
-              {addingToCart
-                ? "Ajout..."
-                : addedToCart
-                  ? "Ajouté au panier"
-                  : !inStock
-                    ? "Épuisé"
-                    : !canAddToCart
-                      ? "Sélectionnez vos options"
-                      : price
-                        ? `Ajouter au panier — ${formatPrice(price.calculated_amount!, price.currency_code!)}`
-                        : "Ajouter au panier"}
+              {ctaLabelWithPrice}
             </button>
           </div>,
           document.body
