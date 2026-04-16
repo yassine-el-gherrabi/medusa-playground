@@ -9,77 +9,46 @@ type ProductImage = { id: string; url: string }
 export default function ProductImages({ images }: { images: ProductImage[] }) {
   const [current, setCurrent] = useState(0)
   const [galleryOpen, setGalleryOpen] = useState(false)
-  const trackRef = useRef<HTMLDivElement>(null)
-  const touchStartX = useRef(0)
-  const touchDelta = useRef(0)
-  const isDragging = useRef(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const isScrolling = useRef(false)
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const total = images.length
 
-  // For infinite loop: we prepend last image and append first image
-  // Layout: [clone-last] [0] [1] ... [N-1] [clone-first]
-  // Visual index 0 = track position 1
-  const trackIndex = current + 1 // offset by 1 because of prepended clone
+  // Scroll-snap based carousel — native, smooth, handles fast swiping perfectly
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current) return
+    // Debounce to get final position after momentum scroll ends
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current)
+    scrollTimeout.current = setTimeout(() => {
+      if (!scrollRef.current) return
+      const scrollLeft = scrollRef.current.scrollLeft
+      const width = scrollRef.current.offsetWidth
+      const index = Math.round(scrollLeft / width)
+      setCurrent(((index % total) + total) % total)
+      isScrolling.current = false
+    }, 50)
+  }, [total])
 
-  const slideTo = useCallback((index: number, animate = true) => {
-    if (trackRef.current) {
-      trackRef.current.style.transition = animate ? "transform 0.3s ease-out" : "none"
-      trackRef.current.style.transform = `translateX(-${index * 100}%)`
-    }
+  // Programmatic scroll to index
+  const scrollToIndex = useCallback((index: number) => {
+    if (!scrollRef.current) return
+    const width = scrollRef.current.offsetWidth
+    scrollRef.current.scrollTo({ left: index * width, behavior: "smooth" })
   }, [])
 
-  useEffect(() => {
-    slideTo(trackIndex)
-  }, [trackIndex, slideTo])
+  // When reaching the end or start, jump to enable infinite feel
+  const handleScrollEnd = useCallback(() => {
+    if (!scrollRef.current || total <= 1) return
+    const scrollLeft = scrollRef.current.scrollLeft
+    const width = scrollRef.current.offsetWidth
+    const maxScroll = (total - 1) * width
 
-  // After transition to a clone, instantly jump to the real slide
-  const handleTransitionEnd = useCallback(() => {
-    if (current >= total) {
-      setCurrent(0)
-      slideTo(1, false) // jump to real first
-    } else if (current < 0) {
-      setCurrent(total - 1)
-      slideTo(total, false) // jump to real last
+    // At the very end — user swiped past last image
+    if (scrollLeft >= maxScroll + width * 0.3) {
+      scrollRef.current.scrollTo({ left: 0, behavior: "smooth" })
     }
-  }, [current, total, slideTo])
-
-  const goTo = useCallback(
-    (index: number) => setCurrent(index),
-    []
-  )
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    isDragging.current = true
-    touchStartX.current = e.touches[0].clientX
-    touchDelta.current = 0
-    if (trackRef.current) trackRef.current.style.transition = "none"
-  }
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging.current) return
-    touchDelta.current = e.touches[0].clientX - touchStartX.current
-    if (trackRef.current) {
-      const offset = -trackIndex * 100
-      const pxToPercent = (touchDelta.current / window.innerWidth) * 100
-      trackRef.current.style.transform = `translateX(${offset + pxToPercent}%)`
-    }
-  }
-
-  const onTouchEnd = () => {
-    isDragging.current = false
-    const threshold = window.innerWidth * 0.15
-    if (touchDelta.current < -threshold) goTo(current + 1)
-    else if (touchDelta.current > threshold) goTo(current - 1)
-    else slideTo(trackIndex) // snap back
-  }
-
-  // Build the looped slide array: [clone-last, ...images, clone-first]
-  const loopedImages = total > 1
-    ? [images[total - 1], ...images, images[0]]
-    : images
-
-  // Display index (always 0..total-1 for the counter)
-  const displayIndex = ((current % total) + total) % total
+  }, [total])
 
   // Lock body scroll when gallery is open
   useEffect(() => {
@@ -107,46 +76,39 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
 
   return (
     <>
-      {/* ── MOBILE: Horizontal carousel ── */}
-      <div className="lg:hidden">
+      {/* ── MOBILE: Native scroll-snap carousel ── */}
+      <div className="lg:hidden relative">
         <div
-          className="relative overflow-hidden"
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
+          ref={scrollRef}
+          className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+          onScroll={handleScroll}
+          onTouchEnd={handleScrollEnd}
+          style={{ WebkitOverflowScrolling: "touch" }}
         >
-          <div
-            ref={trackRef}
-            className="flex will-change-transform"
-            onTransitionEnd={handleTransitionEnd}
-          >
-            {loopedImages.map((image, i) => (
-              <button
-                key={`${image.id}-${i}`}
-                className="w-full flex-shrink-0 aspect-[3/4] relative bg-[#f5f5f5] cursor-zoom-in"
-                onClick={() => {
-                  if (Math.abs(touchDelta.current) < 10) setGalleryOpen(true)
-                }}
-              >
-                <Image
-                  src={image.url}
-                  alt={`Image ${i + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="100vw"
-                  priority={i <= 1}
-                />
-              </button>
-            ))}
-          </div>
-
-          {/* Counter — bottom left, no background */}
-          {total > 1 && (
-            <div className="absolute bottom-4 left-4 text-[11px] text-black tracking-[0.15em]">
-              {displayIndex + 1} / {total}
-            </div>
-          )}
+          {images.map((image, i) => (
+            <button
+              key={image.id}
+              className="w-full flex-shrink-0 snap-center aspect-[3/4] relative bg-[#f5f5f5] cursor-zoom-in"
+              onClick={() => setGalleryOpen(true)}
+            >
+              <Image
+                src={image.url}
+                alt={`Image ${i + 1}`}
+                fill
+                className="object-cover"
+                sizes="100vw"
+                priority={i === 0}
+              />
+            </button>
+          ))}
         </div>
+
+        {/* Counter — bottom left, no background */}
+        {total > 1 && (
+          <div className="absolute bottom-4 left-4 text-[11px] text-black tracking-[0.15em] pointer-events-none">
+            {current + 1} / {total}
+          </div>
+        )}
       </div>
 
       {/* ── DESKTOP: 2-column grid ── */}
@@ -177,7 +139,6 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
       {galleryOpen &&
         createPortal(
           <div className="fixed inset-0 z-[100] bg-white">
-            {/* Close button overlay */}
             <button
               onClick={() => setGalleryOpen(false)}
               className="fixed top-4 right-4 z-10 p-2 cursor-pointer"
@@ -187,7 +148,6 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
               </svg>
             </button>
 
-            {/* Vertical scroll of all images */}
             <div className="overflow-y-auto h-dvh">
               {images.map((image, i) => (
                 <div key={image.id} className="w-full aspect-[3/4] relative bg-[#f5f5f5]">
