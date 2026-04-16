@@ -145,23 +145,18 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
       {galleryOpen &&
         createPortal(
           <div className="fixed inset-0 z-[100] bg-white">
-            {/* Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-12 bg-white/90 backdrop-blur-sm">
-              <span className="text-[11px] tracking-[0.15em] text-muted-foreground">
-                {images.length} images
-              </span>
-              <button
-                onClick={() => setGalleryOpen(false)}
-                className="p-2 -mr-2 cursor-pointer"
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1" />
-                </svg>
-              </button>
-            </div>
+            {/* Close button overlay */}
+            <button
+              onClick={() => setGalleryOpen(false)}
+              className="fixed top-4 right-4 z-10 p-2 cursor-pointer"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1" />
+              </svg>
+            </button>
 
             {/* Vertical scroll of all images */}
-            <div className="overflow-y-auto h-[calc(100dvh-48px)]">
+            <div className="overflow-y-auto h-dvh">
               {images.map((image, i) => (
                 <div key={image.id} className="w-full aspect-[3/4] relative bg-[#f5f5f5]">
                   <Image
