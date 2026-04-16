@@ -18,33 +18,35 @@ export default function AddToCartButton({
     try {
       await addItem(variantId, 1)
       setAdded(true)
-      setTimeout(() => setAdded(false), 2000) // show success for 2s
-    } catch (err) {
-      console.error("Failed to add to cart:", err)
+      setTimeout(() => setAdded(false), 2000)
+    } catch {
+      // error handled by CartProvider
     } finally {
       setLoading(false)
     }
   }
 
+  const disabled = !variantId || loading
+
   return (
     <button
       onClick={handleClick}
-      disabled={!variantId || loading}
-      className={`w-full py-3 px-6 text-sm font-medium uppercase tracking-wider transition-colors min-h-[44px] ${
-        !variantId
+      disabled={disabled}
+      className={`w-full h-[52px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all cursor-pointer ${
+        disabled
           ? "bg-muted text-muted-foreground cursor-not-allowed"
           : added
-          ? "bg-green-600 text-white"
-          : "bg-black text-white hover:bg-black/90"
+            ? "bg-foreground text-background"
+            : "bg-foreground text-background hover:bg-foreground/90"
       }`}
     >
       {loading
-        ? "Ajout en cours..."
+        ? "Ajout..."
         : added
-        ? "Ajoute au panier !"
-        : !variantId
-        ? "Selectionnez les options"
-        : "Ajouter au panier"}
+          ? "Ajouté au panier"
+          : !variantId
+            ? "Sélectionnez vos options"
+            : "Ajouter au panier"}
     </button>
   )
 }
