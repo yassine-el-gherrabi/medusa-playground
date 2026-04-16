@@ -1,70 +1,24 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import ProductImages from "@/components/product/ProductImages"
 import ProductOptions from "@/components/product/ProductOptions"
-import AddToCartButton from "@/components/product/AddToCartButton"
 import { formatPrice, getProductPrice } from "@/lib/utils"
 import { useCart } from "@/providers/CartProvider"
 import { useRegion } from "@/providers/RegionProvider"
 import { DEFAULT_REGION } from "@/lib/constants"
 import { sdk } from "@/lib/sdk"
 import type { Product } from "@/types"
-import { useEffect } from "react"
 
-// ── Accordion item ──
+// ── Product card for cross-sell / you may also like ──
 
-function AccordionItem({
-  title,
-  children,
-  defaultOpen = false,
-}: {
-  title: string
-  children: React.ReactNode
-  defaultOpen?: boolean
-}) {
-  const [open, setOpen] = useState(defaultOpen)
-  return (
-    <div className="border-t border-border">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center justify-between w-full py-4 text-left cursor-pointer"
-      >
-        <span className="text-[11px] uppercase tracking-[0.15em] font-medium">
-          {title}
-        </span>
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 12 12"
-          fill="none"
-          className={`transition-transform duration-300 ${open ? "rotate-180" : ""}`}
-        >
-          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1" />
-        </svg>
-      </button>
-      <div
-        className={`overflow-hidden transition-all duration-300 ${
-          open ? "max-h-[500px] pb-5" : "max-h-0"
-        }`}
-      >
-        <div className="text-[13px] text-muted-foreground leading-relaxed">
-          {children}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ── Cross-sell card ──
-
-function CrossSellCard({ product }: { product: Product }) {
+function ProductCard({ product }: { product: Product }) {
   const priceData = getProductPrice(product)
   const thumbnail = product.thumbnail || product.images?.[0]?.url
   return (
-    <Link href={`/products/${product.handle}`} className="shrink-0 w-[160px] group">
+    <Link href={`/products/${product.handle}`} className="group block">
       <div className="aspect-[3/4] relative bg-[#f5f5f5] overflow-hidden">
         {thumbnail && (
           <Image
@@ -72,12 +26,12 @@ function CrossSellCard({ product }: { product: Product }) {
             alt={product.title}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
-            sizes="160px"
+            sizes="(max-width: 768px) 45vw, 25vw"
             loading="lazy"
           />
         )}
       </div>
-      <div className="mt-2">
+      <div className="mt-2.5">
         <p className="text-[12px] leading-tight line-clamp-1 group-hover:text-black/60 transition-colors">
           {product.title}
         </p>
@@ -96,8 +50,10 @@ function CrossSellCard({ product }: { product: Product }) {
 export default function ProductDetail({ product }: { product: Product }) {
   const { addItem } = useCart()
   const { regionId } = useRegion()
+  const [addingToCart, setAddingToCart] = useState(false)
+  const [addedToCart, setAddedToCart] = useState(false)
 
-  // ── Option selection state ──
+  // ── Option selection ──
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
     if (product.variants?.length === 1 && product.options) {
       const defaults: Record<string, string> = {}
@@ -116,7 +72,6 @@ export default function ProductDetail({ product }: { product: Product }) {
     return {}
   })
 
-  // ── Find matching variant ──
   const selectedVariant = useMemo(() => {
     if (!product.variants || !product.options) return null
     return (
@@ -139,11 +94,22 @@ export default function ProductDetail({ product }: { product: Product }) {
     setSelectedOptions((prev) => ({ ...prev, [optionId]: value }))
   }
 
-  // ── Cross-sell: related products ──
+  const handleAddToCart = async () => {
+    if (!selectedVariant?.id) return
+    setAddingToCart(true)
+    try {
+      await addItem(selectedVariant.id, 1)
+      setAddedToCart(true)
+      setTimeout(() => setAddedToCart(false), 2000)
+    } catch { /* handled by provider */ }
+    finally { setAddingToCart(false) }
+  }
+
+  // ── Cross-sell: related products ("Complétez le look") ──
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   useEffect(() => {
     let cancelled = false
-    const fetchRelated = async () => {
+    const run = async () => {
       try {
         const res = await sdk.client.fetch<{ related_product_ids: string[] }>(
           `/store/products/${product.id}/related`,
@@ -159,11 +125,33 @@ export default function ProductDetail({ product }: { product: Product }) {
           })
           if (!cancelled) setRelatedProducts((products as Product[]) || [])
         }
-      } catch {
-        // No related products module or no associations — that's fine
-      }
+      } catch { /* no module or no associations */ }
     }
-    fetchRelated()
+    run()
+    return () => { cancelled = true }
+  }, [product.id, regionId])
+
+  // ── "You May Also Like" — products from same collection or category ──
+  const [alsoLikeProducts, setAlsoLikeProducts] = useState<Product[]>([])
+  useEffect(() => {
+    let cancelled = false
+    const run = async () => {
+      try {
+        const { products } = await sdk.store.product.list({
+          region_id: regionId || DEFAULT_REGION,
+          fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata",
+          limit: 8,
+          order: "-created_at",
+        })
+        if (!cancelled) {
+          // Exclude current product
+          setAlsoLikeProducts(
+            ((products as Product[]) || []).filter((p) => p.id !== product.id).slice(0, 6)
+          )
+        }
+      } catch { /* */ }
+    }
+    run()
     return () => { cancelled = true }
   }, [product.id, regionId])
 
@@ -171,19 +159,26 @@ export default function ProductDetail({ product }: { product: Product }) {
   const categories = (product as unknown as Record<string, unknown>).categories as { name: string }[] | undefined
   const categoryLabel = categories?.[0]?.name
 
+  // ── Model info from metadata ──
+  const modelInfo = (product.metadata as Record<string, string> | null)?.model_info
+
+  const canAddToCart = !!selectedVariant?.id
+  const inStock = selectedVariant ? (selectedVariant.inventory_quantity ?? 1) > 0 : true
+  const lowStock = selectedVariant && (selectedVariant.inventory_quantity ?? 0) > 0 && (selectedVariant.inventory_quantity ?? 0) <= 3
+
   return (
     <div className="animate-fade-in">
-      {/* ── Layout: images left, info right on desktop ── */}
+      {/* ── Layout ── */}
       <div className="lg:grid lg:grid-cols-2">
         {/* Images */}
         <ProductImages images={product.images || []} />
 
         {/* Product info — sticky on desktop */}
         <div className="lg:sticky lg:top-20 lg:self-start">
-          <div className="px-6 lg:px-12 pt-6 lg:pt-10 pb-32 lg:pb-16">
+          <div className="px-6 lg:px-12 pt-5 lg:pt-10 pb-32 lg:pb-16">
             {/* Category */}
             {categoryLabel && (
-              <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-2">
+              <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-1.5">
                 {categoryLabel}
               </p>
             )}
@@ -194,7 +189,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             </h1>
 
             {/* Price */}
-            <div className="flex items-baseline gap-2 mt-2 mb-6">
+            <div className="flex items-baseline gap-2 mt-1.5 mb-6">
               {price && (
                 <span className="text-[14px] tracking-[0.03em]">
                   {formatPrice(price.calculated_amount!, price.currency_code!)}
@@ -215,16 +210,43 @@ export default function ProductDetail({ product }: { product: Product }) {
               selectedVariant={selectedVariant}
             />
 
-            {/* Stock indicator */}
-            {selectedVariant && (selectedVariant.inventory_quantity ?? 0) > 0 && (selectedVariant.inventory_quantity ?? 0) <= 3 && (
-              <p className="text-[11px] text-red-600 mt-3">
-                Plus que {selectedVariant.inventory_quantity} en stock
+            {/* Model info */}
+            {modelInfo && (
+              <p className="text-[11px] text-muted-foreground mt-4">
+                {modelInfo}
               </p>
             )}
 
-            {/* Add to cart */}
-            <div className="mt-6">
-              <AddToCartButton variantId={selectedVariant?.id || null} />
+            {/* Stock indicator */}
+            {lowStock && (
+              <p className="text-[11px] text-red-600 mt-3">
+                Plus que {selectedVariant!.inventory_quantity} en stock
+              </p>
+            )}
+
+            {/* Add to cart — desktop only (mobile has sticky) */}
+            <div className="mt-6 hidden lg:block">
+              <button
+                onClick={handleAddToCart}
+                disabled={!canAddToCart || addingToCart || !inStock}
+                className={`w-full h-[52px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all cursor-pointer ${
+                  !canAddToCart || !inStock
+                    ? "bg-muted text-muted-foreground cursor-not-allowed"
+                    : addedToCart
+                      ? "bg-foreground text-background"
+                      : "bg-foreground text-background hover:bg-foreground/90"
+                }`}
+              >
+                {addingToCart
+                  ? "Ajout..."
+                  : addedToCart
+                    ? "Ajouté au panier"
+                    : !inStock
+                      ? "Épuisé"
+                      : !canAddToCart
+                        ? "Sélectionnez vos options"
+                        : "Ajouter au panier"}
+              </button>
             </div>
 
             {/* Trust signals */}
@@ -243,6 +265,11 @@ export default function ProductDetail({ product }: { product: Product }) {
               </span>
             </div>
 
+            {/* In stock indicator */}
+            {canAddToCart && inStock && !lowStock && (
+              <p className="text-[11px] text-green-700 mt-3 uppercase tracking-[0.1em]">En stock</p>
+            )}
+
             {/* Click & Collect */}
             <div className="flex items-start gap-3 mt-5 pt-5 border-t border-border">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted-foreground mt-0.5 shrink-0">
@@ -254,38 +281,46 @@ export default function ProductDetail({ product }: { product: Product }) {
               </div>
             </div>
 
-            {/* ── Accordion: Description, Livraison, Retours ── */}
-            <div className="mt-6">
-              {product.description && (
-                <AccordionItem title="Description" defaultOpen>
-                  <p>{product.description}</p>
-                  {product.material && (
-                    <p className="mt-2">Matière : {product.material}</p>
-                  )}
-                </AccordionItem>
-              )}
-              <AccordionItem title="Livraison">
+            {/* ── Product Details — open, no accordion ── */}
+            {product.description && (
+              <div className="mt-6 pt-6 border-t border-border">
+                <h3 className="text-[11px] font-medium uppercase tracking-[0.15em] mb-3">
+                  Détails du produit
+                </h3>
+                <p className="text-[13px] text-muted-foreground leading-relaxed">
+                  {product.description}
+                </p>
+                {product.material && (
+                  <p className="text-[13px] text-muted-foreground mt-2">
+                    Composition : {product.material}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* ── Livraison & Retours — open ── */}
+            <div className="mt-6 pt-6 border-t border-border">
+              <h3 className="text-[11px] font-medium uppercase tracking-[0.15em] mb-3">
+                Livraison & Retours
+              </h3>
+              <div className="text-[13px] text-muted-foreground leading-relaxed space-y-1.5">
                 <p>Livraison standard : 3-5 jours ouvrés</p>
-                <p className="mt-1">Livraison express : 1-2 jours ouvrés</p>
-                <p className="mt-1">Livraison offerte à partir de 250 €</p>
-              </AccordionItem>
-              <AccordionItem title="Retours & Échanges">
-                <p>Vous disposez de 14 jours après réception pour retourner vos articles.</p>
-                <p className="mt-1">Les articles doivent être retournés dans leur état d&apos;origine, non portés, avec les étiquettes.</p>
-                <p className="mt-1">Les retours sont gratuits en France métropolitaine.</p>
-              </AccordionItem>
-              <div className="border-t border-border" /> {/* closing border */}
+                <p>Livraison express : 1-2 jours ouvrés</p>
+                <p>Livraison offerte à partir de 250 €</p>
+                <p className="mt-3">Retours gratuits sous 14 jours en France métropolitaine.</p>
+                <p>Les articles doivent être retournés dans leur état d&apos;origine, non portés, avec les étiquettes.</p>
+              </div>
             </div>
 
             {/* ── Cross-sell: "Complétez le look" ── */}
             {relatedProducts.length > 0 && (
-              <div className="mt-8">
+              <div className="mt-8 pt-6 border-t border-border">
                 <h3 className="text-[11px] font-medium uppercase tracking-[0.12em] mb-4">
                   Complétez le look
                 </h3>
-                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+                <div className="grid grid-cols-2 gap-3">
                   {relatedProducts.map((p) => (
-                    <CrossSellCard key={p.id} product={p} />
+                    <ProductCard key={p.id} product={p} />
                   ))}
                 </div>
               </div>
@@ -294,25 +329,44 @@ export default function ProductDetail({ product }: { product: Product }) {
         </div>
       </div>
 
+      {/* ── "Vous aimerez aussi" — full width section below ── */}
+      {alsoLikeProducts.length > 0 && (
+        <div className="px-6 lg:px-10 py-12 lg:py-16 border-t border-border">
+          <h2 className="text-[11px] font-medium uppercase tracking-[0.15em] mb-6">
+            Vous aimerez aussi
+          </h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+            {alsoLikeProducts.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Sticky mobile CTA ── */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border px-6 py-4">
         <button
-          onClick={async () => {
-            if (!selectedVariant?.id) return
-            await addItem(selectedVariant.id, 1)
-          }}
-          disabled={!selectedVariant?.id}
+          onClick={handleAddToCart}
+          disabled={!canAddToCart || addingToCart || !inStock}
           className={`w-full h-[48px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all ${
-            !selectedVariant?.id
+            !canAddToCart || !inStock
               ? "bg-muted text-muted-foreground cursor-not-allowed"
-              : "bg-foreground text-background cursor-pointer"
+              : addedToCart
+                ? "bg-foreground text-background"
+                : "bg-foreground text-background cursor-pointer"
           }`}
         >
-          {!selectedVariant?.id
-            ? "Sélectionnez vos options"
-            : price
-              ? `Ajouter au panier — ${formatPrice(price.calculated_amount!, price.currency_code!)}`
-              : "Ajouter au panier"}
+          {addingToCart
+            ? "Ajout..."
+            : addedToCart
+              ? "Ajouté au panier"
+              : !inStock
+                ? "Épuisé"
+                : !canAddToCart
+                  ? "Sélectionnez vos options"
+                  : price
+                    ? `Ajouter au panier — ${formatPrice(price.calculated_amount!, price.currency_code!)}`
+                    : "Ajouter au panier"}
         </button>
       </div>
     </div>
