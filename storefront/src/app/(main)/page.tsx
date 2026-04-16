@@ -1,5 +1,4 @@
 import { Suspense } from "react"
-import { REVALIDATE_PRODUCTS } from "@/lib/constants"
 import HeroSection from "@/components/home/HeroSection"
 import NouveautesSection from "@/components/home/NouveautesSection"
 import NewCollectionSection from "@/components/home/NewCollectionSection"
@@ -15,7 +14,7 @@ import type { ShoeImage } from "@/components/home/ShoesSection"
 import type { TriptyqueCard } from "@/components/home/TriptyqueSection"
 
 // ISR: regenerate every 120s — if build-time fetch fails, next visitor gets fresh data
-export const revalidate = REVALIDATE_PRODUCTS
+export const revalidate = 120
 
 // ── Editorial content (static, managed by the team) ──
 
