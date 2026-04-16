@@ -34,7 +34,7 @@ export function getProductPrice(
 type OverlayType = "dark-hero" | "light-hero" | null
 
 const DARK_HERO_ROUTES = [/^\/$/, /^\/collections\/.+/, /^\/boutique$/, /^\/categories\/.+/]
-const LIGHT_HERO_ROUTES = [/^\/products\/.+/]
+const LIGHT_HERO_ROUTES: RegExp[] = []
 
 export function getOverlayType(pathname: string): OverlayType {
   if (DARK_HERO_ROUTES.some((re) => re.test(pathname))) return "dark-hero"
