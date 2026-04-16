@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import { REVALIDATE_PRODUCTS } from "@/lib/constants"
 import HeroSection from "@/components/home/HeroSection"
 import NouveautesSection from "@/components/home/NouveautesSection"
 import NewCollectionSection from "@/components/home/NewCollectionSection"
@@ -12,6 +13,9 @@ import { DEFAULT_REGION } from "@/lib/constants"
 import type { HeroSlide } from "@/components/home/HeroSection"
 import type { ShoeImage } from "@/components/home/ShoesSection"
 import type { TriptyqueCard } from "@/components/home/TriptyqueSection"
+
+// ISR: regenerate every 120s — if build-time fetch fails, next visitor gets fresh data
+export const revalidate = REVALIDATE_PRODUCTS
 
 // ── Editorial content (static, managed by the team) ──
 
@@ -90,13 +94,17 @@ const TRIPTYCH_CARDS: TriptyqueCard[] = [
 
 // ── Data fetching (server-side) ──
 
+async function fetchWithRetry<T>(fn: () => Promise<T>, fallback: T, retries = 2): Promise<T> {
+  for (let i = 0; i < retries; i++) {
+    try { return await fn() } catch { if (i < retries - 1) await new Promise((r) => setTimeout(r, 500)) }
+  }
+  return fallback
+}
+
 async function getHomeData() {
   const [collections, productsResult] = await Promise.all([
-    getCollections().catch(() => []),
-    getProducts({ regionId: DEFAULT_REGION, limit: 12 }).catch(() => ({
-      products: [],
-      count: 0,
-    })),
+    fetchWithRetry(() => getCollections(), []),
+    fetchWithRetry(() => getProducts({ regionId: DEFAULT_REGION, limit: 12 }), { products: [], count: 0 }),
   ])
 
   const sorted = [...collections].sort(
