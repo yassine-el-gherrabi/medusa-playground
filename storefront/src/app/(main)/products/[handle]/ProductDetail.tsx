@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
+import { createPortal } from "react-dom"
 import Link from "next/link"
 import Image from "next/image"
 import ProductImages from "@/components/product/ProductImages"
@@ -343,32 +344,36 @@ export default function ProductDetail({ product }: { product: Product }) {
         </div>
       )}
 
-      {/* ── Sticky mobile CTA ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border px-6 py-4">
-        <button
-          onClick={handleAddToCart}
-          disabled={!canAddToCart || addingToCart || !inStock}
-          className={`w-full h-[48px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all ${
-            !canAddToCart || !inStock
-              ? "bg-muted text-muted-foreground cursor-not-allowed"
-              : addedToCart
-                ? "bg-foreground text-background"
-                : "bg-foreground text-background cursor-pointer"
-          }`}
-        >
-          {addingToCart
-            ? "Ajout..."
-            : addedToCart
-              ? "Ajouté au panier"
-              : !inStock
-                ? "Épuisé"
-                : !canAddToCart
-                  ? "Sélectionnez vos options"
-                  : price
-                    ? `Ajouter au panier — ${formatPrice(price.calculated_amount!, price.currency_code!)}`
-                    : "Ajouter au panier"}
-        </button>
-      </div>
+      {/* Sticky mobile CTA — portal to escape transform containing block */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border px-6 py-4">
+            <button
+              onClick={handleAddToCart}
+              disabled={!canAddToCart || addingToCart || !inStock}
+              className={`w-full h-[48px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all ${
+                !canAddToCart || !inStock
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : addedToCart
+                    ? "bg-foreground text-background"
+                    : "bg-foreground text-background cursor-pointer"
+              }`}
+            >
+              {addingToCart
+                ? "Ajout..."
+                : addedToCart
+                  ? "Ajouté au panier"
+                  : !inStock
+                    ? "Épuisé"
+                    : !canAddToCart
+                      ? "Sélectionnez vos options"
+                      : price
+                        ? `Ajouter au panier — ${formatPrice(price.calculated_amount!, price.currency_code!)}`
+                        : "Ajouter au panier"}
+            </button>
+          </div>,
+          document.body
+        )}
     </div>
   )
 }
