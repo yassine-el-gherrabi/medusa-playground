@@ -127,13 +127,13 @@ export default async function HomePage() {
     <div>
       <HeroSection slides={HERO_SLIDES} />
 
-      {latestCollection && (
-        <NewCollectionSection collection={latestCollection} />
-      )}
-
       <Suspense fallback={<div className="px-6 py-16"><ProductGridSkeleton count={6} /></div>}>
         <NouveautesSection products={products} />
       </Suspense>
+
+      {latestCollection && (
+        <NewCollectionSection collection={latestCollection} />
+      )}
 
       <CollectionCarousel collections={collections} />
 

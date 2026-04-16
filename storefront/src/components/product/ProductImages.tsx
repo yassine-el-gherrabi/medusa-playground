@@ -15,40 +15,54 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
 
   const total = images.length
 
-  // Scroll-snap based carousel — native, smooth, handles fast swiping perfectly
+  // Instant counter update on scroll
   const handleScroll = useCallback(() => {
-    if (!scrollRef.current) return
-    // Debounce to get final position after momentum scroll ends
+    if (!scrollRef.current || total <= 1) return
+    const scrollLeft = scrollRef.current.scrollLeft
+    const width = scrollRef.current.offsetWidth
+    const index = Math.round(scrollLeft / width) % total
+    setCurrent(((index % total) + total) % total)
+  }, [total])
+
+  // Infinite loop: when scroll settles at a clone, jump instantly to the real slide
+  const handleScrollEnd = useCallback(() => {
+    if (!scrollRef.current || total <= 1) return
     if (scrollTimeout.current) clearTimeout(scrollTimeout.current)
     scrollTimeout.current = setTimeout(() => {
       if (!scrollRef.current) return
       const scrollLeft = scrollRef.current.scrollLeft
       const width = scrollRef.current.offsetWidth
       const index = Math.round(scrollLeft / width)
-      setCurrent(((index % total) + total) % total)
-      isScrolling.current = false
-    }, 50)
+
+      // Clone of last image is at position 0 → jump to real last (index = total)
+      if (index === 0) {
+        scrollRef.current.style.scrollBehavior = "auto"
+        scrollRef.current.scrollLeft = total * width
+        scrollRef.current.style.scrollBehavior = ""
+      }
+      // Clone of first image is at position total+1 → jump to real first (index = 1)
+      else if (index === total + 1) {
+        scrollRef.current.style.scrollBehavior = "auto"
+        scrollRef.current.scrollLeft = width
+        scrollRef.current.style.scrollBehavior = ""
+      }
+    }, 60)
   }, [total])
 
-  // Programmatic scroll to index
-  const scrollToIndex = useCallback((index: number) => {
-    if (!scrollRef.current) return
-    const width = scrollRef.current.offsetWidth
-    scrollRef.current.scrollTo({ left: index * width, behavior: "smooth" })
-  }, [])
-
-  // When reaching the end or start, jump to enable infinite feel
-  const handleScrollEnd = useCallback(() => {
-    if (!scrollRef.current || total <= 1) return
-    const scrollLeft = scrollRef.current.scrollLeft
-    const width = scrollRef.current.offsetWidth
-    const maxScroll = (total - 1) * width
-
-    // At the very end — user swiped past last image
-    if (scrollLeft >= maxScroll + width * 0.3) {
-      scrollRef.current.scrollTo({ left: 0, behavior: "smooth" })
+  // Initialize scroll position to first real image (index 1, skipping prepended clone)
+  useEffect(() => {
+    if (scrollRef.current && total > 1) {
+      const width = scrollRef.current.offsetWidth
+      scrollRef.current.style.scrollBehavior = "auto"
+      scrollRef.current.scrollLeft = width
+      scrollRef.current.style.scrollBehavior = ""
     }
   }, [total])
+
+  // Build looped array: [clone-last, ...images, clone-first]
+  const loopedImages = total > 1
+    ? [images[total - 1], ...images, images[0]]
+    : images
 
   // Lock body scroll when gallery is open
   useEffect(() => {
@@ -85,9 +99,9 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
           onTouchEnd={handleScrollEnd}
           style={{ WebkitOverflowScrolling: "touch" }}
         >
-          {images.map((image, i) => (
+          {loopedImages.map((image, i) => (
             <button
-              key={image.id}
+              key={`${image.id}-${i}`}
               className="w-full flex-shrink-0 snap-center aspect-[3/4] relative bg-[#f5f5f5] cursor-zoom-in"
               onClick={() => setGalleryOpen(true)}
             >
@@ -97,7 +111,7 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
                 fill
                 className="object-cover"
                 sizes="100vw"
-                priority={i === 0}
+                priority={i <= 1}
               />
             </button>
           ))}
