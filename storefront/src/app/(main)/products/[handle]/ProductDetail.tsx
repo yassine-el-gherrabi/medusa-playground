@@ -265,20 +265,14 @@ export default function ProductDetail({ product }: { product: Product }) {
               )}
             </div>
 
-            {/* Options: colors + sizes */}
+            {/* Options: colors + sizes, with model info between them */}
             <ProductOptions
               product={product}
               selectedOptions={selectedOptions}
               onOptionChange={onOptionChange}
               selectedVariant={selectedVariant}
+              modelInfo={modelInfo}
             />
-
-            {/* Model info */}
-            {modelInfo && (
-              <p className="text-[11px] text-muted-foreground mt-4">
-                {modelInfo}
-              </p>
-            )}
 
             {/* Stock indicator */}
             {lowStock && (

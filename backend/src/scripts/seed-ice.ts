@@ -452,7 +452,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       category_ids: [catMap["Hauts"]],
       collection_id: colMap["Seamless Bi-Material"],
       images: flattenImages(productImages.tshirtSeamless),
-      metadata: { color_images: productImages.tshirtSeamless, is_new: true },
+      metadata: { color_images: productImages.tshirtSeamless, is_new: true, model_info: "Le mannequin mesure 185 cm et porte du M" },
       weight: 200,
       options: [
         { title: "Couleur", values: ["Bleu", "Blanc", "Beige"] },
@@ -467,7 +467,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       category_ids: [catMap["Bas"]],
       collection_id: colMap["Seamless Bi-Material"],
       images: flattenImages(productImages.pantalonSeamless),
-      metadata: { color_images: productImages.pantalonSeamless },
+      metadata: { color_images: productImages.pantalonSeamless, model_info: "Le mannequin mesure 185 cm et porte du M" },
       weight: 400,
       options: [
         { title: "Couleur", values: ["Noir", "Violet"] },
@@ -508,7 +508,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       category_ids: [catMap["Vestes & Manteaux"]],
       collection_id: colMap["Linea Nebula"],
       images: flattenImages(productImages.vesteLineaNebula),
-      metadata: { color_images: productImages.vesteLineaNebula },
+      metadata: { color_images: productImages.vesteLineaNebula, model_info: "Le mannequin mesure 187 cm / 78 kg et porte du L" },
       weight: 550,
       options: [
         { title: "Couleur", values: ["Noir", "Gris"] },
@@ -552,7 +552,7 @@ export default async function seedIceData({ container }: ExecArgs) {
       category_ids: [catMap["Hauts"]],
       collection_id: colMap["Oscura"],
       images: productImages.sweatOscura,
-      metadata: { is_sold_out: true, color_images: { Gris: productImages.sweatOscura } },
+      metadata: { is_sold_out: true, color_images: { Gris: productImages.sweatOscura }, model_info: "Le mannequin mesure 182 cm / 75 kg et porte du M" },
       weight: 550,
       options: [{ title: "Couleur", values: ["Gris"] }, { title: "Taille", values: ["S", "M", "L", "XL"] }],
       variants: colorSizeVariants(105, "ICE-SHO", ["Gris"]),
