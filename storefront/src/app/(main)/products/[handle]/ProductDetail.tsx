@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import Link from "next/link"
 import Image from "next/image"
 import ProductImages from "@/components/product/ProductImages"
+import type { ProductImagesHandle } from "@/components/product/ProductImages"
 import ProductOptions from "@/components/product/ProductOptions"
 import { formatPrice, getProductPrice } from "@/lib/utils"
 import { useCart } from "@/providers/CartProvider"
@@ -91,8 +92,34 @@ export default function ProductDetail({ product }: { product: Product }) {
     ? price.original_amount
     : null
 
+  const imagesRef = useRef<ProductImagesHandle>(null)
+
+  // Build a map: color value → index of first image for that color
+  const colorImageIndexMap = useMemo(() => {
+    const map: Record<string, number> = {}
+    const colorImages = ((product.metadata as Record<string, unknown> | null)?.color_images as Record<string, { url: string }[]>) || {}
+    const imageUrls = (product.images || []).map((img) => img.url)
+    for (const [color, imgs] of Object.entries(colorImages)) {
+      if (imgs?.[0]?.url) {
+        const idx = imageUrls.indexOf(imgs[0].url)
+        if (idx >= 0) map[color] = idx
+      }
+    }
+    return map
+  }, [product])
+
   const onOptionChange = (optionId: string, value: string) => {
     setSelectedOptions((prev) => ({ ...prev, [optionId]: value }))
+    // If color changed, scroll carousel to that color's image
+    const colorOpt = product.options?.find((o) =>
+      ["color", "couleur"].includes(o.title?.toLowerCase() || "")
+    )
+    if (colorOpt && optionId === colorOpt.id) {
+      const targetIndex = colorImageIndexMap[value]
+      if (targetIndex !== undefined) {
+        imagesRef.current?.scrollTo(targetIndex)
+      }
+    }
   }
 
   const handleAddToCart = async () => {
@@ -172,7 +199,7 @@ export default function ProductDetail({ product }: { product: Product }) {
       {/* ── Layout ── */}
       <div className="lg:grid lg:grid-cols-2">
         {/* Images */}
-        <ProductImages images={product.images || []} />
+        <ProductImages ref={imagesRef} images={product.images || []} />
 
         {/* Product info — sticky on desktop */}
         <div className="lg:sticky lg:top-20 lg:self-start">

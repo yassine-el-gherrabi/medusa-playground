@@ -1,14 +1,22 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useImperativeHandle, forwardRef } from "react"
 import { createPortal } from "react-dom"
 import useEmblaCarousel from "embla-carousel-react"
 import Image from "next/image"
 
 type ProductImage = { id: string; url: string }
 
-export default function ProductImages({ images }: { images: ProductImage[] }) {
+export type ProductImagesHandle = {
+  scrollTo: (index: number) => void
+}
+
+const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[] }>(function ProductImages({ images }, ref) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
+
+  useImperativeHandle(ref, () => ({
+    scrollTo: (index: number) => emblaApi?.scrollTo(index),
+  }), [emblaApi])
   const [current, setCurrent] = useState(0)
   const [galleryOpen, setGalleryOpen] = useState(false)
 
@@ -139,4 +147,6 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
         )}
     </>
   )
-}
+})
+
+export default ProductImages
