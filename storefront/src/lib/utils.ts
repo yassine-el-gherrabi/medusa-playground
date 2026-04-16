@@ -27,21 +27,29 @@ export function getProductPrice(
   return null
 }
 
-const OVERLAY_PATTERNS = [
-  /^\/$/,
-  /^\/collections\/.+/,
-  /^\/boutique$/,
-  /^\/categories\/.+/,
-  /^\/products\/.+/,
-]
+// Overlay types: how the navbar behaves over the page content
+// - "dark-hero"  → transparent bg, white text, white logo (homepage, collections, categories)
+// - "light-hero" → transparent bg, black text, black logo (product pages — light image backgrounds)
+// - null         → solid white bg, black text (all other pages)
+type OverlayType = "dark-hero" | "light-hero" | null
+
+const DARK_HERO_ROUTES = [/^\/$/, /^\/collections\/.+/, /^\/boutique$/, /^\/categories\/.+/]
+const LIGHT_HERO_ROUTES = [/^\/products\/.+/]
+
+export function getOverlayType(pathname: string): OverlayType {
+  if (DARK_HERO_ROUTES.some((re) => re.test(pathname))) return "dark-hero"
+  if (LIGHT_HERO_ROUTES.some((re) => re.test(pathname))) return "light-hero"
+  return null
+}
 
 export function isOverlayRoute(pathname: string): boolean {
-  return OVERLAY_PATTERNS.some((re) => re.test(pathname))
+  return getOverlayType(pathname) !== null
 }
 
 export function getHeroHeightFraction(pathname: string): number {
+  const type = getOverlayType(pathname)
   if (pathname === "/") return 1.0
-  if (/^\/products\/.+/.test(pathname)) return 0.6
-  if (isOverlayRoute(pathname)) return 0.7
+  if (type === "light-hero") return 0.6
+  if (type === "dark-hero") return 0.7
   return 0
 }

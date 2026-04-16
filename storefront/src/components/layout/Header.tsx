@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { isOverlayRoute, getHeroHeightFraction } from "@/lib/utils"
+import { getOverlayType, getHeroHeightFraction } from "@/lib/utils"
 import { useCart } from "@/providers/CartProvider"
 import type { Category, Collection } from "@/types"
 import CartDrawer from "@/components/cart/CartDrawer"
@@ -41,7 +41,8 @@ export default function Header({
   collections: Collection[]
 }) {
   const pathname = usePathname()
-  const isOverlay = isOverlayRoute(pathname)
+  const overlayType = getOverlayType(pathname)
+  const isOverlay = overlayType !== null
   const { cart, openDrawer } = useCart()
   const cartCount =
     cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
@@ -110,10 +111,8 @@ export default function Header({
       : null
 
   const transparent = isOverlay && !scrolled && !megaMenuOpen
-  const isProductPage = /^\/products\/.+/.test(pathname)
-  const textColor = transparent
-    ? isProductPage ? "text-foreground" : "text-white"
-    : "text-foreground"
+  const useLightText = transparent && overlayType === "dark-hero"
+  const textColor = useLightText ? "text-white" : "text-foreground"
 
   return (
     <>
@@ -173,7 +172,7 @@ export default function Header({
           >
             <Logo
               className="h-24 w-auto"
-              variant={transparent && !isProductPage ? "white" : "black"}
+              variant={useLightText ? "white" : "black"}
             />
           </Link>
 
