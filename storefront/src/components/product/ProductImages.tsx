@@ -16,17 +16,37 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
 
   const total = images.length
 
-  const goTo = useCallback(
-    (index: number) => setCurrent(Math.max(0, Math.min(index, total - 1))),
-    [total]
-  )
+  // For infinite loop: we prepend last image and append first image
+  // Layout: [clone-last] [0] [1] ... [N-1] [clone-first]
+  // Visual index 0 = track position 1
+  const trackIndex = current + 1 // offset by 1 because of prepended clone
+
+  const slideTo = useCallback((index: number, animate = true) => {
+    if (trackRef.current) {
+      trackRef.current.style.transition = animate ? "transform 0.3s ease-out" : "none"
+      trackRef.current.style.transform = `translateX(-${index * 100}%)`
+    }
+  }, [])
 
   useEffect(() => {
-    if (trackRef.current) {
-      trackRef.current.style.transition = "transform 0.3s ease-out"
-      trackRef.current.style.transform = `translateX(-${current * 100}%)`
+    slideTo(trackIndex)
+  }, [trackIndex, slideTo])
+
+  // After transition to a clone, instantly jump to the real slide
+  const handleTransitionEnd = useCallback(() => {
+    if (current >= total) {
+      setCurrent(0)
+      slideTo(1, false) // jump to real first
+    } else if (current < 0) {
+      setCurrent(total - 1)
+      slideTo(total, false) // jump to real last
     }
-  }, [current])
+  }, [current, total, slideTo])
+
+  const goTo = useCallback(
+    (index: number) => setCurrent(index),
+    []
+  )
 
   const onTouchStart = (e: React.TouchEvent) => {
     isDragging.current = true
@@ -39,7 +59,7 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
     if (!isDragging.current) return
     touchDelta.current = e.touches[0].clientX - touchStartX.current
     if (trackRef.current) {
-      const offset = -current * 100
+      const offset = -trackIndex * 100
       const pxToPercent = (touchDelta.current / window.innerWidth) * 100
       trackRef.current.style.transform = `translateX(${offset + pxToPercent}%)`
     }
@@ -50,8 +70,16 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
     const threshold = window.innerWidth * 0.15
     if (touchDelta.current < -threshold) goTo(current + 1)
     else if (touchDelta.current > threshold) goTo(current - 1)
-    else goTo(current)
+    else slideTo(trackIndex) // snap back
   }
+
+  // Build the looped slide array: [clone-last, ...images, clone-first]
+  const loopedImages = total > 1
+    ? [images[total - 1], ...images, images[0]]
+    : images
+
+  // Display index (always 0..total-1 for the counter)
+  const displayIndex = ((current % total) + total) % total
 
   // Lock body scroll when gallery is open
   useEffect(() => {
@@ -87,10 +115,14 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          <div ref={trackRef} className="flex will-change-transform">
-            {images.map((image, i) => (
+          <div
+            ref={trackRef}
+            className="flex will-change-transform"
+            onTransitionEnd={handleTransitionEnd}
+          >
+            {loopedImages.map((image, i) => (
               <button
-                key={image.id}
+                key={`${image.id}-${i}`}
                 className="w-full flex-shrink-0 aspect-[3/4] relative bg-[#f5f5f5] cursor-zoom-in"
                 onClick={() => {
                   if (Math.abs(touchDelta.current) < 10) setGalleryOpen(true)
@@ -102,7 +134,7 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
                   fill
                   className="object-cover"
                   sizes="100vw"
-                  priority={i === 0}
+                  priority={i <= 1}
                 />
               </button>
             ))}
@@ -111,7 +143,7 @@ export default function ProductImages({ images }: { images: ProductImage[] }) {
           {/* Counter — bottom left, no background */}
           {total > 1 && (
             <div className="absolute bottom-4 left-4 text-[11px] text-black tracking-[0.15em]">
-              {current + 1} / {total}
+              {displayIndex + 1} / {total}
             </div>
           )}
         </div>
