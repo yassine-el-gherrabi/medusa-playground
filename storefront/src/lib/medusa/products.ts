@@ -1,9 +1,12 @@
 import { sdk } from "@/lib/sdk"
 import { TAGS } from "@/lib/constants"
+import { isBuildPhase } from "@/lib/medusa/cache"
 import type { Product } from "@/types"
 
 const PRODUCT_FIELDS =
   "*variants.calculated_price,+variants.inventory_quantity,+metadata,+categories.name"
+
+const REVALIDATE = 3600 // 1 hour — on-demand revalidation handles real-time changes
 
 export async function getProducts(params: {
   limit?: number
@@ -13,6 +16,9 @@ export async function getProducts(params: {
   collectionId?: string[]
   q?: string
 }): Promise<{ products: Product[]; count: number }> {
+  // Skip during build — ISR will populate on first visitor request
+  if (isBuildPhase()) return { products: [], count: 0 }
+
   const { products, count } = await sdk.store.product.list(
     {
       limit: params.limit ?? 20,
@@ -23,7 +29,7 @@ export async function getProducts(params: {
       ...(params.collectionId && { collection_id: params.collectionId }),
       ...(params.q && { q: params.q }),
     },
-    { next: { tags: [TAGS.products], revalidate: 120 } } as any
+    { next: { tags: [TAGS.products], revalidate: REVALIDATE } } as any
   )
 
   return { products: products as Product[], count: count ?? 0 }
@@ -33,6 +39,8 @@ export async function getProductByHandle(
   handle: string,
   regionId: string
 ): Promise<Product | null> {
+  if (isBuildPhase()) return null
+
   const { products } = await sdk.store.product.list(
     {
       handle,
@@ -40,7 +48,7 @@ export async function getProductByHandle(
       fields: PRODUCT_FIELDS,
       limit: 1,
     },
-    { next: { tags: [TAGS.products], revalidate: 120 } } as any
+    { next: { tags: [TAGS.products], revalidate: REVALIDATE } } as any
   )
 
   return (products?.[0] as Product) ?? null

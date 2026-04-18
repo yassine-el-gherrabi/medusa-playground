@@ -13,10 +13,6 @@ import type { HeroSlide } from "@/components/home/HeroSection"
 import type { ShoeImage } from "@/components/home/ShoesSection"
 import type { TriptyqueCard } from "@/components/home/TriptyqueSection"
 
-// Dynamic rendering — fetch fresh data on every request
-// ISR was caching empty results from build-time API failures
-export const dynamic = "force-dynamic"
-
 // ── Editorial content (static, managed by the team) ──
 
 const HERO_SLIDES: HeroSlide[] = [
@@ -96,8 +92,8 @@ const TRIPTYCH_CARDS: TriptyqueCard[] = [
 
 async function getHomeData() {
   const [collections, productsResult] = await Promise.all([
-    getCollections().catch(() => []),
-    getProducts({ regionId: DEFAULT_REGION, limit: 12 }).catch(() => ({ products: [], count: 0 })),
+    getCollections(),
+    getProducts({ regionId: DEFAULT_REGION, limit: 12 }),
   ])
 
   const sorted = [...collections].sort(
