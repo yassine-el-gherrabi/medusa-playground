@@ -17,7 +17,7 @@ export async function getProducts(params: {
     {
       limit: params.limit ?? 20,
       offset: params.offset ?? 0,
-      region_id: params.regionId,
+      ...(params.regionId && { region_id: params.regionId }),
       fields: PRODUCT_FIELDS,
       ...(params.categoryId && { category_id: params.categoryId }),
       ...(params.collectionId && { collection_id: params.collectionId }),
@@ -36,7 +36,7 @@ export async function getProductByHandle(
   const { products } = await sdk.store.product.list(
     {
       handle,
-      region_id: regionId,
+      ...(regionId && { region_id: regionId }),
       fields: PRODUCT_FIELDS,
       limit: 1,
     },
@@ -53,7 +53,7 @@ export async function searchProducts(
 ): Promise<Product[]> {
   const { products } = await sdk.store.product.list({
     q: query,
-    region_id: regionId,
+    ...(regionId && { region_id: regionId }),
     fields: PRODUCT_FIELDS,
     limit,
   })
