@@ -93,18 +93,30 @@ const TRIPTYCH_CARDS: TriptyqueCard[] = [
 
 // ── Data fetching (server-side) ──
 
-async function fetchWithRetry<T>(fn: () => Promise<T>, fallback: T, retries = 2): Promise<T> {
+async function fetchWithRetry<T>(label: string, fn: () => Promise<T>, fallback: T, retries = 3): Promise<T> {
   for (let i = 0; i < retries; i++) {
-    try { return await fn() } catch { if (i < retries - 1) await new Promise((r) => setTimeout(r, 500)) }
+    try {
+      const result = await fn()
+      console.log(`[HOME] ${label}: SUCCESS (attempt ${i + 1})`)
+      return result
+    } catch (err) {
+      console.error(`[HOME] ${label}: FAILED attempt ${i + 1}/${retries}`, err instanceof Error ? err.message : err)
+      if (i < retries - 1) await new Promise((r) => setTimeout(r, 1000))
+    }
   }
+  console.error(`[HOME] ${label}: ALL RETRIES FAILED, using fallback`)
   return fallback
 }
 
 async function getHomeData() {
+  console.log(`[HOME] getHomeData called. DEFAULT_REGION="${DEFAULT_REGION}", BACKEND_URL="${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}", KEY="${process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY?.slice(0, 10)}..."`)
+
   const [collections, productsResult] = await Promise.all([
-    fetchWithRetry(() => getCollections(), []),
-    fetchWithRetry(() => getProducts({ regionId: DEFAULT_REGION, limit: 12 }), { products: [], count: 0 }),
+    fetchWithRetry("getCollections", () => getCollections(), []),
+    fetchWithRetry("getProducts", () => getProducts({ regionId: DEFAULT_REGION, limit: 12 }), { products: [], count: 0 }),
   ])
+
+  console.log(`[HOME] Results: ${collections.length} collections, ${productsResult.products.length} products`)
 
   const sorted = [...collections].sort(
     (a, b) =>
