@@ -45,11 +45,3 @@ export function getOverlayType(pathname: string): OverlayType {
 export function isOverlayRoute(pathname: string): boolean {
   return getOverlayType(pathname) !== null
 }
-
-export function getHeroHeightFraction(pathname: string): number {
-  const type = getOverlayType(pathname)
-  if (pathname === "/") return 1.0
-  if (type === "light-hero") return 0.6
-  if (type === "dark-hero") return 0.7
-  return 0
-}
