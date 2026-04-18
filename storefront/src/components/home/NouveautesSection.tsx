@@ -142,9 +142,9 @@ function ProductCard({ product }: { product: Product }) {
       </div>
 
       {/* ── Product info ── */}
-      <div className="pt-3 md:pt-4">
+      <div className="pt-3 md:pt-4 pr-2">
         {/* Title + Price — same line */}
-        <div className="flex items-baseline justify-between gap-2">
+        <div className="flex items-baseline justify-between gap-3">
           <Link href={productUrl} className="min-w-0 flex-1">
             <h3 className="text-[12px] md:text-[13px] font-medium leading-tight tracking-[0.02em] truncate">
               {product.title}
@@ -160,9 +160,12 @@ function ProductCard({ product }: { product: Product }) {
           </div>
         </div>
 
+        {/* Active color name */}
+        <p className="text-[11px] text-muted-foreground mt-1">{activeColor}</p>
+
         {/* Color swatches — image thumbnails */}
         {colors.length > 1 && (
-          <div className="flex gap-1.5 mt-2.5">
+          <div className="flex gap-2 mt-2">
             {colors.map((c) => {
               const thumb = getColorThumbnail(colorImages, c.value)
               const isActive = activeColor === c.value
@@ -173,11 +176,11 @@ function ProductCard({ product }: { product: Product }) {
                   className="relative shrink-0 cursor-pointer"
                   aria-label={c.label}
                 >
-                  <div className={`w-8 h-10 md:w-10 md:h-[52px] overflow-hidden bg-[#f5f5f5] ${
-                    isActive ? "ring-1 ring-black ring-offset-1" : ""
+                  <div className={`w-10 h-[52px] md:w-11 md:h-[56px] overflow-hidden bg-[#f5f5f5] transition-all ${
+                    isActive ? "ring-1 ring-black ring-offset-1" : "ring-1 ring-transparent hover:ring-black/20"
                   }`}>
                     {thumb ? (
-                      <Image src={thumb} alt={c.label} fill className="object-cover" sizes="40px" />
+                      <Image src={thumb} alt={c.label} fill className="object-cover" sizes="44px" />
                     ) : (
                       <div className="w-full h-full bg-[#e0e0e0]" />
                     )}
@@ -374,7 +377,7 @@ export default function NouveautesSection({ products }: { products: Product[] })
         </div>
 
         {/* Carousel — last card clipped to hint scrollability */}
-        <div className="flex gap-[1px] overflow-x-auto scroll-smooth scrollbar-hide px-6 md:px-10" style={{ scrollbarWidth: "none" }}>
+        <div className="flex gap-3 md:gap-4 overflow-x-auto scroll-smooth scrollbar-hide px-6 md:px-10" style={{ scrollbarWidth: "none" }}>
           {products.map((product) => <ProductCard key={product.id} product={product} />)}
         </div>
 
