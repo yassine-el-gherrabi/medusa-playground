@@ -114,18 +114,52 @@ function ProductCard({ product }: { product: Product }) {
           )}
         </Link>
 
-        {/* Desktop [+] quick-add */}
-        <button
-          type="button"
-          onClick={handleQuickAdd}
-          className="hidden md:flex absolute bottom-3 right-3 z-10 w-8 h-8 items-center justify-center cursor-pointer"
-          aria-label="Ajout rapide"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <line x1="6" y1="0.5" x2="6" y2="11.5" stroke="black" strokeWidth="0.75" />
-            <line x1="0.5" y1="6" x2="11.5" y2="6" stroke="black" strokeWidth="0.75" />
-          </svg>
-        </button>
+        {/* Desktop: [+] button OR size bar overlay inside image */}
+        {!quickAddOpen ? (
+          <button
+            type="button"
+            onClick={handleQuickAdd}
+            className="hidden md:flex absolute bottom-3 right-3 z-10 w-8 h-8 items-center justify-center cursor-pointer"
+            aria-label="Ajout rapide"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <line x1="6" y1="0.5" x2="6" y2="11.5" stroke="black" strokeWidth="0.75" />
+              <line x1="0.5" y1="6" x2="11.5" y2="6" stroke="black" strokeWidth="0.75" />
+            </svg>
+          </button>
+        ) : hasVariants ? (
+          <div className="hidden md:flex absolute bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur-sm animate-fade-in">
+            {!selectedSize ? (
+              <div className="flex w-full overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+                {sizes.map((s) => {
+                  const inStock = isSizeInStock(variants, activeColor, s.value)
+                  return (
+                    <button
+                      key={s.value}
+                      onClick={(e) => { e.stopPropagation(); if (inStock) setSelectedSize(s.value) }}
+                      disabled={!inStock}
+                      className={`flex-1 min-w-0 py-3 text-[11px] uppercase tracking-[0.1em] transition-colors border-r border-black/10 last:border-r-0 ${
+                        inStock
+                          ? "text-foreground hover:bg-black hover:text-white cursor-pointer"
+                          : "text-black/20 line-through cursor-not-allowed"
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  )
+                })}
+              </div>
+            ) : (
+              <button
+                onClick={(e) => { e.stopPropagation(); handleQuickAdd() }}
+                disabled={adding}
+                className="w-full py-3 text-[11px] font-medium uppercase tracking-[0.15em] bg-black text-white hover:bg-black/90 transition-colors cursor-pointer"
+              >
+                {adding ? "Ajout..." : "Ajouter au panier"}
+              </button>
+            )}
+          </div>
+        ) : null}
 
         {/* Mobile [+] quick-add */}
         <button
@@ -165,7 +199,7 @@ function ProductCard({ product }: { product: Product }) {
 
         {/* Color swatches — image thumbnails */}
         {colors.length > 1 && (
-          <div className="flex gap-2 mt-2 pb-1">
+          <div className="flex gap-2 mt-2 pb-1 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
             {colors.map((c) => {
               const thumb = getColorThumbnail(colorImages, c.value)
               const isActive = activeColor === c.value
@@ -193,51 +227,6 @@ function ProductCard({ product }: { product: Product }) {
           </div>
         )}
 
-        {/* Desktop: size selector (appears on [+] click) */}
-        {quickAddOpen && hasVariants && (
-          <div className="hidden md:block mt-3 animate-fade-in">
-            <div className="flex gap-2.5 flex-wrap">
-              {sizes.map((s) => {
-                const inStock = isSizeInStock(variants, activeColor, s.value)
-                const isSelected = selectedSize === s.value
-                return (
-                  <button
-                    key={s.value}
-                    onClick={() => { if (inStock) { setSelectedSize(s.value) } }}
-                    disabled={!inStock}
-                    className={`relative text-[11px] pb-1 transition-colors cursor-pointer ${
-                      isSelected ? "text-foreground font-medium"
-                      : inStock ? "text-muted-foreground hover:text-foreground"
-                      : "text-black/20 line-through cursor-not-allowed"
-                    }`}
-                  >
-                    {s.label}
-                    <span className={`absolute bottom-0 left-0 right-0 h-px transition-colors ${
-                      isSelected ? "bg-black" : "bg-transparent"
-                    }`} />
-                  </button>
-                )
-              })}
-            </div>
-            {selectedSize && (
-              <button
-                onClick={handleQuickAdd}
-                disabled={adding}
-                className="mt-2 text-[11px] font-medium uppercase tracking-[0.12em] text-foreground cursor-pointer group"
-              >
-                <span className="relative">
-                  {adding ? "Ajout..." : "Ajouter au panier"}
-                  {!adding && (
-                    <>
-                      <span className="absolute left-0 right-0 bottom-[-2px] h-px bg-current origin-right transition-transform duration-300 group-hover:scale-x-0" />
-                      <span className="absolute left-0 right-0 bottom-[-2px] h-px bg-current scale-x-0 origin-left transition-transform duration-300 delay-200 group-hover:scale-x-100" />
-                    </>
-                  )}
-                </span>
-              </button>
-            )}
-          </div>
-        )}
       </div>
 
       {/* ── Mobile bottom sheet ── */}
