@@ -94,30 +94,11 @@ const TRIPTYCH_CARDS: TriptyqueCard[] = [
 
 // ── Data fetching (server-side) ──
 
-async function fetchWithRetry<T>(label: string, fn: () => Promise<T>, fallback: T, retries = 3): Promise<T> {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const result = await fn()
-      console.log(`[HOME] ${label}: SUCCESS (attempt ${i + 1})`)
-      return result
-    } catch (err) {
-      console.error(`[HOME] ${label}: FAILED attempt ${i + 1}/${retries}`, err instanceof Error ? err.message : err)
-      if (i < retries - 1) await new Promise((r) => setTimeout(r, 1000))
-    }
-  }
-  console.error(`[HOME] ${label}: ALL RETRIES FAILED, using fallback`)
-  return fallback
-}
-
 async function getHomeData() {
-  console.log(`[HOME] getHomeData called. DEFAULT_REGION="${DEFAULT_REGION}", BACKEND_URL="${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}", KEY="${process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY?.slice(0, 10)}..."`)
-
   const [collections, productsResult] = await Promise.all([
-    fetchWithRetry("getCollections", () => getCollections(), []),
-    fetchWithRetry("getProducts", () => getProducts({ regionId: DEFAULT_REGION, limit: 12 }), { products: [], count: 0 }),
+    getCollections().catch(() => []),
+    getProducts({ regionId: DEFAULT_REGION, limit: 12 }).catch(() => ({ products: [], count: 0 })),
   ])
-
-  console.log(`[HOME] Results: ${collections.length} collections, ${productsResult.products.length} products`)
 
   const sorted = [...collections].sort(
     (a, b) =>
@@ -125,25 +106,10 @@ async function getHomeData() {
       new Date(a.created_at || 0).getTime()
   )
 
-  // Filter out fully sold-out products (all variants at 0 inventory)
-  const availableProducts = productsResult.products.filter((p) => {
-    if (!p.variants?.length) return true
-    return p.variants.some((v) => (v.inventory_quantity ?? 1) > 0)
-  })
-
-  console.log(`[HOME] After filter: ${availableProducts.length} available out of ${productsResult.products.length}`)
-  if (availableProducts.length === 0 && productsResult.products.length > 0) {
-    // Debug: why were all products filtered out?
-    for (const p of productsResult.products.slice(0, 3)) {
-      const invs = p.variants?.map((v) => `${v.inventory_quantity}`) || []
-      console.log(`[HOME] FILTERED OUT: "${p.title}" inventory=[${invs.join(",")}]`)
-    }
-  }
-
   return {
     collections: sorted,
     latestCollection: sorted[0] ?? null,
-    products: availableProducts,
+    products: productsResult.products,
   }
 }
 
