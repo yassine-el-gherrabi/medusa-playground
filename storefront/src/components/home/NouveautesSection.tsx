@@ -118,7 +118,7 @@ function ProductCard({ product }: { product: Product }) {
         <button
           type="button"
           onClick={handleQuickAdd}
-          className="hidden md:flex absolute bottom-3 right-3 z-10 w-8 h-8 items-center justify-center bg-white/90 backdrop-blur-sm hover:bg-white transition-colors cursor-pointer"
+          className="hidden md:flex absolute bottom-3 right-3 z-10 w-8 h-8 items-center justify-center cursor-pointer"
           aria-label="Ajout rapide"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -165,7 +165,7 @@ function ProductCard({ product }: { product: Product }) {
 
         {/* Color swatches — image thumbnails */}
         {colors.length > 1 && (
-          <div className="flex gap-2 mt-2">
+          <div className="flex gap-2 mt-2 pb-1">
             {colors.map((c) => {
               const thumb = getColorThumbnail(colorImages, c.value)
               const isActive = activeColor === c.value
