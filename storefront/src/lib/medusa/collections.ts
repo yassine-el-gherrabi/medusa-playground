@@ -10,7 +10,7 @@ export async function getCollections(
       limit,
       fields: "+metadata",
     },
-    { next: { tags: [TAGS.collections] } }
+    { next: { tags: [TAGS.collections], revalidate: 120 } } as any
   )
 
   return collections as Collection[]
@@ -25,7 +25,7 @@ export async function getCollectionByHandle(
       fields: "+metadata",
       limit: 1,
     },
-    { next: { tags: [TAGS.collections] } }
+    { next: { tags: [TAGS.collections], revalidate: 120 } } as any
   )
 
   return (collections?.[0] as Collection) ?? null

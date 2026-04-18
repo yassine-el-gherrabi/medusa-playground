@@ -13,7 +13,7 @@ export async function getCategories(
       fields: "+category_children,+metadata",
       limit: 50,
     },
-    { next: { tags: [TAGS.categories] } }
+    { next: { tags: [TAGS.categories], revalidate: 120 } } as any
   )
 
   return product_categories as Category[]
@@ -28,7 +28,7 @@ export async function getCategoryByHandle(
       fields: "+category_children,+metadata",
       limit: 1,
     },
-    { next: { tags: [TAGS.categories] } }
+    { next: { tags: [TAGS.categories], revalidate: 120 } } as any
   )
 
   return (product_categories?.[0] as Category) ?? null

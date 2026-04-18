@@ -23,7 +23,7 @@ export async function getProducts(params: {
       ...(params.collectionId && { collection_id: params.collectionId }),
       ...(params.q && { q: params.q }),
     },
-    { next: { tags: [TAGS.products] } }
+    { next: { tags: [TAGS.products], revalidate: 120 } } as any
   )
 
   return { products: products as Product[], count: count ?? 0 }
@@ -40,7 +40,7 @@ export async function getProductByHandle(
       fields: PRODUCT_FIELDS,
       limit: 1,
     },
-    { next: { tags: [TAGS.products] } }
+    { next: { tags: [TAGS.products], revalidate: 120 } } as any
   )
 
   return (products?.[0] as Product) ?? null
