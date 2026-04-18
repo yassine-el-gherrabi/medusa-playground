@@ -13,6 +13,11 @@ import type { HeroSlide } from "@/components/home/HeroSection"
 import type { ShoeImage } from "@/components/home/ShoesSection"
 import type { TriptyqueCard } from "@/components/home/TriptyqueSection"
 
+// ISR: page revalidates every 30s. If build-time fetch fails (empty data),
+// the first visitor after 30s triggers a re-render with real API data.
+// Fetch-level cache (3600s) handles long-term caching of the actual data.
+export const revalidate = 30
+
 // ── Editorial content (static, managed by the team) ──
 
 const HERO_SLIDES: HeroSlide[] = [
@@ -92,8 +97,11 @@ const TRIPTYCH_CARDS: TriptyqueCard[] = [
 
 async function getHomeData() {
   const [collections, productsResult] = await Promise.all([
-    getCollections(),
-    getProducts({ regionId: DEFAULT_REGION, limit: 12 }),
+    getCollections().catch(() => []),
+    getProducts({ regionId: DEFAULT_REGION, limit: 12 }).catch(() => ({
+      products: [],
+      count: 0,
+    })),
   ])
 
   const sorted = [...collections].sort(
