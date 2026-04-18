@@ -131,6 +131,15 @@ async function getHomeData() {
     return p.variants.some((v) => (v.inventory_quantity ?? 1) > 0)
   })
 
+  console.log(`[HOME] After filter: ${availableProducts.length} available out of ${productsResult.products.length}`)
+  if (availableProducts.length === 0 && productsResult.products.length > 0) {
+    // Debug: why were all products filtered out?
+    for (const p of productsResult.products.slice(0, 3)) {
+      const invs = p.variants?.map((v) => `${v.inventory_quantity}`) || []
+      console.log(`[HOME] FILTERED OUT: "${p.title}" inventory=[${invs.join(",")}]`)
+    }
+  }
+
   return {
     collections: sorted,
     latestCollection: sorted[0] ?? null,
