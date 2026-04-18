@@ -43,9 +43,6 @@ export default function Header({
   const pathname = usePathname()
   const overlayType = getOverlayType(pathname)
   const isOverlay = overlayType !== null
-  if (typeof window === "undefined") {
-    console.log(`[HEADER SSR] pathname="${pathname}" overlayType="${overlayType}" isOverlay=${isOverlay}`)
-  }
   const { cart, openDrawer } = useCart()
   const cartCount =
     cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
@@ -53,13 +50,16 @@ export default function Header({
   const [megaMenuOpen, setMegaMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  // Start as "not scrolled" = transparent. Client will correct after mount if needed.
   const [scrolled, setScrolled] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
   const lastScrollY = useRef(0)
   const headerOffset = useRef(0)
   const headerRef = useRef<HTMLElement>(null)
   const heroFractionRef = useRef(getHeroHeightFraction(pathname))
 
   useEffect(() => {
+    setHydrated(true)
     heroFractionRef.current = getHeroHeightFraction(pathname)
     const threshold = heroFractionRef.current * window.innerHeight - HEADER_H
     setScrolled(window.scrollY > threshold)
@@ -123,6 +123,7 @@ export default function Header({
         ref={headerRef}
         onMouseLeave={closeMegaMenu}
         className={`fixed top-0 left-0 right-0 z-30 ${transparent ? "bg-transparent" : "bg-white"} ${textColor}`}
+        style={{ opacity: hydrated ? 1 : 0 }}
       >
         <div className="h-16 px-6 lg:px-10 flex items-center">
           {/* Mobile LEFT: Burger + Search */}
