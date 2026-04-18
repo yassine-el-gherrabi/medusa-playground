@@ -50,6 +50,7 @@ export default function Header({
   const [megaMenuOpen, setMegaMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const lastScrollY = useRef(0)
   const headerOffset = useRef(0)
@@ -57,6 +58,7 @@ export default function Header({
   const heroFractionRef = useRef(getHeroHeightFraction(pathname))
 
   useEffect(() => {
+    setMounted(true)
     heroFractionRef.current = getHeroHeightFraction(pathname)
     const threshold = heroFractionRef.current * window.innerHeight - HEADER_H
     setScrolled(window.scrollY > threshold)
@@ -110,15 +112,19 @@ export default function Header({
       ? collections[0]
       : null
 
+  // Before mount, default to transparent for overlay routes to avoid flash
   const transparent = isOverlay && !scrolled && !megaMenuOpen
   const useLightText = transparent && overlayType === "dark-hero"
   const textColor = useLightText ? "text-white" : "text-foreground"
+  // Hide spacer only after mount to avoid SSR mismatch
+  const showSpacer = mounted ? !isOverlay : true
 
   return (
     <>
       <header
         ref={headerRef}
         onMouseLeave={closeMegaMenu}
+        suppressHydrationWarning
         className={`fixed top-0 left-0 right-0 z-30 ${transparent ? "bg-transparent" : "bg-white"} ${textColor}`}
       >
         <div className="h-16 px-6 lg:px-10 flex items-center">
@@ -254,7 +260,7 @@ export default function Header({
       />
 
       {/* Spacer for non-overlay pages */}
-      {!isOverlay && <div className="h-16" />}
+      {showSpacer && <div className="h-16" />}
     </>
   )
 }
