@@ -43,6 +43,9 @@ export default function Header({
   const pathname = usePathname()
   const overlayType = getOverlayType(pathname)
   const isOverlay = overlayType !== null
+  if (typeof window === "undefined") {
+    console.log(`[HEADER SSR] pathname="${pathname}" overlayType="${overlayType}" isOverlay=${isOverlay}`)
+  }
   const { cart, openDrawer } = useCart()
   const cartCount =
     cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
