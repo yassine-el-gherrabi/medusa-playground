@@ -177,8 +177,10 @@ function ProductCard({ product }: { product: Product }) {
                   aria-label={c.label}
                 >
                   <div className={`w-10 h-[52px] md:w-11 md:h-[56px] overflow-hidden bg-[#f5f5f5] transition-all ${
-                    isActive ? "ring-1 ring-black ring-offset-1" : "ring-1 ring-transparent hover:ring-black/20"
-                  }`}>
+                    isActive ? "ring-1 ring-black ring-offset-1" : ""
+                  }`}
+                    onMouseEnter={() => setActiveColor(c.value)}
+                  >
                     {thumb ? (
                       <Image src={thumb} alt={c.label} fill className="object-cover" sizes="44px" />
                     ) : (
