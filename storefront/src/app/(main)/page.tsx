@@ -13,8 +13,9 @@ import type { HeroSlide } from "@/components/home/HeroSection"
 import type { ShoeImage } from "@/components/home/ShoesSection"
 import type { TriptyqueCard } from "@/components/home/TriptyqueSection"
 
-// ISR: regenerate every 120s — if build-time fetch fails, next visitor gets fresh data
-export const revalidate = 120
+// Dynamic rendering — fetch fresh data on every request
+// ISR was caching empty results from build-time API failures
+export const dynamic = "force-dynamic"
 
 // ── Editorial content (static, managed by the team) ──
 
