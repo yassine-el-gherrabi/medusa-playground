@@ -36,7 +36,7 @@ export default async function CategoryPage({ params }: Props) {
   }).catch(() => ({ products: [], count: 0 }))
 
   return (
-    <div className="animate-fade-in">
+    <div className="-mt-16 animate-fade-in">
       <EditorialHero
         title={category.name}
         label="Catégorie"

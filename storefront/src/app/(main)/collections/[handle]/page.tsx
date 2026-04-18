@@ -45,7 +45,7 @@ export default async function CollectionPage({ params }: Props) {
   const gallery = (meta?.shoot_gallery as string[]) || []
 
   return (
-    <div className="animate-fade-in">
+    <div className="-mt-16 animate-fade-in">
       <EditorialHero
         title={collection.title}
         description={meta?.description as string}

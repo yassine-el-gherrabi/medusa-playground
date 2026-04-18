@@ -123,7 +123,7 @@ export default async function HomePage() {
   const { collections, latestCollection, products } = await getHomeData()
 
   return (
-    <div>
+    <div className="-mt-16">
       <HeroSection slides={HERO_SLIDES} />
 
       <Suspense fallback={<div className="px-6 py-16"><ProductGridSkeleton count={6} /></div>}>

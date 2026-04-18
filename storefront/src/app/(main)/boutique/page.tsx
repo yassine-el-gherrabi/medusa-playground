@@ -25,7 +25,7 @@ export default async function BoutiquePage() {
   ])
 
   return (
-    <div className="animate-fade-in">
+    <div className="-mt-16 animate-fade-in">
       <EditorialHero
         title="Boutique"
         label="Catalogue"
