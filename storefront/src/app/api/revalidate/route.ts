@@ -3,9 +3,13 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   const secret = request.headers.get("x-revalidate-secret")
+  const envSecret = process.env.REVALIDATE_SECRET
 
-  if (secret !== process.env.REVALIDATE_SECRET) {
-    return NextResponse.json({ error: "Invalid secret" }, { status: 401 })
+  if (!envSecret || secret !== envSecret) {
+    return NextResponse.json(
+      { error: "Invalid secret", hasEnvSecret: !!envSecret },
+      { status: 401 }
+    )
   }
 
   const body = await request.json()
@@ -15,7 +19,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing tag" }, { status: 400 })
   }
 
-  revalidateTag(tag, "max")
+  revalidateTag(tag)
 
   return NextResponse.json({ revalidated: true, tag })
 }
