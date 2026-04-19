@@ -133,7 +133,7 @@ function ProductCard({ product }: { product: Product }) {
         )}
         {/* Size bar overlay inside image */}
         {quickAddOpen && hasVariants ? (
-          <div className="hidden md:flex absolute bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur-sm animate-fade-in">
+          <div className="hidden md:flex absolute bottom-0 left-0 right-0 z-10 bg-black animate-fade-in">
             {!selectedSize ? (
               <div className="flex w-full overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
                 {sizes.map((s) => {
@@ -143,10 +143,10 @@ function ProductCard({ product }: { product: Product }) {
                       key={s.value}
                       onClick={(e) => { e.stopPropagation(); if (inStock) setSelectedSize(s.value) }}
                       disabled={!inStock}
-                      className={`flex-1 min-w-0 py-3 text-[11px] uppercase tracking-[0.1em] transition-colors border-r border-black/10 last:border-r-0 ${
+                      className={`flex-1 min-w-0 py-2.5 text-[11px] uppercase tracking-[0.1em] transition-colors border-r border-white/10 last:border-r-0 ${
                         inStock
-                          ? "text-foreground hover:bg-black hover:text-white cursor-pointer"
-                          : "text-black/20 line-through cursor-not-allowed"
+                          ? "text-white/70 hover:text-white cursor-pointer"
+                          : "text-white/20 line-through cursor-not-allowed"
                       }`}
                     >
                       {s.label}
@@ -158,7 +158,7 @@ function ProductCard({ product }: { product: Product }) {
               <button
                 onClick={(e) => { e.stopPropagation(); handleQuickAdd() }}
                 disabled={adding}
-                className="w-full py-3 text-[11px] font-medium uppercase tracking-[0.15em] bg-black text-white hover:bg-black/90 transition-colors cursor-pointer"
+                className="w-full py-2.5 text-[11px] font-medium uppercase tracking-[0.15em] bg-white text-black hover:bg-white/90 transition-colors cursor-pointer"
               >
                 {adding ? "Ajout..." : "Ajouter au panier"}
               </button>
