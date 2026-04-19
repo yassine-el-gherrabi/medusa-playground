@@ -137,7 +137,7 @@ function ProductCard({ product }: { product: Product }) {
 
         {/* Desktop: size selector — inside image, bottom-left, Represent-style */}
         {quickAddOpen && hasVariants && (
-          <div className="hidden md:flex absolute bottom-3 left-1/2 -translate-x-1/2 z-10 animate-fade-in bg-white/30 backdrop-blur-md rounded-[2px] border border-white/40 overflow-hidden">
+          <div className="hidden md:flex absolute bottom-3 left-1/2 -translate-x-1/2 z-10 animate-fade-in bg-black/30 backdrop-blur-md rounded-[2px] border border-white/30 overflow-hidden">
             {sizes.map((s) => {
               const inStock = isSizeInStock(variants, activeColor, s.value)
               return (
@@ -153,10 +153,10 @@ function ProductCard({ product }: { product: Product }) {
                     finally { setAdding(false); setQuickAddOpen(false) }
                   }}
                   disabled={!inStock || adding}
-                  className={`w-[36px] h-[36px] text-[12px] transition-colors border-r border-white/30 last:border-r-0 ${
+                  className={`w-[36px] h-[36px] text-[12px] transition-colors border-r border-white/20 last:border-r-0 ${
                     inStock && !adding
-                      ? "text-foreground hover:bg-white/50 cursor-pointer"
-                      : "text-black/25 line-through cursor-not-allowed"
+                      ? "text-white/80 hover:text-white hover:bg-white/10 cursor-pointer"
+                      : "text-white/25 line-through cursor-not-allowed"
                   }`}
                 >
                   {s.label}
