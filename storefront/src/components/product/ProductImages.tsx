@@ -44,6 +44,14 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[] }
     }
   }, [galleryOpen, galleryStartIndex])
 
+  // Escape key closes gallery
+  useEffect(() => {
+    if (!galleryOpen) return
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setGalleryOpen(false) }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [galleryOpen])
+
   // Lock body scroll when gallery is open
   useEffect(() => {
     if (galleryOpen) {
