@@ -19,6 +19,7 @@ export async function getProducts(params: {
     {
       limit: params.limit ?? 20,
       offset: params.offset ?? 0,
+      order: "-created_at",
       ...(params.regionId && { region_id: params.regionId }),
       fields: PRODUCT_FIELDS,
       ...(params.categoryId && { category_id: params.categoryId }),
