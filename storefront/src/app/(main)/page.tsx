@@ -98,7 +98,7 @@ const TRIPTYCH_CARDS: TriptyqueCard[] = [
 async function getHomeData() {
   const [collections, productsResult] = await Promise.all([
     getCollections().catch(() => []),
-    getProducts({ regionId: DEFAULT_REGION, limit: 12 }).catch(() => ({
+    getProducts({ regionId: DEFAULT_REGION, limit: 8 }).catch(() => ({
       products: [],
       count: 0,
     })),
