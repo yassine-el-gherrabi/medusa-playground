@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useCart } from "@/providers/CartProvider"
 import { formatPrice } from "@/lib/utils"
+import { getThumbnailForVariantTitle } from "@/lib/product-helpers"
 import type { LineItem } from "@/types"
 
 const DEBOUNCE_MS = 400
@@ -12,12 +13,9 @@ const DEBOUNCE_MS = 400
 export default function CartItem({ item, currencyCode = "eur" }: { item: LineItem; currencyCode?: string }) {
   const { updateItem, removeItem } = useCart()
 
-  // Try to get color-specific image from product metadata
   const variantTitle = (item as unknown as Record<string, string>).variant_title || ""
-  const colorName = variantTitle.split(" / ")[0] // "Noir / M" → "Noir"
-  const productMeta = (item.variant?.product?.metadata as Record<string, unknown>) || {}
-  const colorImages = (productMeta.color_images as Record<string, { url: string }[]>) || {}
-  const colorThumb = colorName && colorImages[colorName]?.[0]?.url
+  const productMeta = item.variant?.product?.metadata as Record<string, unknown> | undefined
+  const colorThumb = getThumbnailForVariantTitle(variantTitle, productMeta)
   const thumbnail = colorThumb || item.thumbnail || item.variant?.product?.thumbnail
 
   // Optimistic local quantity for instant feedback during debounce

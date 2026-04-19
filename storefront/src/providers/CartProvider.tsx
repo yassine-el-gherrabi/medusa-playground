@@ -41,7 +41,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     queryFn: async () => {
       if (!cartId) return null
       try {
-        const { cart } = await sdk.store.cart.retrieve(cartId)
+        const { cart } = await sdk.store.cart.retrieve(cartId, {
+          fields: "+items.variant.product.metadata",
+        } as any)
         return cart as Cart
       } catch {
         // Cart expired or invalid — clear and start fresh

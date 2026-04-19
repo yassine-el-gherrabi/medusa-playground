@@ -3,6 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import type { Product } from "@/types"
+import { COLOR_MAP, getColorImages, getColorThumbnail } from "@/lib/product-helpers"
 
 type ProductOptionsProps = {
   product: Product
@@ -10,37 +11,6 @@ type ProductOptionsProps = {
   onOptionChange: (optionId: string, value: string) => void
   selectedVariant: NonNullable<Product["variants"]>[number] | null
   modelInfo?: string | null
-}
-
-// Map to display color swatches
-const COLOR_MAP: Record<string, string> = {
-  "Noir": "#000000", "Black": "#000000",
-  "Blanc": "#FFFFFF", "White": "#FFFFFF",
-  "Bleu": "#1e3a5f", "Blue": "#1e3a5f",
-  "Rouge": "#8b1a1a", "Red": "#8b1a1a",
-  "Vert": "#2d4a2d", "Green": "#2d4a2d",
-  "Gris": "#8a8a8a", "Grey": "#8a8a8a", "Gray": "#8a8a8a",
-  "Beige": "#c8b89a",
-  "Violet": "#4a2d6b", "Purple": "#4a2d6b",
-  "Marron": "#5c3a1e", "Brown": "#5c3a1e",
-  "Orange": "#cc6600",
-  "Rose": "#d4a0a0", "Pink": "#d4a0a0",
-  "Jaune": "#c4a82b", "Yellow": "#c4a82b",
-  "Kaki": "#5b6b3c", "Khaki": "#5b6b3c",
-}
-
-type ColorImagesMap = Record<string, { url: string }[]>
-
-function getColorImages(product: Product): ColorImagesMap {
-  return ((product.metadata as Record<string, unknown> | null)?.color_images as ColorImagesMap) || {}
-}
-
-function getColorThumbnail(product: Product, colorImages: ColorImagesMap, colorValue: string): string | null {
-  // First try metadata.color_images
-  const ci = colorImages[colorValue]
-  if (ci?.[0]?.url) return ci[0].url
-  // Fallback: product thumbnail
-  return null
 }
 
 function isColorOption(title: string): boolean {
@@ -100,7 +70,7 @@ export default function ProductOptions({
         <div className="flex flex-wrap gap-2.5">
           {option.values?.map((v) => {
             const isSelected = selectedValue === v.value
-            const thumbnail = getColorThumbnail(product, colorImages, v.value)
+            const thumbnail = getColorThumbnail(colorImages, v.value)
             const color = COLOR_MAP[v.value] || "#cccccc"
             const inStock = isOptionInStock(option.id, v.value)
             return (

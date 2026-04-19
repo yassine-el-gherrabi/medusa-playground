@@ -87,6 +87,41 @@ export function getColorThumbnail(ci: ColorImagesMap, color: string): string | n
   return ci[color]?.[0]?.url || null
 }
 
+// ── Colors ──
+
+export const COLOR_MAP: Record<string, string> = {
+  "Noir": "#000000", "Black": "#000000",
+  "Blanc": "#FFFFFF", "White": "#FFFFFF",
+  "Bleu": "#1e3a5f", "Blue": "#1e3a5f",
+  "Rouge": "#8b1a1a", "Red": "#8b1a1a",
+  "Vert": "#2d4a2d", "Green": "#2d4a2d",
+  "Gris": "#8a8a8a", "Grey": "#8a8a8a", "Gray": "#8a8a8a",
+  "Beige": "#c8b89a",
+  "Violet": "#4a2d6b", "Purple": "#4a2d6b",
+  "Marron": "#5c3a1e", "Brown": "#5c3a1e",
+  "Orange": "#cc6600",
+  "Rose": "#d4a0a0", "Pink": "#d4a0a0",
+  "Jaune": "#c4a82b", "Yellow": "#c4a82b",
+  "Kaki": "#5b6b3c", "Khaki": "#5b6b3c",
+  "noir v2": "#111", "noir/gris": "#444",
+}
+
+/**
+ * Get the thumbnail for a specific color from a variant_title string.
+ * Used in cart items where we only have the variant title ("Noir / M")
+ * and the product metadata (which might not be available).
+ */
+export function getThumbnailForVariantTitle(
+  variantTitle: string,
+  metadata: Record<string, unknown> | null | undefined
+): string | null {
+  if (!variantTitle || !metadata) return null
+  const colorName = variantTitle.split(" / ")[0]?.trim()
+  if (!colorName) return null
+  const ci = (metadata.color_images as ColorImagesMap) || {}
+  return ci[colorName]?.[0]?.url || null
+}
+
 // ── Metadata ──
 
 export function getCompareAtPrice(product: Product): number | null {
