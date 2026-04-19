@@ -14,21 +14,6 @@ import Logo from "./Logo"
 const HEADER_H = 64
 const SCROLL_DELTA_MIN = 5
 
-/**
- * Header — CSS-driven theme, JS-driven scroll behavior
- *
- * THEME (CSS, no flash):
- * - Default: transparent bg, black text (text-foreground)
- * - When main contains [data-header-theme="dark"]: white text (via CSS sibling selector)
- * - CSS applies at first paint — no SSR mismatch, no flash
- *
- * SCROLL (JS):
- * - Hide on scroll down (5px threshold), show on scroll up
- * - When page has a dark hero and user scrolls past it:
- *   add .header-scrolled class → CSS overrides to white bg + black text
- * - GPU-accelerated via translate3d
- */
-
 function SearchIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className={className}>
@@ -56,13 +41,13 @@ export default function Header({
   const lastScrollY = useRef(0)
   const headerOffset = useRef(0)
   const headerRef = useRef<HTMLElement>(null)
+  const rafId = useRef(0)
+  const heroObserverRef = useRef<IntersectionObserver | null>(null)
 
-  // ── IntersectionObserver: detect when dark hero leaves viewport ──
+  // ── Observe [data-header-theme="dark"] to detect scroll-past-hero ──
   useEffect(() => {
-    let heroObserver: IntersectionObserver | null = null
-
-    function setup() {
-      if (heroObserver) heroObserver.disconnect()
+    function observe() {
+      if (heroObserverRef.current) heroObserverRef.current.disconnect()
 
       const heroEl = document.querySelector('[data-header-theme="dark"]')
       if (!heroEl) {
@@ -70,52 +55,56 @@ export default function Header({
         return
       }
 
-      heroObserver = new IntersectionObserver(
-        ([entry]) => {
-          setScrolledPastHero(!entry.isIntersecting)
-        },
-        { threshold: [0], rootMargin: `-${HEADER_H}px 0px 0px 0px` }
+      heroObserverRef.current = new IntersectionObserver(
+        ([entry]) => setScrolledPastHero(!entry.isIntersecting),
+        { threshold: 0, rootMargin: `-${HEADER_H}px 0px 0px 0px` }
       )
-      heroObserver.observe(heroEl)
+      heroObserverRef.current.observe(heroEl)
     }
 
-    // Small delay to let DOM settle after route change
-    const timer = setTimeout(setup, 50)
+    // MutationObserver to re-scan when DOM settles after route change
+    const mutationObserver = new MutationObserver(() => observe())
+    mutationObserver.observe(document.body, { childList: true, subtree: false })
+    observe()
 
     return () => {
-      clearTimeout(timer)
-      if (heroObserver) heroObserver.disconnect()
+      mutationObserver.disconnect()
+      if (heroObserverRef.current) heroObserverRef.current.disconnect()
     }
   }, [pathname])
 
-  // ── Scroll: hide on down, show on up ──
+  // ── Scroll: hide/show with rAF throttle ──
   useEffect(() => {
     const handleScroll = () => {
-      const currentY = window.scrollY
-      const delta = currentY - lastScrollY.current
+      cancelAnimationFrame(rafId.current)
+      rafId.current = requestAnimationFrame(() => {
+        const currentY = window.scrollY
+        const delta = currentY - lastScrollY.current
 
-      if (Math.abs(delta) < SCROLL_DELTA_MIN) return
+        if (Math.abs(delta) >= SCROLL_DELTA_MIN) {
+          headerOffset.current = delta > 0
+            ? Math.max(-HEADER_H, headerOffset.current - delta)
+            : Math.min(0, headerOffset.current - delta)
 
-      if (delta > 0) {
-        headerOffset.current = Math.max(-HEADER_H, headerOffset.current - delta)
-      } else {
-        headerOffset.current = Math.min(0, headerOffset.current - delta)
-      }
+          if (currentY <= 0) headerOffset.current = 0
 
-      if (currentY <= 0) headerOffset.current = 0
+          if (headerRef.current) {
+            headerRef.current.style.transform = `translate3d(0,${headerOffset.current}px,0)`
+          }
 
-      if (headerRef.current) {
-        headerRef.current.style.transform = `translate3d(0, ${headerOffset.current}px, 0)`
-      }
-
-      lastScrollY.current = currentY
+          lastScrollY.current = currentY
+        }
+      })
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      cancelAnimationFrame(rafId.current)
+    }
   }, [])
 
-  // Close mega menu on route change
+  // ── Mega menu keyboard + route close ──
   useEffect(() => { setMegaMenuOpen(false) }, [pathname])
 
   useEffect(() => {
@@ -127,10 +116,8 @@ export default function Header({
 
   const openMegaMenu = useCallback(() => setMegaMenuOpen(true), [])
   const closeMegaMenu = useCallback(() => setMegaMenuOpen(false), [])
-
   const latestCollection = collections.length > 0 ? collections[0] : null
 
-  // JS-driven classes for scroll state and mega menu
   const scrollClass = scrolledPastHero ? "header-scrolled" : ""
   const menuClass = megaMenuOpen ? "header-menu-open" : ""
 
@@ -138,13 +125,14 @@ export default function Header({
     <>
       <header
         ref={headerRef}
+        role="banner"
         onMouseLeave={closeMegaMenu}
         className={`site-header fixed top-0 left-0 right-0 z-30 transition-colors duration-300 ease-out ${scrollClass} ${menuClass}`}
       >
-        <div className="h-16 px-6 lg:px-10 flex items-center">
+        <nav className="h-16 px-6 lg:px-10 flex items-center" aria-label="Navigation principale">
           {/* Mobile LEFT: Burger + Search */}
           <div className="lg:hidden flex items-center gap-3">
-            <button className="p-2 -ml-2 hover:opacity-70" onClick={() => setMobileMenuOpen(true)} aria-label="Menu">
+            <button className="p-2 -ml-2 hover:opacity-70" onClick={() => setMobileMenuOpen(true)} aria-label="Ouvrir le menu">
               <div className="flex flex-col gap-[5px]">
                 <span className="block w-5 h-[1px] bg-current" />
                 <span className="block w-3.5 h-[1px] bg-current" />
@@ -156,7 +144,7 @@ export default function Header({
           </div>
 
           {/* Desktop LEFT: Nav */}
-          <nav className="hidden lg:flex items-center gap-12 flex-1">
+          <div className="hidden lg:flex items-center gap-12 flex-1">
             <button onMouseEnter={openMegaMenu} className="group relative text-[11px] font-normal tracking-[0.15em] uppercase">
               Collections
               <span className={`absolute -bottom-0.5 left-0 w-full h-px bg-current transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] ${megaMenuOpen ? "scale-x-100 origin-left" : "scale-x-0 origin-right group-hover:origin-left group-hover:scale-x-100"}`} />
@@ -167,10 +155,10 @@ export default function Header({
                 <span className="absolute -bottom-0.5 left-0 w-full h-px bg-current scale-x-0 origin-right transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:origin-left group-hover:scale-x-100" />
               </Link>
             )}
-          </nav>
+          </div>
 
-          {/* CENTER: Logo — both versions rendered, CSS controls visibility */}
-          <Link href="/" className="flex-shrink-0 flex items-center lg:relative absolute left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0">
+          {/* CENTER: Logo */}
+          <Link href="/" className="flex-shrink-0 flex items-center lg:relative absolute left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0" aria-label="Ice Industry — Accueil">
             <Logo className="h-24 w-auto" />
           </Link>
 
@@ -183,7 +171,7 @@ export default function Header({
               Compte
               <span className="absolute -bottom-0.5 left-0 w-full h-px bg-current scale-x-0 origin-right transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:origin-left group-hover:scale-x-100" />
             </Link>
-            <button onClick={openDrawer} className="group relative text-[11px] font-normal tracking-[0.15em] uppercase">
+            <button onClick={openDrawer} className="group relative text-[11px] font-normal tracking-[0.15em] uppercase" aria-label={`Panier${cartCount > 0 ? `, ${cartCount} articles` : ""}`}>
               Panier{cartCount > 0 && ` (${cartCount})`}
               <span className="absolute -bottom-0.5 left-0 w-full h-px bg-current scale-x-0 origin-right transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:origin-left group-hover:scale-x-100" />
             </button>
@@ -191,20 +179,17 @@ export default function Header({
 
           {/* Mobile RIGHT: Cart */}
           <div className="lg:hidden flex items-center ml-auto">
-            <button onClick={openDrawer} className="relative p-2 hover:opacity-70" aria-label="Panier">
+            <button onClick={openDrawer} className="relative p-2 hover:opacity-70" aria-label={`Panier${cartCount > 0 ? `, ${cartCount} articles` : ""}`}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
               </svg>
               {cartCount > 0 && (
-                <span className="absolute top-1 -right-1 text-[10px] font-medium leading-none">
-                  {cartCount}
-                </span>
+                <span className="absolute top-1 -right-1 text-[10px] font-medium leading-none">{cartCount}</span>
               )}
             </button>
           </div>
-        </div>
+        </nav>
 
-        {/* Mega menu */}
         <MegaMenu categories={categories} collections={collections} isOpen={megaMenuOpen} onClose={closeMegaMenu} />
       </header>
 

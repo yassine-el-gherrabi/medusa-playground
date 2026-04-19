@@ -1,31 +1,32 @@
 @import "tailwindcss";
 
 /* ── Header Theme — CSS-driven, no SSR flash ──
- * Default: transparent bg, black text, black logo
- * When main contains [data-header-theme="dark"]: white text, white logo
- * When JS adds .header-scrolled: white bg, black text, black logo
- * When JS adds .header-menu-open: white bg, black text, black logo
+ *
+ * DOM order: <main> before <header> (header is position:fixed)
+ * CSS :has() detects [data-header-theme="dark"] in main → white text
+ *
+ * States (increasing specificity):
+ * 1. Default: transparent, black text
+ * 2. Dark hero visible: transparent, white text
+ * 3. Scrolled past hero: white bg, black text
+ * 4. Mega menu open: white bg, black text
  */
 
-/* Default state: black text */
 .site-header { background: transparent; color: var(--foreground); }
 .site-header .logo-white { display: none; }
-.site-header .logo-black { display: block; }
 
-/* Dark hero visible: white text (CSS sibling selector — main comes before header) */
 main:has([data-header-theme="dark"]) ~ .site-header { color: white; }
-main:has([data-header-theme="dark"]) ~ .site-header .logo-white { display: block; }
 main:has([data-header-theme="dark"]) ~ .site-header .logo-black { display: none; }
+main:has([data-header-theme="dark"]) ~ .site-header .logo-white { display: block; }
 
-/* Scrolled past hero: override back to white bg + black text */
-main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled { background: white; color: var(--foreground); }
-main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled .logo-white { display: none; }
-main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled .logo-black { display: block; }
+main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled,
+.site-header.header-menu-open { background: white; color: var(--foreground); }
 
-/* Mega menu open: always white bg + black text */
-.site-header.header-menu-open { background: white !important; color: var(--foreground) !important; }
-.site-header.header-menu-open .logo-white { display: none !important; }
-.site-header.header-menu-open .logo-black { display: block !important; }
+main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled .logo-black,
+.site-header.header-menu-open .logo-black { display: block; }
+
+main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled .logo-white,
+.site-header.header-menu-open .logo-white { display: none; }
 
 /* ── Design Tokens ── */
 :root {
