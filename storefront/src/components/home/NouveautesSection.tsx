@@ -154,9 +154,11 @@ function ProductCard({ product }: { product: Product }) {
                   }}
                   disabled={!inStock || adding}
                   className={`w-[36px] h-[36px] text-[12px] transition-colors border-r border-white/20 last:border-r-0 ${
-                    inStock && !adding
-                      ? "text-white/80 hover:text-white hover:bg-white/10 cursor-pointer"
-                      : "text-white/25 line-through cursor-not-allowed"
+                    !inStock
+                      ? "text-white/25 line-through cursor-not-allowed"
+                      : adding
+                        ? "text-white/50 cursor-wait"
+                        : "text-white/80 hover:text-white hover:bg-white/10 cursor-pointer"
                   }`}
                 >
                   {s.label}
