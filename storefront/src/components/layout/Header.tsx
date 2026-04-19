@@ -146,9 +146,19 @@ export default function Header({
   const latestCollection = collections.length > 0 ? collections[0] : null
 
   // ── Styling ──
-  // White text only when a dark hero is visible AND mega menu is closed
+  // Track if this page HAS a dark hero (even if scrolled past it)
+  const [pageHasDarkHero, setPageHasDarkHero] = useState(false)
+
+  useEffect(() => {
+    const heroEl = document.querySelector('[data-header-theme="dark"]')
+    setPageHasDarkHero(!!heroEl)
+  }, [pathname])
+
+  // White text only when dark hero is currently visible
   const useWhiteText = darkHeroVisible && !megaMenuOpen
-  const bgClass = megaMenuOpen ? "bg-white" : "bg-transparent"
+  // Solid background when page has a hero AND we've scrolled past it
+  const showSolidBg = pageHasDarkHero && !darkHeroVisible && !megaMenuOpen
+  const bgClass = megaMenuOpen || showSolidBg ? "bg-white" : "bg-transparent"
   const textClass = useWhiteText ? "text-white" : "text-foreground"
 
   return (
