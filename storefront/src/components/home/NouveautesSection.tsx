@@ -314,7 +314,8 @@ export default function NouveautesSection({ products }: { products: Product[] })
   const scrollRef = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
   const [scrollProgress, setScrollProgress] = useState(0)
-  const [carouselHovered, setCarouselHovered] = useState(false)
+  const [barVisible, setBarVisible] = useState(false)
+  const barTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (!sectionRef.current) return
@@ -326,12 +327,15 @@ export default function NouveautesSection({ products }: { products: Product[] })
     return () => observer.disconnect()
   }, [])
 
-  // Track scroll progress
+  // Track scroll progress + show bar on scroll
   const handleScroll = useCallback(() => {
     if (!scrollRef.current) return
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
     const maxScroll = scrollWidth - clientWidth
     setScrollProgress(maxScroll > 0 ? scrollLeft / maxScroll : 0)
+    setBarVisible(true)
+    if (barTimeout.current) clearTimeout(barTimeout.current)
+    barTimeout.current = setTimeout(() => setBarVisible(false), 1500)
   }, [])
 
   if (products.length === 0) return null
@@ -351,8 +355,8 @@ export default function NouveautesSection({ products }: { products: Product[] })
 
         {/* Carousel */}
         <div
-          onMouseEnter={() => setCarouselHovered(true)}
-          onMouseLeave={() => setCarouselHovered(false)}
+          onMouseEnter={() => setBarVisible(true)}
+          onMouseLeave={() => { barTimeout.current = setTimeout(() => setBarVisible(false), 800) }}
         >
           <div
             ref={scrollRef}
@@ -364,14 +368,17 @@ export default function NouveautesSection({ products }: { products: Product[] })
           </div>
 
           {/* Scroll progress bar — appears on hover */}
-          <div className={`mx-6 md:mx-10 mt-4 transition-opacity duration-300 ${carouselHovered ? "opacity-100" : "opacity-0"}`}>
-            <div
-              className="h-px bg-foreground transition-all duration-150"
-              style={{
-                width: `${Math.max(thumbRatio * 100, 10)}%`,
-                marginLeft: `${scrollProgress * (100 - thumbRatio * 100)}%`,
-              }}
-            />
+          <div className={`mx-6 md:mx-10 mt-4 transition-opacity duration-300 ${barVisible ? "opacity-100" : "opacity-0"}`}>
+            <div className="relative" style={{ height: "1px" }}>
+              <div
+                className="absolute top-0 left-0 h-full bg-foreground will-change-transform"
+                style={{
+                  width: `${Math.max(thumbRatio * 100, 10)}%`,
+                  transform: `translateX(${scrollProgress * ((1 / Math.max(thumbRatio, 0.1)) - 1) * 100}%)`,
+                  transition: "transform 0.05s linear",
+                }}
+              />
+            </div>
           </div>
         </div>
 
