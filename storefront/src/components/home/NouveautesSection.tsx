@@ -75,7 +75,7 @@ function ProductCard({ product }: { product: Product }) {
 
   return (
     <div
-      className="flex-shrink-0 w-[calc(100%/2.15)] md:w-[calc(100%/3.2)] lg:w-[calc(100%/4.3)]"
+      className="flex-shrink-0 w-[calc(100%/2.15)] md:w-[calc(100%/4)] lg:w-[calc(100%/5.5)]"
     >
       {/* ── Image ── */}
       <div
@@ -170,7 +170,7 @@ function ProductCard({ product }: { product: Product }) {
       </div>
 
       {/* ── Product info ── */}
-      <div className="pt-3 md:pt-4 pr-2">
+      <div className="pt-3 md:pt-3 px-3">
         {/* Title + Price — same line */}
         <div className="flex items-baseline justify-between gap-3">
           <Link href={productUrl} className="min-w-0 flex-1">
@@ -348,12 +348,7 @@ export default function NouveautesSection({ products }: { products: Product[] })
   return (
     <section ref={sectionRef} className="bg-white">
       <div className={`transition-all duration-1000 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-        {/* Header */}
-        <div className="flex items-end justify-between px-6 md:px-10 pt-6 md:pt-10 pb-6 md:pb-8">
-          <h2 className="text-sm font-medium uppercase tracking-[0.15em]">Nouveautés</h2>
-        </div>
-
-        {/* Carousel */}
+        {/* Carousel — no header, collé au hero */}
         <div
           onMouseEnter={() => setBarVisible(true)}
           onMouseLeave={() => { barTimeout.current = setTimeout(() => setBarVisible(false), 800) }}
@@ -361,14 +356,21 @@ export default function NouveautesSection({ products }: { products: Product[] })
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="flex gap-3 md:gap-4 overflow-x-auto scroll-smooth scrollbar-hide px-6 md:px-10"
+            className="flex overflow-x-auto scroll-smooth scrollbar-hide"
             style={{ scrollbarWidth: "none" }}
           >
-            {products.map((product) => <ProductCard key={product.id} product={product} />)}
+            {products.map((product, i) => (
+              <div key={product.id} className="flex">
+                <ProductCard product={product} />
+                {i < products.length - 1 && (
+                  <div className="w-px bg-border shrink-0" />
+                )}
+              </div>
+            ))}
           </div>
 
           {/* Scroll progress bar — appears on hover */}
-          <div className={`mx-6 md:mx-10 mt-4 transition-opacity duration-300 ${barVisible ? "opacity-100" : "opacity-0"}`}>
+          <div className={`mx-0 mt-4 transition-opacity duration-300 ${barVisible ? "opacity-100" : "opacity-0"}`}>
             <div className="relative" style={{ height: "1px" }}>
               <div
                 className="absolute top-0 left-0 h-full bg-foreground will-change-transform"
