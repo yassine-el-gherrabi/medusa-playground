@@ -103,10 +103,10 @@ function ProductCard({ product }: { product: Product }) {
 
 function RecentCard({ item }: { item: { handle: string; title: string; thumbnail: string } }) {
   return (
-    <Link href={`/products/${item.handle}`} className="group block shrink-0 w-[140px]">
+    <Link href={`/products/${item.handle}`} className="group block shrink-0 w-[200px] lg:w-[220px]">
       <div className="aspect-[3/4] relative bg-[#f5f5f5] overflow-hidden">
         {item.thumbnail && (
-          <Image src={item.thumbnail} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="140px" loading="lazy" />
+          <Image src={item.thumbnail} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="220px" loading="lazy" />
         )}
       </div>
       <p className="mt-2 text-[11px] leading-tight line-clamp-1 group-hover:text-black/60 transition-colors">{item.title}</p>
@@ -239,10 +239,6 @@ export default function ProductDetail({ product }: { product: Product }) {
 
   const ctaLabel = addingToCart ? "Ajout..." : addedToCart ? "Ajouté au panier" : !inStock ? "Épuisé" : missingOptions.length > 0 ? `Sélectionnez ${missingOptions.join(" et ")}` : "Ajouter au panier"
   const ctaLabelWithPrice = addingToCart ? "Ajout..." : addedToCart ? "Ajouté au panier" : !inStock ? "Épuisé" : missingOptions.length > 0 ? `Sélectionnez ${missingOptions.join(" et ")}` : price ? `Ajouter au panier — ${formatPrice(price.calculated_amount!, price.currency_code!)}` : "Ajouter au panier"
-
-  // ── Newsletter signup state ──
-  const [email, setEmail] = useState("")
-  const [subscribed, setSubscribed] = useState(false)
 
   return (
     <div className="animate-fade-in">
@@ -386,31 +382,6 @@ export default function ProductDetail({ product }: { product: Product }) {
           </div>
         </div>
       )}
-
-      {/* ── Newsletter signup ── */}
-      <div className="px-6 lg:px-10 py-12 lg:py-16 border-t border-border bg-[#fafafa]">
-        <div className="max-w-md mx-auto text-center">
-          <h2 className="text-[11px] font-medium uppercase tracking-[0.2em] mb-2">Newsletter</h2>
-          <p className="text-[13px] text-muted-foreground mb-5">Recevez -10% sur votre première commande et un accès exclusif à nos drops.</p>
-          {subscribed ? (
-            <p className="text-[13px] text-green-700">Merci pour votre inscription !</p>
-          ) : (
-            <form onSubmit={(e) => { e.preventDefault(); setSubscribed(true) }} className="flex gap-2">
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="votre@email.com"
-                className="flex-1 h-[44px] px-4 text-[13px] border border-border bg-white focus:border-foreground focus:outline-none transition-colors"
-              />
-              <button type="submit" className="h-[44px] px-6 bg-foreground text-background text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-foreground/90 transition-colors cursor-pointer">
-                S&apos;inscrire
-              </button>
-            </form>
-          )}
-        </div>
-      </div>
 
       {/* ── Sticky mobile CTA ── */}
       {typeof document !== "undefined" &&

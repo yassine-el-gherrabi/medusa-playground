@@ -80,7 +80,7 @@ export default function ProductOptions({
                 disabled={!inStock}
                 title={v.value}
                 className={`relative transition-all cursor-pointer ${
-                  thumbnail ? "w-14 h-[74px]" : "w-10 h-10"
+                  thumbnail ? "w-16 h-[84px]" : "w-12 h-12"
                 } ${!inStock ? "opacity-30 cursor-not-allowed" : ""}`}
               >
                 {thumbnail ? (
@@ -130,7 +130,7 @@ export default function ProductOptions({
             Guide des tailles
           </Link>
         </div>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-5">
           {option.values?.map((v) => {
             const isSelected = selectedValue === v.value
             const inStock = isOptionInStock(option.id, v.value)
@@ -139,7 +139,7 @@ export default function ProductOptions({
                 key={v.id}
                 onClick={() => inStock && onOptionChange(option.id, v.value)}
                 disabled={!inStock}
-                className={`relative text-[14px] pb-2 transition-colors cursor-pointer ${
+                className={`relative text-[15px] pb-2.5 transition-colors cursor-pointer ${
                   isSelected
                     ? "text-foreground font-medium"
                     : inStock
