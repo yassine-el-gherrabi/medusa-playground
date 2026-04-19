@@ -116,7 +116,7 @@ function ProductCard({ product }: { product: Product }) {
           )}
         </Link>
 
-        {/* Desktop: [+] button — hover opens size bar */}
+        {/* Desktop [+] — visible when sizes not open */}
         {!quickAddOpen && (
           <button
             type="button"
@@ -131,40 +131,6 @@ function ProductCard({ product }: { product: Product }) {
             </svg>
           </button>
         )}
-        {/* Size bar overlay inside image */}
-        {quickAddOpen && hasVariants ? (
-          <div className="hidden md:flex absolute bottom-0 left-0 right-0 z-10 bg-black animate-fade-in">
-            {!selectedSize ? (
-              <div className="flex w-full overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
-                {sizes.map((s) => {
-                  const inStock = isSizeInStock(variants, activeColor, s.value)
-                  return (
-                    <button
-                      key={s.value}
-                      onClick={(e) => { e.stopPropagation(); if (inStock) setSelectedSize(s.value) }}
-                      disabled={!inStock}
-                      className={`flex-1 min-w-0 py-2.5 text-[11px] uppercase tracking-[0.1em] transition-colors border-r border-white/10 last:border-r-0 ${
-                        inStock
-                          ? "text-white/70 hover:text-white cursor-pointer"
-                          : "text-white/20 line-through cursor-not-allowed"
-                      }`}
-                    >
-                      {s.label}
-                    </button>
-                  )
-                })}
-              </div>
-            ) : (
-              <button
-                onClick={(e) => { e.stopPropagation(); handleQuickAdd() }}
-                disabled={adding}
-                className="w-full py-2.5 text-[11px] font-medium uppercase tracking-[0.15em] bg-white text-black hover:bg-white/90 transition-colors cursor-pointer"
-              >
-                {adding ? "Ajout..." : "Ajouter au panier"}
-              </button>
-            )}
-          </div>
-        ) : null}
 
         {/* Mobile [+] quick-add */}
         <button
@@ -179,6 +145,41 @@ function ProductCard({ product }: { product: Product }) {
           </svg>
         </button>
       </div>
+
+      {/* Desktop: size selector — between image and title, Represent-style */}
+      {quickAddOpen && hasVariants && (
+        <div className="hidden md:block animate-fade-in">
+          {!selectedSize ? (
+            <div className="flex overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+              {sizes.map((s) => {
+                const inStock = isSizeInStock(variants, activeColor, s.value)
+                return (
+                  <button
+                    key={s.value}
+                    onClick={() => { if (inStock) setSelectedSize(s.value) }}
+                    disabled={!inStock}
+                    className={`flex-1 min-w-0 py-2 text-[11px] tracking-[0.05em] transition-colors border border-border -ml-px first:ml-0 ${
+                      inStock
+                        ? "text-foreground hover:bg-foreground hover:text-background cursor-pointer"
+                        : "text-black/20 line-through cursor-not-allowed"
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <button
+              onClick={handleQuickAdd}
+              disabled={adding}
+              className="w-full py-2 text-[11px] font-medium uppercase tracking-[0.12em] bg-foreground text-background hover:bg-foreground/90 transition-colors cursor-pointer"
+            >
+              {adding ? "Ajout..." : "Ajouter au panier"}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* ── Product info ── */}
       <div className="pt-3 md:pt-4 pr-2">
