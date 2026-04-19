@@ -90,11 +90,12 @@ function ProductCard({ product }: { product: Product }) {
       {/* ── Image ── */}
       <div
         className="relative"
-        onMouseEnter={() => { setHovered(true); if (hasVariants) setQuickAddOpen(true) }}
         onMouseLeave={() => { setHovered(false); setQuickAddOpen(false); setSelectedSize(null) }}
       >
         <Link
           href={productUrl}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
           className="block bg-[#f5f5f5] aspect-[3/4] relative overflow-hidden"
         >
           <Image
@@ -115,11 +116,11 @@ function ProductCard({ product }: { product: Product }) {
           )}
         </Link>
 
-        {/* Desktop: size bar overlay inside image (appears on hover) */}
-        {/* For products without sizes: [+] adds directly */}
-        {!hasVariants && hovered && (
+        {/* Desktop: [+] button — hover opens size bar */}
+        {!quickAddOpen && (
           <button
             type="button"
+            onMouseEnter={() => { if (hasVariants) setQuickAddOpen(true) }}
             onClick={handleQuickAdd}
             className="hidden md:flex absolute bottom-3 right-3 z-10 w-8 h-8 items-center justify-center cursor-pointer"
             aria-label="Ajout rapide"
@@ -130,7 +131,7 @@ function ProductCard({ product }: { product: Product }) {
             </svg>
           </button>
         )}
-        {/* For products with sizes: size bar */}
+        {/* Size bar overlay inside image */}
         {quickAddOpen && hasVariants ? (
           <div className="hidden md:flex absolute bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur-sm animate-fade-in">
             {!selectedSize ? (
