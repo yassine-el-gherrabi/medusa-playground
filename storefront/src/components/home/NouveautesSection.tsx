@@ -365,15 +365,13 @@ export default function NouveautesSection({ products }: { products: Product[] })
 
           {/* Scroll progress bar — appears on hover */}
           <div className={`mx-6 md:mx-10 mt-4 transition-opacity duration-300 ${carouselHovered ? "opacity-100" : "opacity-0"}`}>
-            <div className="h-px bg-border relative">
-              <div
-                className="absolute top-0 h-px bg-foreground transition-all duration-150"
-                style={{
-                  width: `${Math.max(thumbRatio * 100, 10)}%`,
-                  left: `${scrollProgress * (100 - thumbRatio * 100)}%`,
-                }}
-              />
-            </div>
+            <div
+              className="h-px bg-foreground transition-all duration-150"
+              style={{
+                width: `${Math.max(thumbRatio * 100, 10)}%`,
+                marginLeft: `${scrollProgress * (100 - thumbRatio * 100)}%`,
+              }}
+            />
           </div>
         </div>
 
