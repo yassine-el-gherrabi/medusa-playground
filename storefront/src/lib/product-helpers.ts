@@ -125,6 +125,7 @@ export function getThumbnailForVariantTitle(
 // ── Metadata ──
 
 export function getCompareAtPrice(product: Product): number | null {
-  const meta = (product.metadata as Record<string, unknown>) || {}
-  return (meta.compare_at_price as number) || null
+  const meta = (product.metadata as Record<string, unknown> | null) ?? {}
+  const val = meta.compare_at_price
+  return typeof val === "number" && val > 0 ? val : null
 }

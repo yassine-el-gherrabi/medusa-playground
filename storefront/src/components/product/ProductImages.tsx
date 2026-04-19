@@ -11,7 +11,7 @@ export type ProductImagesHandle = {
   scrollTo: (index: number) => void
 }
 
-const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[] }>(function ProductImages({ images }, ref) {
+const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[]; productTitle?: string }>(function ProductImages({ images, productTitle = "Produit" }, ref) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
 
   useImperativeHandle(ref, () => ({
@@ -23,6 +23,11 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[] }
   const galleryScrollRef = useRef<HTMLDivElement>(null)
 
   const total = images.length
+
+  // Reset carousel to first slide when images change (color switch)
+  useEffect(() => {
+    if (emblaApi) { emblaApi.scrollTo(0, true); setCurrent(0) }
+  }, [images, emblaApi])
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return
@@ -137,9 +142,10 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[] }
       {/* ── FULLSCREEN GALLERY (mobile + desktop) ── */}
       {galleryOpen &&
         createPortal(
-          <div className="fixed inset-0 z-[100] bg-white">
+          <div className="fixed inset-0 z-[100] bg-white" role="dialog" aria-modal="true" aria-label="Galerie d'images">
             <button
               onClick={() => setGalleryOpen(false)}
+              aria-label="Fermer la galerie"
               className="fixed top-4 right-4 z-10 p-3 cursor-pointer"
             >
               <svg width="18" height="18" viewBox="0 0 16 16" fill="none">

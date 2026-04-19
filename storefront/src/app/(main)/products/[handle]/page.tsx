@@ -14,8 +14,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!product) return { title: "Produit introuvable" }
 
   const price = product.variants?.[0]?.calculated_price
-  const priceText = price
-    ? `${price.calculated_amount} ${price.currency_code?.toUpperCase()}`
+  const priceText = price?.calculated_amount != null && price.currency_code
+    ? `${price.calculated_amount} ${price.currency_code.toUpperCase()}`
     : ""
 
   return {
@@ -55,10 +55,10 @@ export default async function ProductPage({ params }: Props) {
     image: product.images?.map((img) => img.url) || [],
     description: product.description || undefined,
     sku: variant?.sku || undefined,
-    offers: price
+    offers: price?.calculated_amount != null
       ? {
           "@type": "Offer",
-          price: price.calculated_amount ?? undefined,
+          price: price.calculated_amount,
           priceCurrency: price.currency_code?.toUpperCase() || "EUR",
           availability:
             (variant?.inventory_quantity ?? 0) > 0
