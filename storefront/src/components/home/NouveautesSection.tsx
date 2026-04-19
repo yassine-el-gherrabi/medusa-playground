@@ -75,7 +75,7 @@ function ProductCard({ product }: { product: Product }) {
 
   return (
     <div
-      className="flex-shrink-0 w-[calc(100%/2.15)] md:w-[calc(100%/4)] lg:w-[calc(100%/5.5)] border-r border-border last:border-r-0"
+      className="flex-shrink-0 w-[calc(100%/2.15)] md:w-[calc(100%/4)] lg:w-[calc(100%/5.5)]"
     >
       {/* ── Image ── */}
       <div
@@ -356,7 +356,7 @@ export default function NouveautesSection({ products }: { products: Product[] })
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="flex overflow-x-auto scroll-smooth scrollbar-hide"
+            className="flex gap-[6px] overflow-x-auto scroll-smooth scrollbar-hide"
             style={{ scrollbarWidth: "none" }}
           >
             {products.map((product) => (
