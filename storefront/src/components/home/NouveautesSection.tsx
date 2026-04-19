@@ -35,7 +35,6 @@ function ProductCard({ product }: { product: Product }) {
   const [activeColor, setActiveColor] = useState(colors[0]?.value || "Noir")
   const [hovered, setHovered] = useState(false)
   const [quickAddOpen, setQuickAddOpen] = useState(false)
-  const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
 
   // Mobile bottom sheet
@@ -53,23 +52,14 @@ function ProductCard({ product }: { product: Product }) {
   const compareLabel = compareAtPrice && priceData ? formatPrice(compareAtPrice, priceData.currencyCode) : null
   const productUrl = `/products/${product.handle}`
 
-  // Desktop quick-add
+  // Quick-add for products without sizes (accessories)
   const handleQuickAdd = useCallback(async () => {
-    if (!hasVariants) {
-      const variantId = product.variants?.[0]?.id
-      if (!variantId) return
-      setAdding(true)
-      try { await addItem(variantId, 1) } catch { /* */ } finally { setAdding(false) }
-      return
-    }
-    if (!quickAddOpen) { setQuickAddOpen(true); setSelectedSize(null); return }
-    if (!selectedSize) return
-    const variantId = findVariantId(variants, activeColor, selectedSize)
+    if (hasVariants) return // sizes handle their own add
+    const variantId = product.variants?.[0]?.id
     if (!variantId) return
     setAdding(true)
-    try { await addItem(variantId, 1); setQuickAddOpen(false); setSelectedSize(null) }
-    catch { /* */ } finally { setAdding(false) }
-  }, [hasVariants, quickAddOpen, selectedSize, activeColor, variants, product.variants, addItem])
+    try { await addItem(variantId, 1) } catch { /* */ } finally { setAdding(false) }
+  }, [hasVariants, product.variants, addItem])
 
   // Mobile add
   const handleSheetAdd = useCallback(async () => {
@@ -90,7 +80,7 @@ function ProductCard({ product }: { product: Product }) {
       {/* ── Image ── */}
       <div
         className="relative"
-        onMouseLeave={() => { setHovered(false); setQuickAddOpen(false); setSelectedSize(null) }}
+        onMouseLeave={() => { setHovered(false); setQuickAddOpen(false) }}
       >
         <Link
           href={productUrl}
@@ -147,34 +137,32 @@ function ProductCard({ product }: { product: Product }) {
 
         {/* Desktop: size selector — inside image, bottom-left, Represent-style */}
         {quickAddOpen && hasVariants && (
-          <div className="hidden md:flex absolute bottom-3 left-1/2 -translate-x-1/2 z-10 animate-fade-in bg-white/30 backdrop-blur-md rounded-[2px] overflow-hidden">
-            {!selectedSize ? (
-              sizes.map((s) => {
-                const inStock = isSizeInStock(variants, activeColor, s.value)
-                return (
-                  <button
-                    key={s.value}
-                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); if (inStock) setSelectedSize(s.value) }}
-                    disabled={!inStock}
-                    className={`w-[36px] h-[36px] text-[12px] transition-colors border-r border-white/30 last:border-r-0 ${
-                      inStock
-                        ? "text-foreground hover:bg-white/50 cursor-pointer"
-                        : "text-black/25 line-through cursor-not-allowed"
-                    }`}
-                  >
-                    {s.label}
-                  </button>
-                )
-              })
-            ) : (
-              <button
-                onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleQuickAdd() }}
-                disabled={adding}
-                className="px-5 h-[36px] text-[11px] font-medium uppercase tracking-[0.12em] bg-black/80 backdrop-blur-md text-white hover:bg-black/90 transition-colors cursor-pointer"
-              >
-                {adding ? "Ajout..." : "Ajouter au panier"}
-              </button>
-            )}
+          <div className="hidden md:flex absolute bottom-3 left-1/2 -translate-x-1/2 z-10 animate-fade-in bg-white/30 backdrop-blur-md rounded-[2px] border border-white/40 overflow-hidden">
+            {sizes.map((s) => {
+              const inStock = isSizeInStock(variants, activeColor, s.value)
+              return (
+                <button
+                  key={s.value}
+                  onClick={async (e) => {
+                    e.stopPropagation(); e.preventDefault()
+                    if (!inStock) return
+                    const variantId = findVariantId(variants, activeColor, s.value)
+                    if (!variantId) return
+                    setAdding(true)
+                    try { await addItem(variantId, 1) } catch { /* */ }
+                    finally { setAdding(false); setQuickAddOpen(false) }
+                  }}
+                  disabled={!inStock || adding}
+                  className={`w-[36px] h-[36px] text-[12px] transition-colors border-r border-white/30 last:border-r-0 ${
+                    inStock && !adding
+                      ? "text-foreground hover:bg-white/50 cursor-pointer"
+                      : "text-black/25 line-through cursor-not-allowed"
+                  }`}
+                >
+                  {s.label}
+                </button>
+              )
+            })}
           </div>
         )}
       </div>

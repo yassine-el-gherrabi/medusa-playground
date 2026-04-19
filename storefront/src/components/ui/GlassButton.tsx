@@ -1,36 +1,57 @@
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 
-interface GlassButtonProps {
-  href: string
+type GlassVariant = "dark" | "light"
+
+interface GlassButtonBaseProps {
   children: React.ReactNode
+  variant?: GlassVariant
   className?: string
 }
 
-export default function GlassButton({ href, children, className }: GlassButtonProps) {
+interface GlassLinkProps extends GlassButtonBaseProps {
+  href: string
+  onClick?: () => void
+}
+
+interface GlassActionProps extends GlassButtonBaseProps {
+  onClick?: () => void
+  disabled?: boolean
+  type?: "button" | "submit"
+}
+
+const variantStyles: Record<GlassVariant, string> = {
+  dark: "bg-black/30 backdrop-blur-md border-white/30 text-white hover:bg-white/20 hover:border-white/50",
+  light: "bg-white/30 backdrop-blur-md border-white/40 text-foreground hover:bg-white/50 hover:border-white/60",
+}
+
+function glassClasses(variant: GlassVariant, className?: string) {
+  return cn(
+    "shiny-btn inline-flex items-center justify-center h-10 px-7 rounded-[2px] border",
+    "uppercase tracking-[0.18em] text-[11px] md:text-xs font-medium",
+    "transition-all duration-200",
+    variantStyles[variant],
+    className
+  )
+}
+
+export function GlassLink({ href, children, variant = "dark", className, onClick }: GlassLinkProps) {
   return (
-    <Link
-      href={href}
-      className={cn(
-        "group relative inline-block h-10 overflow-hidden",
-        "text-[12px] uppercase tracking-wide text-center text-white",
-        "bg-black/30 backdrop-blur-[24px]",
-        "border border-white/30 rounded-[2px]",
-        "hover:bg-white/20 hover:border-white/50",
-        className
-      )}
-    >
-      <div className="relative h-10">
-        <span
-          aria-hidden="true"
-          className="absolute left-0 top-0 block w-full h-10 leading-10 px-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]"
-        >
-          {children}
-        </span>
-        <span className="relative block h-10 leading-10 px-6 translate-y-0 group-hover:-translate-y-full transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]">
-          {children}
-        </span>
-      </div>
+    <Link href={href} onClick={onClick} className={glassClasses(variant, className)}>
+      <span className="shiny-text">{children}</span>
     </Link>
   )
+}
+
+export function GlassAction({ children, variant = "dark", className, onClick, disabled, type = "button" }: GlassActionProps) {
+  return (
+    <button type={type} onClick={onClick} disabled={disabled} className={glassClasses(variant, cn(disabled && "opacity-50 cursor-not-allowed", className))}>
+      <span className="shiny-text">{children}</span>
+    </button>
+  )
+}
+
+// Default export for backward compatibility
+export default function GlassButton({ href, children, className }: GlassLinkProps) {
+  return <GlassLink href={href} className={className}>{children}</GlassLink>
 }
