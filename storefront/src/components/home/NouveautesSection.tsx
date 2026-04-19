@@ -75,7 +75,7 @@ function ProductCard({ product }: { product: Product }) {
 
   return (
     <div
-      className="flex-shrink-0 w-[calc(100%/2.15)] md:w-[calc(100%/4)] lg:w-[calc(100%/5.5)]"
+      className="flex-shrink-0 w-[calc(100%/2.15)] md:w-[calc(100%/4)] lg:w-[calc(100%/5.5)] border-r border-border last:border-r-0"
     >
       {/* ── Image ── */}
       <div
@@ -359,13 +359,8 @@ export default function NouveautesSection({ products }: { products: Product[] })
             className="flex overflow-x-auto scroll-smooth scrollbar-hide"
             style={{ scrollbarWidth: "none" }}
           >
-            {products.map((product, i) => (
-              <div key={product.id} className="flex">
-                <ProductCard product={product} />
-                {i < products.length - 1 && (
-                  <div className="w-px bg-border shrink-0" />
-                )}
-              </div>
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
 
