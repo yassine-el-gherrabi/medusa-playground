@@ -356,7 +356,7 @@ export default function NouveautesSection({ products }: { products: Product[] })
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="flex gap-[6px] overflow-x-auto scroll-smooth scrollbar-hide"
+            className="flex gap-2 overflow-x-auto scroll-smooth scrollbar-hide"
             style={{ scrollbarWidth: "none" }}
           >
             {products.map((product) => (
