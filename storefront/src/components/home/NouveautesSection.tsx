@@ -311,7 +311,10 @@ function ProductCard({ product }: { product: Product }) {
 
 export default function NouveautesSection({ products }: { products: Product[] }) {
   const sectionRef = useRef<HTMLElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const [carouselHovered, setCarouselHovered] = useState(false)
 
   useEffect(() => {
     if (!sectionRef.current) return
@@ -323,7 +326,20 @@ export default function NouveautesSection({ products }: { products: Product[] })
     return () => observer.disconnect()
   }, [])
 
+  // Track scroll progress
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current) return
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
+    const maxScroll = scrollWidth - clientWidth
+    setScrollProgress(maxScroll > 0 ? scrollLeft / maxScroll : 0)
+  }, [])
+
   if (products.length === 0) return null
+
+  // Progress bar width = viewport visible portion relative to total
+  const thumbRatio = scrollRef.current
+    ? scrollRef.current.clientWidth / scrollRef.current.scrollWidth
+    : 0.3
 
   return (
     <section ref={sectionRef} className="bg-white">
@@ -333,9 +349,32 @@ export default function NouveautesSection({ products }: { products: Product[] })
           <h2 className="text-sm font-medium uppercase tracking-[0.15em]">Nouveautés</h2>
         </div>
 
-        {/* Carousel — last card clipped to hint scrollability */}
-        <div className="flex gap-3 md:gap-4 overflow-x-auto scroll-smooth scrollbar-hide px-6 md:px-10" style={{ scrollbarWidth: "none" }}>
-          {products.map((product) => <ProductCard key={product.id} product={product} />)}
+        {/* Carousel */}
+        <div
+          onMouseEnter={() => setCarouselHovered(true)}
+          onMouseLeave={() => setCarouselHovered(false)}
+        >
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="flex gap-3 md:gap-4 overflow-x-auto scroll-smooth scrollbar-hide px-6 md:px-10"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {products.map((product) => <ProductCard key={product.id} product={product} />)}
+          </div>
+
+          {/* Scroll progress bar — appears on hover */}
+          <div className={`mx-6 md:mx-10 mt-4 transition-opacity duration-300 ${carouselHovered ? "opacity-100" : "opacity-0"}`}>
+            <div className="h-px bg-border relative">
+              <div
+                className="absolute top-0 h-px bg-foreground transition-all duration-150"
+                style={{
+                  width: `${Math.max(thumbRatio * 100, 10)}%`,
+                  left: `${scrollProgress * (100 - thumbRatio * 100)}%`,
+                }}
+              />
+            </div>
+          </div>
         </div>
 
         {/* "Voir tout" centered below */}
