@@ -144,40 +144,40 @@ function ProductCard({ product }: { product: Product }) {
             <line x1="0.5" y1="6" x2="11.5" y2="6" stroke="black" strokeWidth="0.75" />
           </svg>
         </button>
-      </div>
 
-      {/* Desktop: size selector — below image, left-aligned, Represent-style */}
-      {quickAddOpen && hasVariants && (
-        <div className="hidden md:flex mt-2 animate-fade-in overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
-          {!selectedSize ? (
-            sizes.map((s) => {
-              const inStock = isSizeInStock(variants, activeColor, s.value)
-              return (
-                <button
-                  key={s.value}
-                  onClick={() => { if (inStock) setSelectedSize(s.value) }}
-                  disabled={!inStock}
-                  className={`w-[42px] h-[42px] text-[13px] transition-colors border border-border -ml-px first:ml-0 ${
-                    inStock
-                      ? "text-foreground hover:bg-foreground hover:text-background cursor-pointer"
-                      : "text-black/20 line-through cursor-not-allowed"
-                  }`}
-                >
-                  {s.label}
-                </button>
-              )
-            })
-          ) : (
-            <button
-              onClick={handleQuickAdd}
-              disabled={adding}
-              className="px-6 h-[42px] text-[11px] font-medium uppercase tracking-[0.12em] bg-foreground text-background hover:bg-foreground/90 transition-colors cursor-pointer"
-            >
-              {adding ? "Ajout..." : "Ajouter au panier"}
-            </button>
-          )}
-        </div>
-      )}
+        {/* Desktop: size selector — inside image, bottom-left, Represent-style */}
+        {quickAddOpen && hasVariants && (
+          <div className="hidden md:flex absolute bottom-3 left-3 z-10 animate-fade-in overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+            {!selectedSize ? (
+              sizes.map((s) => {
+                const inStock = isSizeInStock(variants, activeColor, s.value)
+                return (
+                  <button
+                    key={s.value}
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); if (inStock) setSelectedSize(s.value) }}
+                    disabled={!inStock}
+                    className={`w-[42px] h-[42px] text-[13px] transition-colors border border-border -ml-px first:ml-0 bg-white ${
+                      inStock
+                        ? "text-foreground hover:bg-foreground hover:text-background cursor-pointer"
+                        : "text-black/20 line-through cursor-not-allowed"
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                )
+              })
+            ) : (
+              <button
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleQuickAdd() }}
+                disabled={adding}
+                className="px-6 h-[42px] text-[11px] font-medium uppercase tracking-[0.12em] bg-foreground text-background hover:bg-foreground/90 transition-colors cursor-pointer"
+              >
+                {adding ? "Ajout..." : "Ajouter au panier"}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* ── Product info ── */}
       <div className="pt-3 md:pt-4 pr-2">
