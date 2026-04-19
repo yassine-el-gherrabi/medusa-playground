@@ -24,6 +24,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "iceindustry.fr",
       },
+      {
+        protocol: "https",
+        hostname: "api.iceindustry.fr",
+      },
     ],
   },
 };
