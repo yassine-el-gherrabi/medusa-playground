@@ -26,13 +26,29 @@ export function extractSizes(product: Product): SizeOption[] {
 
 export function buildVariantMap(product: Product): VariantInfo[] {
   if (!product.variants) return []
+
+  // Build a map: option_id → type ("color" | "size" | "other")
+  // Using product-level options which always have titles
+  const optionTypeMap: Record<string, "color" | "size" | "other"> = {}
+  product.options?.forEach((opt) => {
+    const title = opt.title?.toLowerCase() || ""
+    if (["color", "couleur"].includes(title)) optionTypeMap[opt.id] = "color"
+    else if (["size", "taille", "pointure"].includes(title)) optionTypeMap[opt.id] = "size"
+    else optionTypeMap[opt.id] = "other"
+  })
+
   return product.variants.map((v) => {
-    const opts: Record<string, string> = {}
-    v.options?.forEach((o) => { opts[o.option?.title?.toLowerCase() || o.option_id || ""] = o.value })
+    let color = "Noir"
+    let size = ""
+    v.options?.forEach((o) => {
+      const type = optionTypeMap[o.option_id || ""]
+      if (type === "color") color = o.value
+      else if (type === "size") size = o.value
+    })
     return {
       id: v.id,
-      color: opts["color"] || opts["couleur"] || "Noir",
-      size: opts["size"] || opts["taille"] || opts["pointure"] || "",
+      color,
+      size,
       inStock: (v.inventory_quantity ?? 1) > 0,
     }
   })

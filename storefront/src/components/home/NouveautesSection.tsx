@@ -86,14 +86,15 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <div
       className="flex-shrink-0 w-[calc(100%/2.15)] md:w-[calc(100%/3.2)] lg:w-[calc(100%/4.3)]"
-      onMouseLeave={() => { setQuickAddOpen(false); setSelectedSize(null) }}
     >
       {/* ── Image ── */}
-      <div className="relative">
+      <div
+        className="relative"
+        onMouseEnter={() => { setHovered(true); if (hasVariants) setQuickAddOpen(true) }}
+        onMouseLeave={() => { setHovered(false); setQuickAddOpen(false); setSelectedSize(null) }}
+      >
         <Link
           href={productUrl}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
           className="block bg-[#f5f5f5] aspect-[3/4] relative overflow-hidden"
         >
           <Image
@@ -114,8 +115,9 @@ function ProductCard({ product }: { product: Product }) {
           )}
         </Link>
 
-        {/* Desktop: [+] button OR size bar overlay inside image */}
-        {!quickAddOpen ? (
+        {/* Desktop: size bar overlay inside image (appears on hover) */}
+        {/* For products without sizes: [+] adds directly */}
+        {!hasVariants && hovered && (
           <button
             type="button"
             onClick={handleQuickAdd}
@@ -127,7 +129,9 @@ function ProductCard({ product }: { product: Product }) {
               <line x1="0.5" y1="6" x2="11.5" y2="6" stroke="black" strokeWidth="0.75" />
             </svg>
           </button>
-        ) : hasVariants ? (
+        )}
+        {/* For products with sizes: size bar */}
+        {quickAddOpen && hasVariants ? (
           <div className="hidden md:flex absolute bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur-sm animate-fade-in">
             {!selectedSize ? (
               <div className="flex w-full overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
