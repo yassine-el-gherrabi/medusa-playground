@@ -147,7 +147,7 @@ function ProductCard({ product }: { product: Product }) {
 
         {/* Desktop: size selector — inside image, bottom-left, Represent-style */}
         {quickAddOpen && hasVariants && (
-          <div className="hidden md:flex absolute bottom-3 left-3 z-10 animate-fade-in overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+          <div className="hidden md:flex absolute bottom-3 left-1/2 -translate-x-1/2 z-10 animate-fade-in overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
             {!selectedSize ? (
               sizes.map((s) => {
                 const inStock = isSizeInStock(variants, activeColor, s.value)
@@ -156,10 +156,10 @@ function ProductCard({ product }: { product: Product }) {
                     key={s.value}
                     onClick={(e) => { e.stopPropagation(); e.preventDefault(); if (inStock) setSelectedSize(s.value) }}
                     disabled={!inStock}
-                    className={`w-[42px] h-[42px] text-[13px] transition-colors border border-border -ml-px first:ml-0 bg-white ${
+                    className={`w-[34px] h-[34px] text-[12px] transition-colors border -ml-px first:ml-0 ${
                       inStock
-                        ? "text-foreground hover:bg-foreground hover:text-background cursor-pointer"
-                        : "text-black/20 line-through cursor-not-allowed"
+                        ? "border-black/20 text-foreground hover:border-black cursor-pointer"
+                        : "border-black/10 text-black/20 line-through cursor-not-allowed"
                     }`}
                   >
                     {s.label}
@@ -170,7 +170,7 @@ function ProductCard({ product }: { product: Product }) {
               <button
                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleQuickAdd() }}
                 disabled={adding}
-                className="px-6 h-[42px] text-[11px] font-medium uppercase tracking-[0.12em] bg-foreground text-background hover:bg-foreground/90 transition-colors cursor-pointer"
+                className="px-5 h-[34px] text-[11px] font-medium uppercase tracking-[0.12em] bg-foreground text-background hover:bg-foreground/90 transition-colors cursor-pointer"
               >
                 {adding ? "Ajout..." : "Ajouter au panier"}
               </button>
