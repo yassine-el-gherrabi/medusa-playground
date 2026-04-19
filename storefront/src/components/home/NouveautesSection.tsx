@@ -137,7 +137,7 @@ function ProductCard({ product }: { product: Product }) {
 
         {/* Desktop: size selector — inside image, bottom-left, Represent-style */}
         {quickAddOpen && hasVariants && (
-          <div className="hidden md:flex absolute bottom-3 left-1/2 -translate-x-1/2 z-10 animate-fade-in bg-black/30 backdrop-blur-md rounded-[2px] border border-white/30 overflow-hidden">
+          <div className="hidden md:flex absolute bottom-3 left-1/2 -translate-x-1/2 z-10 animate-fade-in bg-black/30 backdrop-blur-md rounded-[2px] border border-white/30 overflow-x-auto scrollbar-hide max-w-[85%]" style={{ scrollbarWidth: "none" }}>
             {sizes.map((s) => {
               const inStock = isSizeInStock(variants, activeColor, s.value)
               return (
@@ -153,7 +153,7 @@ function ProductCard({ product }: { product: Product }) {
                     finally { setAdding(false); setQuickAddOpen(false) }
                   }}
                   disabled={!inStock || adding}
-                  className={`w-[36px] h-[36px] text-[12px] transition-colors border-r border-white/20 last:border-r-0 ${
+                  className={`shrink-0 min-w-[36px] px-2 h-[36px] text-[12px] transition-colors border-r border-white/20 last:border-r-0 ${
                     !inStock
                       ? "text-white/25 line-through cursor-not-allowed"
                       : adding
