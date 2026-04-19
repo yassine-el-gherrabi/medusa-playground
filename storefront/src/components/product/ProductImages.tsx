@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect, useImperativeHandle, forwardRef } from "react"
+import { useState, useCallback, useEffect, useImperativeHandle, forwardRef, useRef } from "react"
 import { createPortal } from "react-dom"
 import useEmblaCarousel from "embla-carousel-react"
 import Image from "next/image"
@@ -19,6 +19,8 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[] }
   }), [emblaApi])
   const [current, setCurrent] = useState(0)
   const [galleryOpen, setGalleryOpen] = useState(false)
+  const [galleryStartIndex, setGalleryStartIndex] = useState(0)
+  const galleryScrollRef = useRef<HTMLDivElement>(null)
 
   const total = images.length
 
@@ -33,6 +35,14 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[] }
     onSelect()
     return () => { emblaApi.off("select", onSelect) }
   }, [emblaApi, onSelect])
+
+  // Scroll to clicked image when gallery opens
+  useEffect(() => {
+    if (galleryOpen && galleryScrollRef.current && galleryStartIndex > 0) {
+      const target = document.getElementById(`gallery-img-${galleryStartIndex}`)
+      if (target) target.scrollIntoView({ behavior: "instant" })
+    }
+  }, [galleryOpen, galleryStartIndex])
 
   // Lock body scroll when gallery is open
   useEffect(() => {
@@ -68,7 +78,7 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[] }
               <button
                 key={image.id}
                 className="flex-[0_0_100%] min-w-0 aspect-[3/4] relative bg-[#f5f5f5] cursor-zoom-in"
-                onClick={() => setGalleryOpen(true)}
+                onClick={() => { setGalleryStartIndex(current); setGalleryOpen(true) }}
               >
                 <Image
                   src={image.url}
@@ -95,9 +105,10 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[] }
       <div className="hidden lg:block">
         <div className="grid grid-cols-2 gap-1">
           {images.map((image, i) => (
-            <div
+            <button
               key={image.id}
-              className={`relative bg-[#f5f5f5] overflow-hidden ${
+              onClick={() => { setGalleryStartIndex(i); setGalleryOpen(true) }}
+              className={`relative bg-[#f5f5f5] overflow-hidden cursor-zoom-in ${
                 i === total - 1 && total % 2 !== 0 ? "col-span-2 aspect-[3/2]" : "aspect-[3/4]"
               }`}
             >
@@ -110,33 +121,36 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[] }
                 priority={i < 2}
                 loading={i < 2 ? "eager" : "lazy"}
               />
-            </div>
+            </button>
           ))}
         </div>
       </div>
 
-      {/* ── FULLSCREEN GALLERY (mobile tap-to-open) ── */}
+      {/* ── FULLSCREEN GALLERY (mobile + desktop) ── */}
       {galleryOpen &&
         createPortal(
-          <div className="fixed inset-0 z-[100] bg-white">
+          <div className="fixed inset-0 z-[100] bg-black/95">
             <button
               onClick={() => setGalleryOpen(false)}
-              className="fixed top-4 right-4 z-10 p-2 cursor-pointer"
+              className="fixed top-4 right-4 z-10 p-3 text-white/80 hover:text-white cursor-pointer transition-colors"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1" />
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
+                <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.5" />
               </svg>
             </button>
 
-            <div className="overflow-y-auto h-dvh">
+            <div
+              ref={galleryScrollRef}
+              className="overflow-y-auto h-dvh flex flex-col items-center py-10 lg:py-16 gap-2"
+            >
               {images.map((image, i) => (
-                <div key={image.id} className="w-full aspect-[3/4] relative bg-[#f5f5f5]">
+                <div key={image.id} id={`gallery-img-${i}`} className="w-full lg:w-[70vh] max-w-[900px] aspect-[3/4] relative bg-[#f5f5f5] shrink-0">
                   <Image
                     src={image.url}
                     alt={`Image ${i + 1}`}
                     fill
                     className="object-cover"
-                    sizes="100vw"
+                    sizes="(max-width: 1024px) 100vw, 70vh"
                     priority={i < 3}
                   />
                 </div>
