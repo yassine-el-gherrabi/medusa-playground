@@ -144,7 +144,7 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[] }
               className="overflow-y-auto h-dvh"
             >
               {images.map((image, i) => (
-                <div key={image.id} id={`gallery-img-${i}`} className="w-full aspect-[3/4] relative bg-[#f5f5f5] mb-1">
+                <div key={image.id} id={`gallery-img-${i}`} className="w-full aspect-[3/4] relative bg-[#f5f5f5] mb-3">
                   <Image
                     src={image.url}
                     alt={`Image ${i + 1}`}
