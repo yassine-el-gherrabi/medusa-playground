@@ -103,13 +103,13 @@ function ProductCard({ product }: { product: Product }) {
 
 function RecentCard({ item }: { item: { handle: string; title: string; thumbnail: string } }) {
   return (
-    <Link href={`/products/${item.handle}`} className="group block shrink-0 w-[200px] lg:w-[220px]">
+    <Link href={`/products/${item.handle}`} className="group block">
       <div className="aspect-[3/4] relative bg-[#f5f5f5] overflow-hidden">
         {item.thumbnail && (
-          <Image src={item.thumbnail} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="220px" loading="lazy" />
+          <Image src={item.thumbnail} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 45vw, 25vw" loading="lazy" />
         )}
       </div>
-      <p className="mt-2 text-[11px] leading-tight line-clamp-1 group-hover:text-black/60 transition-colors">{item.title}</p>
+      <p className="mt-2.5 text-[12px] leading-tight line-clamp-1 group-hover:text-black/60 transition-colors">{item.title}</p>
     </Link>
   )
 }
@@ -377,7 +377,7 @@ export default function ProductDetail({ product }: { product: Product }) {
       {recentlyViewed.length > 0 && (
         <div className="px-6 lg:px-10 py-12 lg:py-16 border-t border-border">
           <h2 className="text-[11px] font-medium uppercase tracking-[0.15em] mb-6">Récemment consultés</h2>
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
             {recentlyViewed.map((item) => <RecentCard key={item.id} item={item} />)}
           </div>
         </div>
