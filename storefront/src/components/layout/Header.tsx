@@ -12,7 +12,25 @@ import SearchOverlay from "./SearchOverlay"
 import Logo from "./Logo"
 
 const HEADER_H = 64
-const SCROLL_THRESHOLD = 10 // px — minimal scroll to trigger solid background
+const SCROLL_DELTA_MIN = 5 // px — ignore micro-scrolls to prevent jitter
+
+/**
+ * Header — IntersectionObserver-based theme detection
+ *
+ * Instead of guessing the page type from pathname (unreliable at SSR),
+ * the header observes the DOM for a [data-header-theme="dark"] element.
+ * Pages with dark heroes render this attribute on their hero section.
+ *
+ * BEHAVIOR:
+ * - Default: transparent bg, black text (correct for 80% of pages)
+ * - When [data-header-theme="dark"] is visible: transparent bg, white text
+ * - When mega menu is open: white bg, black text
+ * - Hide on scroll down (5px threshold), show on scroll up
+ * - GPU-accelerated transforms (translate3d)
+ *
+ * NO SSR MISMATCH: default is always black text on transparent.
+ * Pages with dark hero correct to white in ~50ms after hydration.
+ */
 
 function SearchIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
@@ -20,36 +38,6 @@ function SearchIcon({ className = "w-5 h-5" }: { className?: string }) {
       <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
     </svg>
   )
-}
-
-/**
- * Header algorithm:
- *
- * 1. BACKGROUND
- *    - scroll === 0: always transparent (content behind determines visual)
- *    - scroll > 0: solid white
- *
- * 2. TEXT COLOR
- *    - Pages with dark hero (homepage, collections, categories, boutique):
- *      white text when transparent, black when scrolled
- *    - All other pages: always black text
- *      (transparent header on white page background = black text is readable)
- *
- * 3. HIDE ON SCROLL
- *    - Scrolling down: header slides up (hides)
- *    - Scrolling up: header slides back down (shows)
- *
- * 4. NO SSR DEPENDENCY
- *    - The header renders identically on SSR and client at scroll=0
- *    - No usePathname() for layout decisions — avoids SSR mismatch
- *    - usePathname() only used for: text color (client-side only), mega menu close
- */
-
-// Which pages have a dark hero behind the transparent header
-const DARK_HERO_PAGES = [/^\/$/, /^\/collections\/.+/, /^\/boutique$/, /^\/categories\/.+/]
-
-function isDarkHeroPage(pathname: string): boolean {
-  return DARK_HERO_PAGES.some((re) => re.test(pathname))
 }
 
 export default function Header({
@@ -66,31 +54,77 @@ export default function Header({
   const [megaMenuOpen, setMegaMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [atTop, setAtTop] = useState(true) // true = scroll is at/near top
+  const [darkHeroVisible, setDarkHeroVisible] = useState(false)
+
   const lastScrollY = useRef(0)
   const headerOffset = useRef(0)
   const headerRef = useRef<HTMLElement>(null)
 
-  // Scroll handler: detect top position + hide/show on scroll direction
+  // ── IntersectionObserver: watch for [data-header-theme="dark"] elements ──
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      // Re-scan for hero elements when DOM changes (route navigation)
+      setupHeroObserver()
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+
+    let heroObserver: IntersectionObserver | null = null
+
+    function setupHeroObserver() {
+      // Clean up previous observer
+      if (heroObserver) heroObserver.disconnect()
+
+      const heroEl = document.querySelector('[data-header-theme="dark"]')
+      if (!heroEl) {
+        setDarkHeroVisible(false)
+        return
+      }
+
+      heroObserver = new IntersectionObserver(
+        ([entry]) => {
+          // Hero is "visible" if its bottom edge is below the header
+          setDarkHeroVisible(entry.isIntersecting && entry.boundingClientRect.bottom > HEADER_H)
+        },
+        { threshold: [0], rootMargin: `-${HEADER_H}px 0px 0px 0px` }
+      )
+      heroObserver.observe(heroEl)
+    }
+
+    setupHeroObserver()
+
+    return () => {
+      observer.disconnect()
+      if (heroObserver) heroObserver.disconnect()
+    }
+  }, [pathname]) // Re-run on route change
+
+  // ── Scroll: hide on down, show on up (with delta threshold) ──
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY
       const delta = currentY - lastScrollY.current
 
-      setAtTop(currentY <= SCROLL_THRESHOLD)
+      // Ignore micro-scrolls
+      if (Math.abs(delta) < SCROLL_DELTA_MIN) return
 
       // Hide on scroll down, show on scroll up
-      headerOffset.current = Math.min(0, Math.max(-HEADER_H, headerOffset.current - delta))
+      if (delta > 0) {
+        // Scrolling down — hide
+        headerOffset.current = Math.max(-HEADER_H, headerOffset.current - delta)
+      } else {
+        // Scrolling up — show
+        headerOffset.current = Math.min(0, headerOffset.current - delta)
+      }
+
+      // Always show at top
       if (currentY <= 0) headerOffset.current = 0
+
       if (headerRef.current) {
-        headerRef.current.style.transform = `translateY(${headerOffset.current}px)`
+        headerRef.current.style.transform = `translate3d(0, ${headerOffset.current}px, 0)`
       }
 
       lastScrollY.current = currentY
     }
-
-    // Set initial state
-    setAtTop(window.scrollY <= SCROLL_THRESHOLD)
 
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
@@ -111,11 +145,10 @@ export default function Header({
 
   const latestCollection = collections.length > 0 ? collections[0] : null
 
-  // Determine styling based on scroll + page type
-  const isTransparent = atTop && !megaMenuOpen
-  const darkHero = isDarkHeroPage(pathname)
-  const useWhiteText = isTransparent && darkHero
-  const bgClass = isTransparent ? "bg-transparent" : "bg-white"
+  // ── Styling ──
+  // White text only when a dark hero is visible AND mega menu is closed
+  const useWhiteText = darkHeroVisible && !megaMenuOpen
+  const bgClass = megaMenuOpen ? "bg-white" : "bg-transparent"
   const textClass = useWhiteText ? "text-white" : "text-foreground"
 
   return (
@@ -123,7 +156,7 @@ export default function Header({
       <header
         ref={headerRef}
         onMouseLeave={closeMegaMenu}
-        className={`fixed top-0 left-0 right-0 z-30 transition-colors duration-200 ${bgClass} ${textClass}`}
+        className={`fixed top-0 left-0 right-0 z-30 transition-colors duration-300 ease-out ${bgClass} ${textClass}`}
       >
         <div className="h-16 px-6 lg:px-10 flex items-center">
           {/* Mobile LEFT: Burger + Search */}

@@ -12,7 +12,7 @@ export default function EditorialHero({
   label?: string
 }) {
   return (
-    <section className="relative h-[70vh] md:h-[80vh] flex items-end overflow-hidden bg-black">
+    <section data-header-theme="dark" className="relative h-[70vh] md:h-[80vh] flex items-end overflow-hidden bg-black">
       {imageUrl && (
         <Image src={imageUrl} alt={title} fill className="object-cover" priority />
       )}

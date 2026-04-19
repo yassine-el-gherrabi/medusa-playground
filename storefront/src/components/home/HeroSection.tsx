@@ -83,6 +83,7 @@ export default function HeroSection({ slides }: HeroSectionProps) {
 
   return (
     <section
+      data-header-theme="dark"
       className="relative h-dvh w-full overflow-hidden bg-black"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
