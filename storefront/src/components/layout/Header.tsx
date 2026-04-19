@@ -12,24 +12,21 @@ import SearchOverlay from "./SearchOverlay"
 import Logo from "./Logo"
 
 const HEADER_H = 64
-const SCROLL_DELTA_MIN = 5 // px — ignore micro-scrolls to prevent jitter
+const SCROLL_DELTA_MIN = 5
 
 /**
- * Header — IntersectionObserver-based theme detection
+ * Header — CSS-driven theme, JS-driven scroll behavior
  *
- * Instead of guessing the page type from pathname (unreliable at SSR),
- * the header observes the DOM for a [data-header-theme="dark"] element.
- * Pages with dark heroes render this attribute on their hero section.
+ * THEME (CSS, no flash):
+ * - Default: transparent bg, black text (text-foreground)
+ * - When main contains [data-header-theme="dark"]: white text (via CSS sibling selector)
+ * - CSS applies at first paint — no SSR mismatch, no flash
  *
- * BEHAVIOR:
- * - Default: transparent bg, black text (correct for 80% of pages)
- * - When [data-header-theme="dark"] is visible: transparent bg, white text
- * - When mega menu is open: white bg, black text
+ * SCROLL (JS):
  * - Hide on scroll down (5px threshold), show on scroll up
- * - GPU-accelerated transforms (translate3d)
- *
- * NO SSR MISMATCH: default is always black text on transparent.
- * Pages with dark hero correct to white in ~50ms after hydration.
+ * - When page has a dark hero and user scrolls past it:
+ *   add .header-scrolled class → CSS overrides to white bg + black text
+ * - GPU-accelerated via translate3d
  */
 
 function SearchIcon({ className = "w-5 h-5" }: { className?: string }) {
@@ -54,69 +51,57 @@ export default function Header({
   const [megaMenuOpen, setMegaMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [darkHeroVisible, setDarkHeroVisible] = useState(false)
+  const [scrolledPastHero, setScrolledPastHero] = useState(false)
 
   const lastScrollY = useRef(0)
   const headerOffset = useRef(0)
   const headerRef = useRef<HTMLElement>(null)
 
-  // ── IntersectionObserver: watch for [data-header-theme="dark"] elements ──
+  // ── IntersectionObserver: detect when dark hero leaves viewport ──
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      // Re-scan for hero elements when DOM changes (route navigation)
-      setupHeroObserver()
-    })
-    observer.observe(document.body, { childList: true, subtree: true })
-
     let heroObserver: IntersectionObserver | null = null
 
-    function setupHeroObserver() {
-      // Clean up previous observer
+    function setup() {
       if (heroObserver) heroObserver.disconnect()
 
       const heroEl = document.querySelector('[data-header-theme="dark"]')
       if (!heroEl) {
-        setDarkHeroVisible(false)
+        setScrolledPastHero(false)
         return
       }
 
       heroObserver = new IntersectionObserver(
         ([entry]) => {
-          // Hero is "visible" if its bottom edge is below the header
-          setDarkHeroVisible(entry.isIntersecting && entry.boundingClientRect.bottom > HEADER_H)
+          setScrolledPastHero(!entry.isIntersecting)
         },
         { threshold: [0], rootMargin: `-${HEADER_H}px 0px 0px 0px` }
       )
       heroObserver.observe(heroEl)
     }
 
-    setupHeroObserver()
+    // Small delay to let DOM settle after route change
+    const timer = setTimeout(setup, 50)
 
     return () => {
-      observer.disconnect()
+      clearTimeout(timer)
       if (heroObserver) heroObserver.disconnect()
     }
-  }, [pathname]) // Re-run on route change
+  }, [pathname])
 
-  // ── Scroll: hide on down, show on up (with delta threshold) ──
+  // ── Scroll: hide on down, show on up ──
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY
       const delta = currentY - lastScrollY.current
 
-      // Ignore micro-scrolls
       if (Math.abs(delta) < SCROLL_DELTA_MIN) return
 
-      // Hide on scroll down, show on scroll up
       if (delta > 0) {
-        // Scrolling down — hide
         headerOffset.current = Math.max(-HEADER_H, headerOffset.current - delta)
       } else {
-        // Scrolling up — show
         headerOffset.current = Math.min(0, headerOffset.current - delta)
       }
 
-      // Always show at top
       if (currentY <= 0) headerOffset.current = 0
 
       if (headerRef.current) {
@@ -145,28 +130,16 @@ export default function Header({
 
   const latestCollection = collections.length > 0 ? collections[0] : null
 
-  // ── Styling ──
-  // Track if this page HAS a dark hero (even if scrolled past it)
-  const [pageHasDarkHero, setPageHasDarkHero] = useState(false)
-
-  useEffect(() => {
-    const heroEl = document.querySelector('[data-header-theme="dark"]')
-    setPageHasDarkHero(!!heroEl)
-  }, [pathname])
-
-  // White text only when dark hero is currently visible
-  const useWhiteText = darkHeroVisible && !megaMenuOpen
-  // Solid background when page has a hero AND we've scrolled past it
-  const showSolidBg = pageHasDarkHero && !darkHeroVisible && !megaMenuOpen
-  const bgClass = megaMenuOpen || showSolidBg ? "bg-white" : "bg-transparent"
-  const textClass = useWhiteText ? "text-white" : "text-foreground"
+  // JS-driven classes for scroll state and mega menu
+  const scrollClass = scrolledPastHero ? "header-scrolled" : ""
+  const menuClass = megaMenuOpen ? "header-menu-open" : ""
 
   return (
     <>
       <header
         ref={headerRef}
         onMouseLeave={closeMegaMenu}
-        className={`fixed top-0 left-0 right-0 z-30 transition-colors duration-300 ease-out ${bgClass} ${textClass}`}
+        className={`site-header fixed top-0 left-0 right-0 z-30 transition-colors duration-300 ease-out ${scrollClass} ${menuClass}`}
       >
         <div className="h-16 px-6 lg:px-10 flex items-center">
           {/* Mobile LEFT: Burger + Search */}
@@ -196,9 +169,9 @@ export default function Header({
             )}
           </nav>
 
-          {/* CENTER: Logo */}
+          {/* CENTER: Logo — both versions rendered, CSS controls visibility */}
           <Link href="/" className="flex-shrink-0 flex items-center lg:relative absolute left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0">
-            <Logo className="h-24 w-auto" variant={useWhiteText ? "white" : "black"} />
+            <Logo className="h-24 w-auto" />
           </Link>
 
           {/* Desktop RIGHT: Utilities */}

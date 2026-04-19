@@ -22,8 +22,8 @@ export default async function MainLayout({
 
   return (
     <>
-      <Header categories={categories} collections={collections} />
       <main className="flex-1 pt-16">{children}</main>
+      <Header categories={categories} collections={collections} />
       <Footer />
     </>
   )

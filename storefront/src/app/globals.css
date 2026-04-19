@@ -1,5 +1,32 @@
 @import "tailwindcss";
 
+/* ── Header Theme — CSS-driven, no SSR flash ──
+ * Default: transparent bg, black text, black logo
+ * When main contains [data-header-theme="dark"]: white text, white logo
+ * When JS adds .header-scrolled: white bg, black text, black logo
+ * When JS adds .header-menu-open: white bg, black text, black logo
+ */
+
+/* Default state: black text */
+.site-header { background: transparent; color: var(--foreground); }
+.site-header .logo-white { display: none; }
+.site-header .logo-black { display: block; }
+
+/* Dark hero visible: white text (CSS sibling selector — main comes before header) */
+main:has([data-header-theme="dark"]) ~ .site-header { color: white; }
+main:has([data-header-theme="dark"]) ~ .site-header .logo-white { display: block; }
+main:has([data-header-theme="dark"]) ~ .site-header .logo-black { display: none; }
+
+/* Scrolled past hero: override back to white bg + black text */
+main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled { background: white; color: var(--foreground); }
+main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled .logo-white { display: none; }
+main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled .logo-black { display: block; }
+
+/* Mega menu open: always white bg + black text */
+.site-header.header-menu-open { background: white !important; color: var(--foreground) !important; }
+.site-header.header-menu-open .logo-white { display: none !important; }
+.site-header.header-menu-open .logo-black { display: block !important; }
+
 /* ── Design Tokens ── */
 :root {
   --background: #ffffff;
