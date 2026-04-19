@@ -129,28 +129,28 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[] }
       {/* ── FULLSCREEN GALLERY (mobile + desktop) ── */}
       {galleryOpen &&
         createPortal(
-          <div className="fixed inset-0 z-[100] bg-black/95">
+          <div className="fixed inset-0 z-[100] bg-white">
             <button
               onClick={() => setGalleryOpen(false)}
-              className="fixed top-4 right-4 z-10 p-3 text-white/80 hover:text-white cursor-pointer transition-colors"
+              className="fixed top-4 right-4 z-10 p-3 cursor-pointer"
             >
-              <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-                <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.5" />
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1" />
               </svg>
             </button>
 
             <div
               ref={galleryScrollRef}
-              className="overflow-y-auto h-dvh flex flex-col items-center py-10 lg:py-16 gap-2"
+              className="overflow-y-auto h-dvh"
             >
               {images.map((image, i) => (
-                <div key={image.id} id={`gallery-img-${i}`} className="w-full lg:w-[70vh] max-w-[900px] aspect-[3/4] relative bg-[#f5f5f5] shrink-0">
+                <div key={image.id} id={`gallery-img-${i}`} className="w-full aspect-[3/4] relative bg-[#f5f5f5]">
                   <Image
                     src={image.url}
                     alt={`Image ${i + 1}`}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 70vh"
+                    sizes="100vw"
                     priority={i < 3}
                   />
                 </div>
