@@ -3,38 +3,50 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react"
 import { createPortal } from "react-dom"
 import Link from "next/link"
-import Image from "next/image"
 import ProductImages from "@/components/product/ProductImages"
 import ProductOptions from "@/components/product/ProductOptions"
+import ProductCard from "@/components/product/ProductCard"
 import type { ProductImagesHandle } from "@/components/product/ProductImages"
 import { formatPrice, getProductPrice } from "@/lib/utils"
 import { useCart } from "@/providers/CartProvider"
 import { useRegion } from "@/providers/RegionProvider"
 import { DEFAULT_REGION } from "@/lib/constants"
+import { PRODUCT_FIELDS } from "@/lib/medusa/products"
 import { sdk } from "@/lib/sdk"
 import { getColorImages, getCompareAtPrice } from "@/lib/product-helpers"
 import type { Product } from "@/types"
 
-// ── Types ──
+// ── Recently Viewed (localStorage — stores IDs only) ──
 
-type RecentItem = { id: string; handle: string; title: string; thumbnail: string }
-
-// ── Recently Viewed (localStorage with error handling) ──
-
-function addToRecentlyViewed(productId: string, handle: string, title: string, thumbnail: string) {
+function addToRecentlyViewed(productId: string) {
   try {
     const key = "recently_viewed"
-    const stored: RecentItem[] = JSON.parse(localStorage.getItem(key) || "[]")
-    const filtered = stored.filter((p) => p.id !== productId)
-    filtered.unshift({ id: productId, handle, title, thumbnail })
+    const raw = localStorage.getItem(key)
+    let stored: string[] = []
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      // Migration: old format stored objects, new stores IDs
+      if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === "object") {
+        stored = parsed.map((p: { id: string }) => p.id).filter(Boolean)
+      } else {
+        stored = parsed
+      }
+    }
+    const filtered = stored.filter((id) => id !== productId)
+    filtered.unshift(productId)
     localStorage.setItem(key, JSON.stringify(filtered.slice(0, 10)))
-  } catch { /* localStorage unavailable or full — silently skip */ }
+  } catch { /* localStorage unavailable */ }
 }
 
-function getRecentlyViewed(excludeId: string): RecentItem[] {
+function getRecentlyViewedIds(excludeId: string): string[] {
   try {
-    const stored: RecentItem[] = JSON.parse(localStorage.getItem("recently_viewed") || "[]")
-    return stored.filter((p) => p.id !== excludeId).slice(0, 6)
+    const raw = localStorage.getItem("recently_viewed")
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === "object") {
+      return parsed.map((p: { id: string }) => p.id).filter((id: string) => id !== excludeId).slice(0, 4)
+    }
+    return (parsed as string[]).filter((id) => id !== excludeId).slice(0, 4)
   } catch { return [] }
 }
 
@@ -53,22 +65,13 @@ function Tabs({ tabs }: { tabs: { label: string; content: React.ReactNode }[] })
     <div role="tablist">
       <div className="flex border-b border-border">
         {tabs.map((tab, i) => (
-          <button
-            key={tab.label}
-            role="tab"
-            aria-selected={active === i}
-            onClick={() => setActive(i)}
-            className={`py-3 px-1 mr-6 text-[11px] uppercase tracking-[0.15em] transition-colors cursor-pointer ${
-              active === i ? "text-foreground border-b border-foreground -mb-px" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
+          <button key={tab.label} role="tab" aria-selected={active === i} onClick={() => setActive(i)}
+            className={`py-3 px-1 mr-6 text-[11px] uppercase tracking-[0.15em] transition-colors cursor-pointer ${active === i ? "text-foreground border-b border-foreground -mb-px" : "text-muted-foreground hover:text-foreground"}`}>
             {tab.label}
           </button>
         ))}
       </div>
-      <div role="tabpanel" className="pt-4 text-[13px] text-muted-foreground leading-relaxed">
-        {tabs[active].content}
-      </div>
+      <div role="tabpanel" className="pt-4 text-[13px] text-muted-foreground leading-relaxed">{tabs[active].content}</div>
     </div>
   )
 }
@@ -79,50 +82,13 @@ function FeatureBlock({ title, text }: { title: string; text: string }) {
   return (
     <div className="flex gap-3">
       <div className="shrink-0 w-5 h-5 text-muted-foreground mt-0.5">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
       </div>
       <div>
         <p className="text-[12px] font-medium">{title}</p>
         <p className="text-[11px] text-muted-foreground mt-0.5">{text}</p>
       </div>
     </div>
-  )
-}
-
-// ── Product card ──
-
-function ProductCard({ product }: { product: Product }) {
-  const priceData = getProductPrice(product)
-  const thumbnail = product.thumbnail || product.images?.[0]?.url
-  return (
-    <Link href={`/products/${product.handle}`} className="group block">
-      <div className="aspect-[3/4] relative bg-[#f5f5f5] overflow-hidden">
-        {thumbnail && (
-          <Image src={thumbnail} alt={`${product.title} — Ice Industry`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 45vw, 25vw" loading="lazy" />
-        )}
-      </div>
-      <div className="mt-2.5">
-        <p className="text-[12px] leading-tight line-clamp-1 group-hover:text-black/60 transition-colors">{product.title}</p>
-        {priceData && <p className="text-[12px] text-muted-foreground mt-0.5">{formatPrice(priceData.amount, priceData.currencyCode)}</p>}
-      </div>
-    </Link>
-  )
-}
-
-// ── Recent card ──
-
-function RecentCard({ item }: { item: RecentItem }) {
-  return (
-    <Link href={`/products/${item.handle}`} className="group block">
-      <div className="aspect-[3/4] relative bg-[#f5f5f5] overflow-hidden">
-        {item.thumbnail && (
-          <Image src={item.thumbnail} alt={`${item.title} — Ice Industry`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 45vw, 25vw" loading="lazy" />
-        )}
-      </div>
-      <p className="mt-2.5 text-[12px] leading-tight line-clamp-1 group-hover:text-black/60 transition-colors">{item.title}</p>
-    </Link>
   )
 }
 
@@ -137,22 +103,13 @@ export default function ProductDetail({ product }: { product: Product }) {
   const addedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isMounted = useRef(true)
 
-  // Cleanup on unmount
   useEffect(() => {
     isMounted.current = true
-    return () => {
-      isMounted.current = false
-      if (addedTimerRef.current) clearTimeout(addedTimerRef.current)
-    }
+    return () => { isMounted.current = false; if (addedTimerRef.current) clearTimeout(addedTimerRef.current) }
   }, [])
 
   // ── Recently viewed ──
-  useEffect(() => {
-    addToRecentlyViewed(product.id, product.handle || "", product.title, product.thumbnail || product.images?.[0]?.url || "")
-  }, [product.id, product.handle, product.title, product.thumbnail, product.images])
-
-  const [recentlyViewed, setRecentlyViewed] = useState<RecentItem[]>([])
-  useEffect(() => { setRecentlyViewed(getRecentlyViewed(product.id)) }, [product.id])
+  useEffect(() => { addToRecentlyViewed(product.id) }, [product.id])
 
   // ── Options ──
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
@@ -180,8 +137,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   const price = selectedVariant?.calculated_price ?? product.variants?.[0]?.calculated_price
   const priceLabel = safeFormatPrice(price?.calculated_amount, price?.currency_code)
   const compareAtPrice = getCompareAtPrice(product)
-  const compareLabel = compareAtPrice && price?.currency_code && compareAtPrice > (price?.calculated_amount ?? 0)
-    ? safeFormatPrice(compareAtPrice, price.currency_code) : null
+  const compareLabel = compareAtPrice && price?.currency_code && compareAtPrice > (price?.calculated_amount ?? 0) ? safeFormatPrice(compareAtPrice, price.currency_code) : null
 
   // ── Color images ──
   const imagesRef = useRef<ProductImagesHandle>(null)
@@ -200,51 +156,103 @@ export default function ProductDetail({ product }: { product: Product }) {
     setSelectedOptions((prev) => ({ ...prev, [optionId]: value }))
   }, [])
 
-  // ── Add to cart with proper cleanup ──
+  // ── Add to cart ──
   const handleAddToCart = useCallback(async () => {
     if (!selectedVariant?.id) return
-    setAddingToCart(true)
-    setAddError("")
+    setAddingToCart(true); setAddError("")
     try {
       await addItem(selectedVariant.id, 1)
       if (!isMounted.current) return
       setAddedToCart(true)
       if (addedTimerRef.current) clearTimeout(addedTimerRef.current)
-      addedTimerRef.current = setTimeout(() => {
-        if (isMounted.current) setAddedToCart(false)
-      }, 2000)
-    } catch (err) {
-      if (!isMounted.current) return
-      setAddError(err instanceof Error ? err.message : "Erreur lors de l'ajout au panier")
-    } finally {
-      if (isMounted.current) setAddingToCart(false)
-    }
+      addedTimerRef.current = setTimeout(() => { if (isMounted.current) setAddedToCart(false) }, 2000)
+    } catch (err) { if (isMounted.current) setAddError(err instanceof Error ? err.message : "Erreur") }
+    finally { if (isMounted.current) setAddingToCart(false) }
   }, [selectedVariant, addItem])
 
-  // ── Cross-sell ──
+  // ── Section A: "Complétez le look" (manual only) ──
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   useEffect(() => {
     let cancelled = false
+    const region = regionId || DEFAULT_REGION
     sdk.client.fetch<{ related_product_ids: string[] }>(`/store/products/${product.id}/related`, { method: "GET" })
       .then((res) => {
         const ids = res.related_product_ids || []
         if (ids.length > 0 && !cancelled) {
-          return sdk.store.product.list({ id: ids, region_id: regionId || DEFAULT_REGION, fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata", limit: 4 })
+          return sdk.store.product.list({ id: ids, ...(region && { region_id: region }), fields: PRODUCT_FIELDS, limit: ids.length })
         }
       })
       .then((res) => { if (res && !cancelled) setRelatedProducts((res.products as Product[]) || []) })
-      .catch(() => { /* No related products module or no associations */ })
+      .catch(() => {})
     return () => { cancelled = true }
   }, [product.id, regionId])
 
-  // ── "You May Also Like" ──
+  // ── Section B: "Vous aimerez aussi" (cascade) ──
   const [alsoLikeProducts, setAlsoLikeProducts] = useState<Product[]>([])
+  const [alsoLikeVisible, setAlsoLikeVisible] = useState(8)
+
   useEffect(() => {
     let cancelled = false
-    sdk.store.product.list({ region_id: regionId || DEFAULT_REGION, fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata", limit: 8, order: "-created_at" })
-      .then(({ products }) => { if (!cancelled) setAlsoLikeProducts(((products as Product[]) || []).filter((p) => p.id !== product.id).slice(0, 6)) })
-      .catch(() => { /* API unavailable */ })
+    const region = regionId || DEFAULT_REGION
+    const excludeIds = new Set<string>([product.id])
+
+    async function cascade() {
+      const results: Product[] = []
+      const addIfNew = (prods: Product[]) => {
+        for (const p of prods) {
+          if (results.length >= 24) break
+          if (!excludeIds.has(p.id)) { excludeIds.add(p.id); results.push(p) }
+        }
+      }
+
+      // Wait for relatedProducts to populate excludeIds
+      // (small delay to let the other effect run first)
+      await new Promise((r) => setTimeout(r, 200))
+      relatedProducts.forEach((p) => excludeIds.add(p.id))
+
+      // 1. Same collection
+      const collectionId = (product as unknown as Record<string, unknown>).collection_id as string | undefined
+      if (collectionId) {
+        try {
+          const { products } = await sdk.store.product.list({ collection_id: [collectionId], ...(region && { region_id: region }), fields: PRODUCT_FIELDS, limit: 24, order: "-created_at" })
+          addIfNew(products as Product[])
+        } catch {}
+      }
+
+      // 2. Same category
+      const categories = (product as unknown as Record<string, unknown>).categories as { id: string }[] | undefined
+      const categoryId = categories?.[0]?.id
+      if (categoryId && results.length < 24) {
+        try {
+          const { products } = await sdk.store.product.list({ category_id: [categoryId], ...(region && { region_id: region }), fields: PRODUCT_FIELDS, limit: 24, order: "-created_at" })
+          addIfNew(products as Product[])
+        } catch {}
+      }
+
+      // 3. Recent products
+      if (results.length < 24) {
+        try {
+          const { products } = await sdk.store.product.list({ ...(region && { region_id: region }), fields: PRODUCT_FIELDS, limit: 24, order: "-created_at" })
+          addIfNew(products as Product[])
+        } catch {}
+      }
+
+      if (!cancelled) { setAlsoLikeProducts(results); setAlsoLikeVisible(8) }
+    }
+
+    cascade()
     return () => { cancelled = true }
+  }, [product.id, regionId, relatedProducts])
+
+  // ── Section C: "Récemment consultés" (fetch from localStorage IDs) ──
+  const [recentProducts, setRecentProducts] = useState<Product[]>([])
+  useEffect(() => {
+    const ids = getRecentlyViewedIds(product.id)
+    if (ids.length === 0) return
+    const region = regionId || DEFAULT_REGION
+    sdk.store.product.list({ id: ids, ...(region && { region_id: region }), fields: PRODUCT_FIELDS, limit: 4 })
+      .then(({ products }) => setRecentProducts(products as Product[]))
+      .catch(() => {})
   }, [product.id, regionId])
 
   // ── Derived ──
@@ -298,14 +306,13 @@ export default function ProductDetail({ product }: { product: Product }) {
         </ol>
       </nav>
 
-      {/* Layout */}
+      {/* Layout: images + info */}
       <div className="lg:grid lg:grid-cols-2">
         <ProductImages ref={imagesRef} images={displayImages} productTitle={product.title} />
 
         <div className="lg:sticky lg:top-20 lg:self-start">
           <div className="px-6 lg:px-12 pt-5 lg:pt-10 pb-32 lg:pb-16">
             {categoryLabel && <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-1.5">{categoryLabel}</p>}
-
             <h1 className="text-[15px] lg:text-[17px] font-medium uppercase tracking-[0.08em]">{product.title}</h1>
 
             <div className="flex items-baseline gap-2 mt-1.5 mb-6">
@@ -316,11 +323,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             <ProductOptions product={product} selectedOptions={selectedOptions} onOptionChange={onOptionChange} selectedVariant={selectedVariant} modelInfo={modelInfo} />
 
             {lowStock && <p className="text-[11px] text-red-600 mt-3">Plus que {selectedVariant?.inventory_quantity} en stock</p>}
-
-            {/* Error feedback */}
-            {(addError || cartError) && (
-              <p className="text-[11px] text-red-600 mt-3">{addError || cartError}</p>
-            )}
+            {(addError || cartError) && <p className="text-[11px] text-red-600 mt-3">{addError || cartError}</p>}
 
             {/* CTA desktop */}
             <div className="mt-6 hidden lg:block">
@@ -330,17 +333,14 @@ export default function ProductDetail({ product }: { product: Product }) {
               </button>
             </div>
 
-            {/* Trust */}
+            {/* Trust + stock */}
             <div className="flex items-center gap-6 mt-5 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 14l-4-4m0 0l4-4m-4 4h11a4 4 0 010 8h-1" /></svg>
                 Retours sous 14 jours
               </span>
             </div>
-
-            {canAddToCart && inStock && !lowStock && (
-              <p className="text-[11px] text-green-700 mt-3 uppercase tracking-[0.1em]">En stock</p>
-            )}
+            {canAddToCart && inStock && !lowStock && <p className="text-[11px] text-green-700 mt-3 uppercase tracking-[0.1em]">En stock</p>}
 
             {/* Click & Collect */}
             <div className="flex items-start gap-3 mt-5 pt-5 border-t border-border">
@@ -356,63 +356,69 @@ export default function ProductDetail({ product }: { product: Product }) {
             {/* Tabs */}
             <div className="mt-6 pt-6 border-t border-border">
               <Tabs tabs={[
-                {
-                  label: "Détails",
-                  content: (
-                    <div className="space-y-3">
-                      {product.description && <p>{product.description}</p>}
-                      {product.material && <p>Composition : {product.material}</p>}
-                      {features && features.length > 0 && (
-                        <div className="grid grid-cols-1 gap-3 mt-4">
-                          {features.map((f, i) => <FeatureBlock key={i} title={f.title} text={f.text} />)}
-                        </div>
-                      )}
-                    </div>
-                  ),
-                },
-                {
-                  label: "Livraison & Retours",
-                  content: (
-                    <div className="space-y-1.5">
-                      <p>Livraison standard : 3-5 jours ouvrés</p>
-                      <p>Livraison express : 1-2 jours ouvrés</p>
-                      <p className="mt-3">Retours gratuits sous 14 jours en France métropolitaine.</p>
-                      <p>Les articles doivent être retournés dans leur état d&apos;origine, non portés, avec les étiquettes.</p>
-                    </div>
-                  ),
-                },
+                { label: "Détails", content: (
+                  <div className="space-y-3">
+                    {product.description && <p>{product.description}</p>}
+                    {product.material && <p>Composition : {product.material}</p>}
+                    {features && features.length > 0 && (
+                      <div className="grid grid-cols-1 gap-3 mt-4">
+                        {features.map((f, i) => <FeatureBlock key={i} title={f.title} text={f.text} />)}
+                      </div>
+                    )}
+                  </div>
+                )},
+                { label: "Livraison & Retours", content: (
+                  <div className="space-y-1.5">
+                    <p>Livraison standard : 3-5 jours ouvrés</p>
+                    <p>Livraison express : 1-2 jours ouvrés</p>
+                    <p className="mt-3">Retours gratuits sous 14 jours en France métropolitaine.</p>
+                    <p>Les articles doivent être retournés dans leur état d&apos;origine, non portés, avec les étiquettes.</p>
+                  </div>
+                )},
               ]} />
             </div>
-
-            {/* Cross-sell */}
-            {relatedProducts.length > 0 && (
-              <div className="mt-8 pt-6 border-t border-border">
-                <h3 className="text-[11px] font-medium uppercase tracking-[0.12em] mb-4">Complétez le look</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {relatedProducts.map((p) => <ProductCard key={p.id} product={p} />)}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      {/* "Vous aimerez aussi" */}
-      {alsoLikeProducts.length > 0 && (
-        <section className="px-6 lg:px-10 py-12 lg:py-16 border-t border-border" aria-label="Recommandations">
-          <h2 className="text-[11px] font-medium uppercase tracking-[0.15em] mb-6">Vous aimerez aussi</h2>
+      {/* ── Section A: "Complétez le look" (manual only) ── */}
+      {relatedProducts.length > 0 && (
+        <section className="px-6 lg:px-10 py-12 lg:py-16 border-t border-border" aria-label="Complétez le look">
+          <h2 className="text-[11px] font-medium uppercase tracking-[0.15em] mb-6">Complétez le look</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-            {alsoLikeProducts.map((p) => <ProductCard key={p.id} product={p} />)}
+            {relatedProducts.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         </section>
       )}
 
-      {/* Récemment consultés */}
-      {recentlyViewed.length > 0 && (
+      {/* ── Section B: "Vous aimerez aussi" (cascade) ── */}
+      {alsoLikeProducts.length > 0 && (
+        <section className="px-6 lg:px-10 py-12 lg:py-16 border-t border-border" aria-label="Recommandations">
+          <h2 className="text-[11px] font-medium uppercase tracking-[0.15em] mb-6">Vous aimerez aussi</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+            {alsoLikeProducts.slice(0, alsoLikeVisible).map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+          {alsoLikeVisible < alsoLikeProducts.length && (
+            <div className="flex justify-center mt-8">
+              <button onClick={() => setAlsoLikeVisible((v) => Math.min(v + 8, alsoLikeProducts.length))}
+                className="text-[11px] font-medium uppercase tracking-[0.15em] group relative cursor-pointer">
+                <span className="relative">
+                  Charger plus
+                  <span className="absolute left-0 right-0 bottom-[-2px] h-px bg-current origin-right transition-transform duration-300 group-hover:scale-x-0" />
+                  <span className="absolute left-0 right-0 bottom-[-2px] h-px bg-current scale-x-0 origin-left transition-transform duration-300 delay-200 group-hover:scale-x-100" />
+                </span>
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── Section C: "Récemment consultés" ── */}
+      {recentProducts.length > 0 && (
         <section className="px-6 lg:px-10 py-12 lg:py-16 border-t border-border" aria-label="Récemment consultés">
           <h2 className="text-[11px] font-medium uppercase tracking-[0.15em] mb-6">Récemment consultés</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-            {recentlyViewed.map((item) => <RecentCard key={item.id} item={item} />)}
+            {recentProducts.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         </section>
       )}

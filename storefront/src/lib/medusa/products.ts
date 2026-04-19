@@ -2,8 +2,8 @@ import { sdk } from "@/lib/sdk"
 import { TAGS } from "@/lib/constants"
 import type { Product } from "@/types"
 
-const PRODUCT_FIELDS =
-  "*variants.calculated_price,+variants.inventory_quantity,+metadata,+categories.name"
+export const PRODUCT_FIELDS =
+  "*variants.calculated_price,+variants.inventory_quantity,+metadata,+categories.name,+categories.handle,+categories.id,+collection_id,*options.values"
 
 const REVALIDATE = 3600 // 1h — on-demand revalidation handles real-time changes
 
