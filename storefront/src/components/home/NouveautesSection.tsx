@@ -188,38 +188,10 @@ function ProductCard({ product }: { product: Product }) {
           </div>
         </div>
 
-        {/* Active color name */}
-        <p className="text-[11px] text-muted-foreground mt-1">{activeColor}</p>
-
-        {/* Color swatches — image thumbnails */}
-        {colors.length > 1 && (
-          <div className="flex gap-3 mt-2 p-[3px] -ml-[3px] overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
-            {colors.map((c) => {
-              const thumb = getColorThumbnail(colorImages, c.value)
-              const isActive = activeColor === c.value
-              return (
-                <button
-                  key={c.value}
-                  onClick={() => setActiveColor(c.value)}
-                  className="relative shrink-0 cursor-pointer"
-                  aria-label={c.label}
-                >
-                  <div className={`w-10 h-[52px] md:w-11 md:h-[56px] overflow-hidden bg-[#f5f5f5] transition-all ${
-                    isActive ? "ring-1 ring-black ring-offset-1" : ""
-                  }`}
-                    onMouseEnter={() => setActiveColor(c.value)}
-                  >
-                    {thumb ? (
-                      <Image src={thumb} alt={c.label} fill className="object-cover" sizes="44px" />
-                    ) : (
-                      <div className="w-full h-full bg-[#e0e0e0]" />
-                    )}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        )}
+        {/* Color name + count */}
+        <p className="text-[11px] text-muted-foreground mt-1">
+          {activeColor}{colors.length > 1 && ` · ${colors.length} couleurs`}
+        </p>
 
       </div>
 
