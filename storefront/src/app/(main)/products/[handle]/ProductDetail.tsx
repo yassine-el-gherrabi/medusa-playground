@@ -155,26 +155,22 @@ export default function ProductDetail({ product }: { product: Product }) {
   const comparePrice = compareAtPrice && price && compareAtPrice > (price.calculated_amount ?? 0) ? compareAtPrice : null
 
   const imagesRef = useRef<ProductImagesHandle>(null)
-  const colorImageIndexMap = useMemo(() => {
-    const map: Record<string, number> = {}
-    const colorImages = getColorImages(product)
-    const imageUrls = (product.images || []).map((img) => img.url)
-    for (const [color, imgs] of Object.entries(colorImages)) {
-      if (imgs?.[0]?.url) {
-        const idx = imageUrls.indexOf(imgs[0].url)
-        if (idx >= 0) map[color] = idx
-      }
+  const colorImagesMap = getColorImages(product)
+
+  // Get the selected color value
+  const colorOpt = product.options?.find((o) => ["color", "couleur"].includes(o.title?.toLowerCase() || ""))
+  const selectedColor = colorOpt ? selectedOptions[colorOpt.id] : null
+
+  // Images for the current color — falls back to product.images
+  const displayImages = useMemo(() => {
+    if (selectedColor && colorImagesMap[selectedColor]?.length) {
+      return colorImagesMap[selectedColor].map((img, i) => ({ id: `color-${i}`, url: img.url }))
     }
-    return map
-  }, [product])
+    return product.images || []
+  }, [selectedColor, colorImagesMap, product.images])
 
   const onOptionChange = (optionId: string, value: string) => {
     setSelectedOptions((prev) => ({ ...prev, [optionId]: value }))
-    const colorOpt = product.options?.find((o) => ["color", "couleur"].includes(o.title?.toLowerCase() || ""))
-    if (colorOpt && optionId === colorOpt.id) {
-      const targetIndex = colorImageIndexMap[value]
-      if (targetIndex !== undefined) imagesRef.current?.scrollTo(targetIndex)
-    }
   }
 
   const handleAddToCart = async () => {
@@ -259,7 +255,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
       {/* ── Layout: images + info ── */}
       <div className="lg:grid lg:grid-cols-2">
-        <ProductImages ref={imagesRef} images={product.images || []} />
+        <ProductImages ref={imagesRef} images={displayImages} />
 
         <div className="lg:sticky lg:top-20 lg:self-start">
           <div className="px-6 lg:px-12 pt-5 lg:pt-10 pb-32 lg:pb-16">
