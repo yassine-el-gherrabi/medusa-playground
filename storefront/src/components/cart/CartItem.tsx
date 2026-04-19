@@ -11,7 +11,14 @@ const DEBOUNCE_MS = 400
 
 export default function CartItem({ item, currencyCode = "eur" }: { item: LineItem; currencyCode?: string }) {
   const { updateItem, removeItem } = useCart()
-  const thumbnail = item.thumbnail || item.variant?.product?.thumbnail
+
+  // Try to get color-specific image from product metadata
+  const variantTitle = (item as unknown as Record<string, string>).variant_title || ""
+  const colorName = variantTitle.split(" / ")[0] // "Noir / M" → "Noir"
+  const productMeta = (item.variant?.product?.metadata as Record<string, unknown>) || {}
+  const colorImages = (productMeta.color_images as Record<string, { url: string }[]>) || {}
+  const colorThumb = colorName && colorImages[colorName]?.[0]?.url
+  const thumbnail = colorThumb || item.thumbnail || item.variant?.product?.thumbnail
 
   // Optimistic local quantity for instant feedback during debounce
   const [localQty, setLocalQty] = useState(item.quantity)
