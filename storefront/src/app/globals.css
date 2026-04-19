@@ -19,14 +19,19 @@ main:has([data-header-theme="dark"]) ~ .site-header { color: white; }
 main:has([data-header-theme="dark"]) ~ .site-header .logo-black { display: none; }
 main:has([data-header-theme="dark"]) ~ .site-header .logo-white { display: block; }
 
-main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled,
-.site-header.header-menu-open { background: white; color: var(--foreground); }
+main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled { background: white; color: var(--foreground); }
+main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled .logo-black { display: block; }
+main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled .logo-white { display: none; }
 
-main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled .logo-black,
-.site-header.header-menu-open .logo-black { display: block; }
+/* Mega menu open: always white bg + black text, overrides dark hero */
+.site-header.header-menu-open,
+main:has([data-header-theme="dark"]) ~ .site-header.header-menu-open { background: white; color: var(--foreground); }
 
-main:has([data-header-theme="dark"]) ~ .site-header.header-scrolled .logo-white,
-.site-header.header-menu-open .logo-white { display: none; }
+.site-header.header-menu-open .logo-black,
+main:has([data-header-theme="dark"]) ~ .site-header.header-menu-open .logo-black { display: block; }
+
+.site-header.header-menu-open .logo-white,
+main:has([data-header-theme="dark"]) ~ .site-header.header-menu-open .logo-white { display: none; }
 
 /* ── Design Tokens ── */
 :root {
