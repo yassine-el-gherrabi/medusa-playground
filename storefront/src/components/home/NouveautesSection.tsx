@@ -204,7 +204,7 @@ function ProductCard({ product }: { product: Product }) {
 
         {/* Color swatches — image thumbnails */}
         {colors.length > 1 && (
-          <div className="flex gap-2 mt-2 pb-1 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+          <div className="flex gap-3 mt-2 p-[3px] -ml-[3px] overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
             {colors.map((c) => {
               const thumb = getColorThumbnail(colorImages, c.value)
               const isActive = activeColor === c.value
