@@ -348,7 +348,12 @@ export default function NouveautesSection({ products }: { products: Product[] })
   return (
     <section ref={sectionRef} className="bg-white">
       <div className={`transition-all duration-1000 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-        {/* Carousel — no header, collé au hero */}
+        {/* Header */}
+        <div className="px-6 md:px-10 pt-8 md:pt-12 pb-5 md:pb-6">
+          <h2 className="text-sm font-medium uppercase tracking-[0.15em]">Nouveautés</h2>
+        </div>
+
+        {/* Carousel */}
         <div
           onMouseEnter={() => setBarVisible(true)}
           onMouseLeave={() => { barTimeout.current = setTimeout(() => setBarVisible(false), 800) }}
