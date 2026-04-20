@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
+import AnimatedLink from "@/components/ui/AnimatedLink"
 import type { Product } from "@/types"
 import { COLOR_MAP, getColorImages, getColorThumbnail } from "@/lib/product-helpers"
 
@@ -126,12 +126,12 @@ export default function ProductOptions({
               <span className="text-muted-foreground ml-2">— {selectedValue}</span>
             )}
           </p>
-          <Link
+          <AnimatedLink
             href="/guide-des-tailles"
-            className="font-mono text-[10px] uppercase tracking-[0.14em] underline underline-offset-[3px] hover:text-foreground transition-colors"
+            className="font-mono text-[10px] uppercase tracking-[0.14em]"
           >
-            Guide des tailles ↗
-          </Link>
+            Guide des tailles
+          </AnimatedLink>
         </div>
         <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${colCount}, 1fr)` }}>
           {values.map((v) => {
