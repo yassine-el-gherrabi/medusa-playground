@@ -311,7 +311,7 @@ export default function ProductDetail({ product }: { product: Product }) {
         <ProductImages ref={imagesRef} images={displayImages} productTitle={product.title} />
 
         <div className="lg:sticky lg:top-20 lg:self-start">
-          <div className="px-6 lg:px-12 pt-5 lg:pt-10 pb-32 lg:pb-16">
+          <div className="px-6 lg:pl-10 lg:pr-16 pt-5 lg:pt-10 pb-32 lg:pb-16">
             {categoryLabel && <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-1.5">{categoryLabel}</p>}
             <h1 className="text-[15px] lg:text-[17px] font-medium uppercase tracking-[0.08em]">{product.title}</h1>
 
