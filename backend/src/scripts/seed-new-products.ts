@@ -398,7 +398,7 @@ export default async function seedNewProducts({ container }: ExecArgs) {
         for (const size of p.sizes) {
           variants.push({
             title: `${color} / ${size}`,
-            sku: `ICE-${p.handle.toUpperCase().slice(0, 6)}-${color.slice(0, 3).toUpperCase()}-${size}`,
+            sku: `ICE-${p.handle.toUpperCase().replace(/-/g, "").slice(0, 10)}-${color.slice(0, 3).toUpperCase()}-${size}`,
             manage_inventory: true,
             options: { Couleur: color, Taille: size },
             prices: [{ amount: p.price, currency_code: "eur" }],
@@ -410,7 +410,7 @@ export default async function seedNewProducts({ container }: ExecArgs) {
       for (const color of p.colors) {
         variants.push({
           title: color,
-          sku: `ICE-${p.handle.toUpperCase().slice(0, 6)}-${color.slice(0, 3).toUpperCase()}`,
+          sku: `ICE-${p.handle.toUpperCase().replace(/-/g, "").slice(0, 10)}-${color.slice(0, 3).toUpperCase()}`,
           manage_inventory: true,
           options: { Couleur: color },
           prices: [{ amount: p.price, currency_code: "eur" }],
