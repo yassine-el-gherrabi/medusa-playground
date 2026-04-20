@@ -231,20 +231,24 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
       </div>
 
       {/* ── DESKTOP: Editorial gallery ── */}
-      <div className="hidden lg:flex lg:flex-col lg:gap-12">
-        {/* Hero — full-width 4/5 */}
-        <EditorialImage
-          image={hero}
-          index={0}
-          ratio="4/5"
-          productTitle={productTitle}
-          onOpen={openGallery}
-          priority
-        />
+      <div className="hidden lg:flex lg:flex-col lg:gap-1">
+        {/* Hero — full-width, capped to viewport height */}
+        <div className="relative w-full max-h-[calc(100vh-8rem)] overflow-hidden bg-[#f5f5f5] cursor-zoom-in" style={{ aspectRatio: "4/5" }}>
+          <button onClick={() => openGallery(0)} className="absolute inset-0">
+            <Image
+              src={hero.url}
+              alt={`${productTitle} — image 1`}
+              fill
+              className="object-cover"
+              sizes="(max-width: 1280px) 50vw, 640px"
+              priority
+            />
+          </button>
+        </div>
 
         {/* Diptych — 2 side-by-side 4/5 */}
         {diptych.length === 2 && (
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 gap-1">
             <EditorialImage
               image={diptych[0]}
               index={1}
@@ -252,7 +256,7 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
               productTitle={productTitle}
               onOpen={openGallery}
               priority
-              sizes="(max-width: 1280px) 29vw, 370px"
+              sizes="(max-width: 1280px) 25vw, 320px"
             />
             <EditorialImage
               image={diptych[1]}
@@ -260,7 +264,7 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
               ratio="4/5"
               productTitle={productTitle}
               onOpen={openGallery}
-              sizes="(max-width: 1280px) 29vw, 370px"
+              sizes="(max-width: 1280px) 25vw, 320px"
             />
           </div>
         )}
@@ -283,7 +287,7 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
         {remainingPairs.map((pair, pi) => {
           const baseIdx = 4 + pi * 2
           return (
-            <div key={baseIdx} className="grid grid-cols-2 gap-6">
+            <div key={baseIdx} className="grid grid-cols-2 gap-1">
               <EditorialImage
                 image={pair[0]}
                 index={baseIdx}
