@@ -309,7 +309,7 @@ export default function ProductDetail({ product }: { product: Product }) {
       </nav>
 
       {/* Layout: images + info */}
-      <div className="lg:grid lg:gap-16" style={{ gridTemplateColumns: "minmax(0, 1.4fr) minmax(440px, 1fr)" }}>
+      <div className="lg:grid lg:grid-cols-2 lg:gap-16">
         <ProductImages ref={imagesRef} images={displayImages} productTitle={product.title} editorialBlocks={editorial} />
 
         <div className="lg:sticky lg:top-20 lg:self-start">
