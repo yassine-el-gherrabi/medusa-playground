@@ -98,6 +98,7 @@ interface ProductDef {
   price: number
   weight: number
   model_info?: string
+  editorial?: { label: string; text: string }[]
 }
 
 const products: ProductDef[] = [
@@ -112,6 +113,10 @@ const products: ProductDef[] = [
     price: 160,
     weight: 550,
     model_info: "Le mannequin mesure 185 cm et porte du M",
+    editorial: [
+      { label: "Matière · Nylon technique", text: "Nylon haute densité avec coutures patchwork courbes, signature de la collection. Résistant à l'eau et au vent, doublure mesh respirante." },
+      { label: "Fabrication · Atelier Marseille", text: "Chaque pièce est assemblée à la main dans notre atelier. Coutures courbes réalisées sur machines industrielles japonaises, finitions bords francs." },
+    ],
   },
   {
     title: "Pantalon Nylon Patchwork",
@@ -124,6 +129,10 @@ const products: ProductDef[] = [
     price: 120,
     weight: 400,
     model_info: "Le mannequin mesure 185 cm et porte du M",
+    editorial: [
+      { label: "Matière · Nylon technique", text: "Même nylon haute densité que la veste, coutures patchwork courbes. Taille élastique avec cordon intérieur, bas resserré." },
+      { label: "Coupe · Relaxed tapered", text: "Coupe ample à la cuisse, resserrée à la cheville. Pensée pour le mouvement urbain, portée basse sur les hanches." },
+    ],
   },
   {
     title: "Hoodie Ice Industry",
@@ -136,6 +145,10 @@ const products: ProductDef[] = [
     price: 110,
     weight: 500,
     model_info: "Le mannequin mesure 182 cm / 75 kg et porte du M",
+    editorial: [
+      { label: "Matière · Coton fleece 400 g/m²", text: "Fleece lourd en coton brossé, toucher doux à l'intérieur. Poche kangourou renforcée, capuche doublée." },
+      { label: "Détails · Patch brodé", text: "Patch Ice Industry brodé sur le bras gauche. Bords-côtes nervurés aux poignets et à la taille, surpiqûres ton-sur-ton." },
+    ],
   },
   {
     title: "Jogger Ice Industry",
@@ -184,6 +197,10 @@ const products: ProductDef[] = [
     price: 150,
     weight: 500,
     model_info: "Le mannequin mesure 187 cm / 78 kg et porte du L",
+    editorial: [
+      { label: "Matière · Softshell 3 couches", text: "Tissu softshell triple couche : extérieur déperlant, membrane coupe-vent, intérieur micro-polaire. Panneaux mesh aux épaules pour la ventilation." },
+      { label: "Construction · Technique", text: "Coutures thermosoudées, zips étanches YKK, capuche ajustable. Conçue pour la transition entre l'urbain et l'outdoor." },
+    ],
   },
   {
     title: "Pantalon Cargo Mesh",
@@ -196,6 +213,10 @@ const products: ProductDef[] = [
     price: 110,
     weight: 380,
     model_info: "Le mannequin mesure 187 cm / 78 kg et porte du L",
+    editorial: [
+      { label: "Matière · Nylon + Mesh", text: "Nylon ripstop léger avec inserts mesh aux genoux et à l'arrière. Poches cargo à rabat avec boutons-pression." },
+      { label: "Coupe · Cargo relaxed", text: "Taille élastique avec cordon, coupe droite généreuse. Six poches au total dont deux cargo latérales à soufflet." },
+    ],
   },
   {
     title: "T-shirt Mesh",
@@ -208,6 +229,10 @@ const products: ProductDef[] = [
     price: 70,
     weight: 180,
     model_info: "Le mannequin mesure 185 cm et porte du M",
+    editorial: [
+      { label: "Matière · Jersey + Mesh", text: "Corps en jersey de coton 180 g/m², panneaux mesh techniques aux épaules. Respirabilité maximale sans sacrifier le style." },
+      { label: "Finitions · Détails techniques", text: "Col renforcé double épaisseur, ourlet arrondi, étiquette tissée Ice Industry au col. Coupe régulière, épaule tombante." },
+    ],
   },
   {
     title: "Zip Top Mesh",
@@ -244,6 +269,10 @@ const products: ProductDef[] = [
     price: 140,
     weight: 350,
     model_info: "Le mannequin mesure 185 cm et porte du M",
+    editorial: [
+      { label: "Garnissage · Duvet synthétique", text: "Isolation en duvet synthétique haute performance. Idéale en couche intermédiaire ou seule en mi-saison." },
+      { label: "Design · Minimaliste", text: "Col montant, zip intégral, poches latérales zippées invisibles. Silhouette épurée, matelassage fin et discret." },
+    ],
   },
   {
     title: "Doudoune Ice Industry",
@@ -256,6 +285,10 @@ const products: ProductDef[] = [
     price: 180,
     weight: 800,
     model_info: "Le mannequin mesure 187 cm / 78 kg et porte du L",
+    editorial: [
+      { label: "Garnissage · Duvet synthétique", text: "Isolation en duvet synthétique haute performance. Rapport chaleur/poids optimal, garde ses propriétés même humide." },
+      { label: "Design · Matelassé signature", text: "Matelassage horizontal asymétrique, capuche amovible. Poches latérales zippées et poche intérieure sécurisée." },
+    ],
   },
   {
     title: "Lunettes Ice Industry",
@@ -407,6 +440,7 @@ export default async function seedNewProducts({ container }: ExecArgs) {
           metadata: {
             color_images: colorImgs,
             ...(p.model_info ? { model_info: p.model_info } : {}),
+            ...(p.editorial ? { editorial: p.editorial } : {}),
           },
         }],
       },
