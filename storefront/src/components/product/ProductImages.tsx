@@ -64,7 +64,7 @@ function EditorialImage({
 
 function EditorialAnnotation({ blocks }: { blocks: EditorialBlock[] }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 py-7 border-t border-b border-[#E3E1DC]">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 py-10">
       {blocks.map((block) => (
         <div key={block.label}>
           <span className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#6F6E6A]">
