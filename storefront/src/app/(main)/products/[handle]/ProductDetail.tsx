@@ -445,20 +445,20 @@ export default function ProductDetail({ product }: { product: Product }) {
               <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#6F6E6A]">{categoryLabel}</p>
             )}
 
-            {/* Title — editorial, large */}
-            <h1 className="text-[28px] lg:text-[clamp(36px,3.4vw,52px)] font-medium tracking-[-0.035em] leading-[1.0] mt-4">
+            {/* Title — editorial */}
+            <h1 className="text-[24px] lg:text-[28px] font-medium tracking-[-0.02em] leading-[1.1] mt-3">
               {product.title}
             </h1>
 
             {/* Price + shipping info */}
-            <div className="mt-5">
-              <span className="text-[22px] font-medium tracking-[-0.01em]">{priceLabel}</span>
-              {compareLabel && <span className="text-[15px] text-[#6F6E6A] line-through ml-3">{compareLabel}</span>}
-              <span className="text-[12px] text-[#6F6E6A] ml-2.5">TTC · Expédition offerte dès 80 €</span>
+            <div className="mt-4">
+              <span className="text-[17px] font-medium tracking-[-0.01em]">{priceLabel}</span>
+              {compareLabel && <span className="text-[14px] text-[#6F6E6A] line-through ml-2.5">{compareLabel}</span>}
+              <span className="text-[11px] text-[#6F6E6A] ml-2">TTC · Expédition offerte dès 80 €</span>
             </div>
 
             {/* Hairline separator */}
-            <div className="h-px bg-[#E3E1DC] my-7" />
+            <div className="h-px bg-[#E3E1DC] my-6" />
 
             {/* Options (color + size grid) */}
             <ProductOptions product={product} selectedOptions={selectedOptions} onOptionChange={onOptionChange} selectedVariant={selectedVariant} />
@@ -479,7 +479,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                 onClick={handleAddToCart}
                 disabled={!canAddToCart || addingToCart || !inStock}
                 aria-busy={addingToCart}
-                className="w-full h-[62px] flex items-center justify-between px-6 text-[13px] font-medium uppercase tracking-[0.24em] transition-all cursor-pointer border-none"
+                className="w-full h-[52px] flex items-center justify-between px-5 text-[11px] font-medium uppercase tracking-[0.2em] transition-all cursor-pointer border-none"
                 style={{
                   background: canAddToCart && inStock ? (addedToCart ? "#0A0A0A" : "#0A0A0A") : "#18181A",
                   color: "#FAFAF8",

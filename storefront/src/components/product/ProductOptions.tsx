@@ -140,7 +140,7 @@ export default function ProductOptions({
                 key={v.id}
                 onClick={() => inStock && onOptionChange(option.id, v.value)}
                 disabled={!inStock}
-                className="relative h-[54px] text-[14px] font-medium tracking-[0.02em] transition-all cursor-pointer"
+                className="relative h-[46px] text-[13px] font-medium tracking-[0.02em] transition-all cursor-pointer"
                 style={{
                   background: isSelected ? "#0A0A0A" : "transparent",
                   color: !inStock ? "#A3A19C" : isSelected ? "#FAFAF8" : "#0A0A0A",
