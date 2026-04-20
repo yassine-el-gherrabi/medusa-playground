@@ -435,7 +435,7 @@ export default function ProductDetail({ product }: { product: Product }) {
       </nav>
 
       {/* Layout: images + info */}
-      <div className="lg:grid lg:grid-cols-2 lg:gap-16">
+      <div className="lg:grid lg:gap-12" style={{ gridTemplateColumns: "1.25fr 1fr" }}>
         <ProductImages ref={imagesRef} images={displayImages} productTitle={product.title} editorialBlocks={editorial} />
 
         <div className="lg:sticky lg:top-24 lg:self-start">
@@ -450,18 +450,17 @@ export default function ProductDetail({ product }: { product: Product }) {
               {product.title}
             </h1>
 
-            {/* Price + shipping info */}
+            {/* Price */}
             <div className="mt-4">
               <span className="text-[17px] font-medium tracking-[-0.01em]">{priceLabel}</span>
               {compareLabel && <span className="text-[14px] text-[#6F6E6A] line-through ml-2.5">{compareLabel}</span>}
-              <span className="text-[11px] text-[#6F6E6A] ml-2">TTC · Expédition offerte dès 80 €</span>
             </div>
 
             {/* Hairline separator */}
-            <div className="h-px bg-[#E3E1DC] my-6" />
+            <div className="h-px bg-[#E3E1DC] my-5" />
 
             {/* Options (color + size grid) */}
-            <ProductOptions product={product} selectedOptions={selectedOptions} onOptionChange={onOptionChange} selectedVariant={selectedVariant} />
+            <ProductOptions product={product} selectedOptions={selectedOptions} onOptionChange={onOptionChange} selectedVariant={selectedVariant} modelInfo={modelInfo} />
 
             {/* Low stock */}
             {lowStock && (
@@ -487,14 +486,14 @@ export default function ProductDetail({ product }: { product: Product }) {
                   cursor: canAddToCart && inStock ? "pointer" : "not-allowed",
                 }}
               >
-                <span className="flex items-center gap-2.5">
+                <span className="flex items-center gap-2">
                   {addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? (
-                    <>Ajouter au panier<span className="opacity-45">·</span>Taille {selectedOptions[product.options?.find((o) => ["size", "taille", "pointure"].includes(o.title?.toLowerCase() || ""))?.id || ""] || ""}</>
+                    <>Ajouter<span className="opacity-40">·</span>{selectedColor || ""}<span className="opacity-40">·</span>{selectedOptions[product.options?.find((o) => ["size", "taille", "pointure"].includes(o.title?.toLowerCase() || ""))?.id || ""] || ""}</>
                   ) : (
                     <>
                       {missingOptions.length > 0 ? "Sélectionner une taille" : "Épuisé"}
                       {missingOptions.length > 0 && (
-                        <svg width="14" height="14" viewBox="0 0 14 14" className="opacity-60"><path d="M3 5l4 4 4-4" stroke="#FAFAF8" strokeWidth="1.4" fill="none" strokeLinecap="round" /></svg>
+                        <svg width="12" height="12" viewBox="0 0 14 14" className="opacity-60"><path d="M3 5l4 4 4-4" stroke="#FAFAF8" strokeWidth="1.4" fill="none" strokeLinecap="round" /></svg>
                       )}
                     </>
                   )}
@@ -504,7 +503,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             </div>
 
             {/* Reassurance — 3-column grid */}
-            <div className="mt-7 grid grid-cols-3 border-t border-b border-[#E3E1DC]">
+            <div className="mt-5 grid grid-cols-3 border-t border-b border-[#E3E1DC]">
               {[
                 { t: "Livraison", d: "Offerte dès 80 €" },
                 { t: "Retours", d: "30 jours gratuits" },
@@ -518,7 +517,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             </div>
 
             {/* Info tab rows — click to open overlay */}
-            <div className="mt-8 border-t border-[#E3E1DC]">
+            <div className="mt-6 border-t border-[#E3E1DC]">
               {INFO_TABS.map((t) => (
                 <button
                   key={t.key}
@@ -531,13 +530,6 @@ export default function ProductDetail({ product }: { product: Product }) {
                 </button>
               ))}
             </div>
-
-            {/* Model info — bottom */}
-            {modelInfo && (
-              <div className="mt-6 pt-4.5 border-t border-[#E3E1DC] text-[12px] text-[#6F6E6A] leading-relaxed">
-                {modelInfo}
-              </div>
-            )}
 
             {/* Info overlay panel */}
             <InfoOverlay activeKey={activeInfoPanel} onOpen={setActiveInfoPanel} onClose={() => setActiveInfoPanel(null)} product={product} />

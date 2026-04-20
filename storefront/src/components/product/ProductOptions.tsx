@@ -10,6 +10,7 @@ type ProductOptionsProps = {
   selectedOptions: Record<string, string>
   onOptionChange: (optionId: string, value: string) => void
   selectedVariant: NonNullable<Product["variants"]>[number] | null
+  modelInfo?: string | null
 }
 
 function isColorOption(title: string): boolean {
@@ -25,6 +26,7 @@ export default function ProductOptions({
   selectedOptions,
   onOptionChange,
   selectedVariant,
+  modelInfo,
 }: ProductOptionsProps) {
   if (!product.options || product.options.length === 0) return null
 
@@ -163,8 +165,11 @@ export default function ProductOptions({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {colorOption && renderColorSwatches(colorOption)}
+      {modelInfo && (
+        <p className="text-[12px] text-[#6F6E6A] leading-relaxed">{modelInfo}</p>
+      )}
       {sizeOption && renderSizeGrid(sizeOption)}
       {otherOptions.map((option) => {
         const selectedValue = selectedOptions[option.id]
