@@ -27,15 +27,13 @@ type ProductImagesProps = {
 function EditorialImage({
   image,
   index,
-  ratio,
   productTitle,
   onOpen,
   priority = false,
-  sizes = "(max-width: 1280px) 58vw, 740px",
+  sizes = "(max-width: 1280px) 55vw, 740px",
 }: {
   image: ProductImage
   index: number
-  ratio: string
   productTitle: string
   onOpen: (i: number) => void
   priority?: boolean
@@ -44,14 +42,14 @@ function EditorialImage({
   return (
     <button
       onClick={() => onOpen(index)}
-      className={`relative bg-[#f5f5f5] overflow-hidden cursor-zoom-in w-full aspect-[${ratio}]`}
-      style={{ aspectRatio: ratio }}
+      className="block w-full bg-[#f5f5f5] cursor-zoom-in overflow-hidden"
     >
       <Image
         src={image.url}
         alt={`${productTitle} — image ${index + 1}`}
-        fill
-        className="object-contain"
+        width={1200}
+        height={1500}
+        className="w-full h-auto"
         sizes={sizes}
         priority={priority}
         loading={priority ? "eager" : "lazy"}
@@ -232,49 +230,42 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
 
       {/* ── DESKTOP: Editorial gallery ── */}
       <div className="hidden lg:flex lg:flex-col lg:gap-1">
-        {/* Hero — full-width, capped to viewport height */}
-        <div className="relative w-full max-h-[calc(100vh-8rem)] overflow-hidden bg-[#f5f5f5] cursor-zoom-in" style={{ aspectRatio: "4/5" }}>
-          <button onClick={() => openGallery(0)} className="absolute inset-0">
-            <Image
-              src={hero.url}
-              alt={`${productTitle} — image 1`}
-              fill
-              className="object-contain"
-              sizes="(max-width: 1280px) 50vw, 640px"
-              priority
-            />
-          </button>
-        </div>
+        {/* Hero — full-width */}
+        <EditorialImage
+          image={hero}
+          index={0}
+          productTitle={productTitle}
+          onOpen={openGallery}
+          priority
+          sizes="(max-width: 1280px) 55vw, 740px"
+        />
 
-        {/* Diptych — 2 side-by-side 4/5 */}
+        {/* Diptych — 2 side-by-side */}
         {diptych.length === 2 && (
           <div className="grid grid-cols-2 gap-1">
             <EditorialImage
               image={diptych[0]}
               index={1}
-              ratio="4/5"
               productTitle={productTitle}
               onOpen={openGallery}
               priority
-              sizes="(max-width: 1280px) 25vw, 320px"
+              sizes="(max-width: 1280px) 27vw, 370px"
             />
             <EditorialImage
               image={diptych[1]}
               index={2}
-              ratio="4/5"
               productTitle={productTitle}
               onOpen={openGallery}
-              sizes="(max-width: 1280px) 25vw, 320px"
+              sizes="(max-width: 1280px) 27vw, 370px"
             />
           </div>
         )}
 
-        {/* Full-width — 3/4 */}
+        {/* Full-width */}
         {fullWidth1 && (
           <EditorialImage
             image={fullWidth1}
             index={diptych.length === 2 ? 3 : 1}
-            ratio="3/4"
             productTitle={productTitle}
             onOpen={openGallery}
           />
@@ -291,29 +282,26 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
               <EditorialImage
                 image={pair[0]}
                 index={baseIdx}
-                ratio="4/5"
                 productTitle={productTitle}
                 onOpen={openGallery}
-                sizes="(max-width: 1280px) 29vw, 370px"
+                sizes="(max-width: 1280px) 27vw, 370px"
               />
               <EditorialImage
                 image={pair[1]}
                 index={baseIdx + 1}
-                ratio="4/5"
                 productTitle={productTitle}
                 onOpen={openGallery}
-                sizes="(max-width: 1280px) 29vw, 370px"
+                sizes="(max-width: 1280px) 27vw, 370px"
               />
             </div>
           )
         })}
 
-        {/* Last image solo — full-width 3/4 */}
+        {/* Last image solo — full-width */}
         {remainingSolo && (
           <EditorialImage
             image={remainingSolo}
             index={total - 1}
-            ratio="3/4"
             productTitle={productTitle}
             onOpen={openGallery}
           />
@@ -339,12 +327,13 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
               className="overflow-y-auto h-dvh"
             >
               {images.map((image, i) => (
-                <div key={image.id} id={`gallery-img-${i}`} className="w-full aspect-[3/4] relative bg-[#f5f5f5] mb-1.5 cursor-zoom-out" onClick={() => setGalleryOpen(false)}>
+                <div key={image.id} id={`gallery-img-${i}`} className="w-full bg-[#f5f5f5] mb-1.5 cursor-zoom-out" onClick={() => setGalleryOpen(false)}>
                   <Image
                     src={image.url}
                     alt={`${productTitle} — image ${i + 1}`}
-                    fill
-                    className="object-contain"
+                    width={1200}
+                    height={1500}
+                    className="w-full h-auto"
                     sizes="100vw"
                     priority={i < 3}
                   />
