@@ -11,7 +11,77 @@ export type ProductImagesHandle = {
   scrollTo: (index: number) => void
 }
 
-const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[]; productTitle?: string }>(function ProductImages({ images, productTitle = "Produit" }, ref) {
+export type EditorialBlock = {
+  label: string
+  text: string
+}
+
+type ProductImagesProps = {
+  images: ProductImage[]
+  productTitle?: string
+  editorialBlocks?: EditorialBlock[]
+}
+
+// ── Editorial image slot ──
+
+function EditorialImage({
+  image,
+  index,
+  ratio,
+  productTitle,
+  onOpen,
+  priority = false,
+  sizes = "(max-width: 1280px) 58vw, 740px",
+}: {
+  image: ProductImage
+  index: number
+  ratio: string
+  productTitle: string
+  onOpen: (i: number) => void
+  priority?: boolean
+  sizes?: string
+}) {
+  return (
+    <button
+      onClick={() => onOpen(index)}
+      className={`relative bg-[#f5f5f5] overflow-hidden cursor-zoom-in w-full aspect-[${ratio}]`}
+      style={{ aspectRatio: ratio }}
+    >
+      <Image
+        src={image.url}
+        alt={`${productTitle} — image ${index + 1}`}
+        fill
+        className="object-cover"
+        sizes={sizes}
+        priority={priority}
+        loading={priority ? "eager" : "lazy"}
+      />
+    </button>
+  )
+}
+
+// ── Editorial text block (between images, only if data exists) ──
+
+function EditorialAnnotation({ blocks }: { blocks: EditorialBlock[] }) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 py-7 border-t border-b border-[#E3E1DC]">
+      {blocks.map((block) => (
+        <div key={block.label}>
+          <span className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#6F6E6A]">
+            {block.label}
+          </span>
+          <p className="font-[family-name:var(--font-display,'Inter_Tight',sans-serif)] text-[20px] font-medium tracking-[-0.02em] leading-[1.3] mt-3.5 text-[#0A0A0A]" style={{ textWrap: "pretty" }}>
+            {block.text}
+          </p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ── Main component ──
+
+const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(function ProductImages({ images, productTitle = "Produit", editorialBlocks }, ref) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
 
   useImperativeHandle(ref, () => ({
@@ -23,6 +93,7 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[]; 
   const galleryScrollRef = useRef<HTMLDivElement>(null)
 
   const total = images.length
+  const hasEditorial = editorialBlocks && editorialBlocks.length > 0
 
   // Reset carousel to first slide when images change (color switch)
   useEffect(() => {
@@ -73,12 +144,57 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[]; 
     }
   }, [galleryOpen])
 
+  const openGallery = useCallback((index: number) => {
+    setGalleryStartIndex(index)
+    setGalleryOpen(true)
+  }, [])
+
   if (!images || total === 0) {
     return (
       <div className="aspect-[3/4] bg-[#f5f5f5] flex items-center justify-center text-muted-foreground text-sm">
         Pas d&apos;image
       </div>
     )
+  }
+
+  // ── Desktop editorial layout: distribute images ──
+  // hero = [0] (always, full-width 4/5)
+  // diptych = [1, 2] (only if 3+ images)
+  // fullWidth1 = next after diptych (3/4)
+  // [editorial text block if metadata]
+  // remaining = rest, in diptych pairs (last full-width if odd)
+
+  const hero = images[0]
+  let diptych: ProductImage[] = []
+  let fullWidth1: ProductImage | null = null
+  let remaining: ProductImage[] = []
+
+  if (total === 2) {
+    // 2 images: hero + full-width, no diptych
+    fullWidth1 = images[1]
+  } else if (total === 3) {
+    // 3 images: hero + diptych
+    diptych = [images[1], images[2]]
+  } else if (total === 4) {
+    // 4 images: hero + diptych + full-width
+    diptych = [images[1], images[2]]
+    fullWidth1 = images[3]
+  } else if (total >= 5) {
+    // 5+ images: hero + diptych + full-width + [editorial] + remaining
+    diptych = [images[1], images[2]]
+    fullWidth1 = images[3]
+    remaining = images.slice(4)
+  }
+
+  // Split remaining into diptych pairs
+  const remainingPairs: ProductImage[][] = []
+  let remainingSolo: ProductImage | null = null
+  for (let i = 0; i < remaining.length; i += 2) {
+    if (i + 1 < remaining.length) {
+      remainingPairs.push([remaining[i], remaining[i + 1]])
+    } else {
+      remainingSolo = remaining[i]
+    }
   }
 
   return (
@@ -95,7 +211,7 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[]; 
               >
                 <Image
                   src={image.url}
-                  alt={`Image ${i + 1}`}
+                  alt={`${productTitle} — image ${i + 1}`}
                   fill
                   className="object-cover"
                   sizes="100vw"
@@ -106,7 +222,7 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[]; 
           </div>
         </div>
 
-        {/* Counter — bottom left, no background */}
+        {/* Counter */}
         {total > 1 && (
           <div className="absolute bottom-4 left-4 text-[11px] text-black tracking-[0.15em] pointer-events-none">
             {current + 1} / {total}
@@ -114,29 +230,90 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[]; 
         )}
       </div>
 
-      {/* ── DESKTOP: 2-column grid ── */}
-      <div className="hidden lg:block">
-        <div className="grid grid-cols-2 gap-1">
-          {images.map((image, i) => (
-            <button
-              key={image.id}
-              onClick={() => { setGalleryStartIndex(i); setGalleryOpen(true) }}
-              className={`relative bg-[#f5f5f5] overflow-hidden cursor-zoom-in ${
-                i === total - 1 && total % 2 !== 0 ? "col-span-2 aspect-[3/2]" : "aspect-[3/4]"
-              }`}
-            >
-              <Image
-                src={image.url}
-                alt={`Image ${i + 1}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1280px) 50vw, 640px"
-                priority={i < 2}
-                loading={i < 2 ? "eager" : "lazy"}
+      {/* ── DESKTOP: Editorial gallery ── */}
+      <div className="hidden lg:flex lg:flex-col lg:gap-12">
+        {/* Hero — full-width 4/5 */}
+        <EditorialImage
+          image={hero}
+          index={0}
+          ratio="4/5"
+          productTitle={productTitle}
+          onOpen={openGallery}
+          priority
+        />
+
+        {/* Diptych — 2 side-by-side 4/5 */}
+        {diptych.length === 2 && (
+          <div className="grid grid-cols-2 gap-6">
+            <EditorialImage
+              image={diptych[0]}
+              index={1}
+              ratio="4/5"
+              productTitle={productTitle}
+              onOpen={openGallery}
+              priority
+              sizes="(max-width: 1280px) 29vw, 370px"
+            />
+            <EditorialImage
+              image={diptych[1]}
+              index={2}
+              ratio="4/5"
+              productTitle={productTitle}
+              onOpen={openGallery}
+              sizes="(max-width: 1280px) 29vw, 370px"
+            />
+          </div>
+        )}
+
+        {/* Full-width — 3/4 */}
+        {fullWidth1 && (
+          <EditorialImage
+            image={fullWidth1}
+            index={diptych.length === 2 ? 3 : 1}
+            ratio="3/4"
+            productTitle={productTitle}
+            onOpen={openGallery}
+          />
+        )}
+
+        {/* Editorial annotation — only if metadata provided */}
+        {hasEditorial && <EditorialAnnotation blocks={editorialBlocks} />}
+
+        {/* Remaining images: diptych pairs */}
+        {remainingPairs.map((pair, pi) => {
+          const baseIdx = 4 + pi * 2
+          return (
+            <div key={baseIdx} className="grid grid-cols-2 gap-6">
+              <EditorialImage
+                image={pair[0]}
+                index={baseIdx}
+                ratio="4/5"
+                productTitle={productTitle}
+                onOpen={openGallery}
+                sizes="(max-width: 1280px) 29vw, 370px"
               />
-            </button>
-          ))}
-        </div>
+              <EditorialImage
+                image={pair[1]}
+                index={baseIdx + 1}
+                ratio="4/5"
+                productTitle={productTitle}
+                onOpen={openGallery}
+                sizes="(max-width: 1280px) 29vw, 370px"
+              />
+            </div>
+          )
+        })}
+
+        {/* Last image solo — full-width 3/4 */}
+        {remainingSolo && (
+          <EditorialImage
+            image={remainingSolo}
+            index={total - 1}
+            ratio="3/4"
+            productTitle={productTitle}
+            onOpen={openGallery}
+          />
+        )}
       </div>
 
       {/* ── FULLSCREEN GALLERY (mobile + desktop) ── */}
@@ -161,7 +338,7 @@ const ProductImages = forwardRef<ProductImagesHandle, { images: ProductImage[]; 
                 <div key={image.id} id={`gallery-img-${i}`} className="w-full aspect-[3/4] relative bg-[#f5f5f5] mb-1.5 cursor-zoom-out" onClick={() => setGalleryOpen(false)}>
                   <Image
                     src={image.url}
-                    alt={`Image ${i + 1}`}
+                    alt={`${productTitle} — image ${i + 1}`}
                     fill
                     className="object-cover"
                     sizes="100vw"

@@ -14,6 +14,7 @@ import { DEFAULT_REGION } from "@/lib/constants"
 import { PRODUCT_FIELDS } from "@/lib/medusa/products"
 import { sdk } from "@/lib/sdk"
 import { getColorImages, getCompareAtPrice } from "@/lib/product-helpers"
+import type { EditorialBlock } from "@/components/product/ProductImages"
 import type { Product } from "@/types"
 
 // ── Recently Viewed (localStorage — stores IDs only) ──
@@ -261,6 +262,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   const categoryHandle = categories?.[0]?.handle
   const modelInfo = (product.metadata as Record<string, unknown> | null)?.model_info as string | undefined
   const features = (product.metadata as Record<string, unknown> | null)?.features as { title: string; text: string }[] | undefined
+  const editorial = (product.metadata as Record<string, unknown> | null)?.editorial as EditorialBlock[] | undefined
 
   const canAddToCart = !!selectedVariant?.id
   const inStock = selectedVariant ? (selectedVariant.inventory_quantity ?? 1) > 0 : false
@@ -307,8 +309,8 @@ export default function ProductDetail({ product }: { product: Product }) {
       </nav>
 
       {/* Layout: images + info */}
-      <div className="lg:grid lg:grid-cols-2">
-        <ProductImages ref={imagesRef} images={displayImages} productTitle={product.title} />
+      <div className="lg:grid lg:gap-16" style={{ gridTemplateColumns: "minmax(0, 1.4fr) minmax(440px, 1fr)" }}>
+        <ProductImages ref={imagesRef} images={displayImages} productTitle={product.title} editorialBlocks={editorial} />
 
         <div className="lg:sticky lg:top-20 lg:self-start">
           <div className="px-6 lg:pl-10 lg:pr-16 pt-5 lg:pt-10 pb-32 lg:pb-16">
