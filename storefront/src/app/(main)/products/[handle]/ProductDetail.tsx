@@ -58,37 +58,162 @@ function safeFormatPrice(amount: number | null | undefined, currency: string | n
   return formatPrice(amount, currency)
 }
 
-// ── Tabs ──
+// ── Info tab data ──
 
-function Tabs({ tabs }: { tabs: { label: string; content: React.ReactNode }[] }) {
-  const [active, setActive] = useState(0)
+const INFO_TABS = [
+  {
+    key: "details",
+    label: "Détails & Matière",
+    kicker: "01",
+  },
+  {
+    key: "care",
+    label: "Entretien",
+    kicker: "02",
+  },
+  {
+    key: "shipping",
+    label: "Livraison & Retours",
+    kicker: "03",
+  },
+]
+
+// ── Info overlay panel ──
+
+function InfoOverlay({
+  activeKey,
+  onOpen,
+  onClose,
+  product,
+}: {
+  activeKey: string | null
+  onOpen: (key: string) => void
+  onClose: () => void
+  product: Product
+}) {
+  const tab = INFO_TABS.find((t) => t.key === activeKey)
+  const isOpen = !!tab
+
+  useEffect(() => {
+    if (!isOpen) return
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose() }
+    window.addEventListener("keydown", h)
+    return () => window.removeEventListener("keydown", h)
+  }, [isOpen, onClose])
+
+  const bodyContent: Record<string, React.ReactNode> = {
+    details: (
+      <>
+        {product.description && <p className="mb-0">{product.description}</p>}
+        {product.material && (
+          <dl className="mt-9 grid gap-y-4 gap-x-6 text-[14px]" style={{ gridTemplateColumns: "160px 1fr" }}>
+            {[
+              ["Matière", product.material],
+              ...(product.weight ? [["Poids", `${product.weight}g`]] : []),
+            ].map(([k, v]) => (
+              <div key={k} className="contents">
+                <dt className="font-mono text-[10px] tracking-[0.16em] uppercase text-[#6F6E6A] pt-0.5">{k}</dt>
+                <dd className="m-0 leading-relaxed">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </>
+    ),
+    care: (
+      <>
+        <p>Pour préserver la matière et les finitions sur le long terme, nous recommandons un entretien doux.</p>
+        <ul className="mt-8 p-0 list-none border-t border-[#E3E1DC]">
+          {[
+            "Lavage 30°C à l'envers",
+            "Repassage doux au dos de l'impression",
+            "Ne pas sécher en machine",
+            "Ne pas nettoyer à sec",
+          ].map((t) => (
+            <li key={t} className="py-4 border-b border-[#E3E1DC] flex items-center gap-4 text-[14px]">
+              <span className="w-1 h-1 rounded-full bg-[#0A0A0A] shrink-0" />
+              {t}
+            </li>
+          ))}
+        </ul>
+      </>
+    ),
+    shipping: (
+      <>
+        <p>Expédition rapide depuis Marseille, emballage signature Ice Industry.</p>
+        <div className="mt-9 grid grid-cols-2 gap-px bg-[#E3E1DC] border border-[#E3E1DC]">
+          {[
+            ["Standard", "Offerte dès 80 €", "3–5 jours ouvrés"],
+            ["Express", "9,90 €", "J+1 en France"],
+            ["Retrait boutique", "Gratuit", "Marseille · 24h"],
+            ["International", "Dès 14,90 €", "Europe · Monde"],
+          ].map(([t, p, d]) => (
+            <div key={t} className="bg-[#FAFAF8] p-5">
+              <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-[#6F6E6A]">{t}</div>
+              <div className="mt-2.5 text-[17px] font-medium tracking-[-0.01em]">{p}</div>
+              <div className="mt-1 text-[12px] text-[#1F1F1F]">{d}</div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-7 text-[13px] text-[#1F1F1F] leading-relaxed">
+          Retours gratuits sous 30 jours. Remboursement sous 5 jours ouvrés après réception.
+        </p>
+      </>
+    ),
+  }
+
   return (
-    <div role="tablist">
-      <div className="flex border-b border-border">
-        {tabs.map((tab, i) => (
-          <button key={tab.label} role="tab" aria-selected={active === i} onClick={() => setActive(i)}
-            className={`py-3 px-1 mr-6 text-[11px] uppercase tracking-[0.15em] transition-colors cursor-pointer ${active === i ? "text-foreground border-b border-foreground -mb-px" : "text-muted-foreground hover:text-foreground"}`}>
-            {tab.label}
-          </button>
-        ))}
-      </div>
-      <div role="tabpanel" className="pt-4 text-[13px] text-muted-foreground leading-relaxed">{tabs[active].content}</div>
-    </div>
-  )
-}
+    <div
+      aria-hidden={!isOpen}
+      className="absolute inset-0 bg-[#FAFAF8] flex flex-col transition-all duration-300"
+      style={{
+        opacity: isOpen ? 1 : 0,
+        pointerEvents: isOpen ? "auto" : "none",
+        transform: isOpen ? "translateY(0)" : "translateY(12px)",
+        paddingLeft: 56,
+        paddingRight: 8,
+      }}
+    >
+      {tab && (
+        <>
+          <div className="flex justify-between items-center pt-1 pb-6">
+            <div className="flex items-baseline gap-4">
+              <span className="font-mono text-[10px] tracking-[0.18em] text-[#6F6E6A]">{tab.kicker} /</span>
+              <h2 className="text-[32px] font-medium tracking-[-0.025em] m-0">{tab.label}</h2>
+            </div>
+            <button
+              onClick={onClose}
+              aria-label="Fermer"
+              className="flex items-center gap-2.5 bg-transparent border-none cursor-pointer font-mono text-[10px] tracking-[0.18em] uppercase p-0"
+            >
+              Fermer
+              <span className="w-[34px] h-[34px] border border-[#0A0A0A] flex items-center justify-center">
+                <svg width="11" height="11" viewBox="0 0 11 11"><path d="M1 1l9 9M10 1l-9 9" stroke="#0A0A0A" strokeWidth="1.2" /></svg>
+              </span>
+            </button>
+          </div>
 
-// ── Feature block ──
+          <div className="h-px bg-[#E3E1DC]" />
 
-function FeatureBlock({ title, text }: { title: string; text: string }) {
-  return (
-    <div className="flex gap-3">
-      <div className="shrink-0 w-5 h-5 text-muted-foreground mt-0.5">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
-      </div>
-      <div>
-        <p className="text-[12px] font-medium">{title}</p>
-        <p className="text-[11px] text-muted-foreground mt-0.5">{text}</p>
-      </div>
+          <div className="flex-1 overflow-y-auto pt-8 pb-10 text-[14px] leading-[1.7] text-[#1F1F1F]" style={{ textWrap: "pretty" }}>
+            {bodyContent[tab.key]}
+          </div>
+
+          <div className="border-t border-[#E3E1DC] flex">
+            {INFO_TABS.filter((t) => t.key !== tab.key).map((t, idx) => (
+              <button
+                key={t.key}
+                onClick={() => onOpen(t.key)}
+                className="flex-1 bg-transparent border-none py-4.5 px-3.5 flex justify-between items-center cursor-pointer text-left font-mono text-[10px] tracking-[0.16em] uppercase text-[#6F6E6A] hover:text-[#0A0A0A] transition-colors"
+                style={{ borderLeft: idx > 0 ? "1px solid #E3E1DC" : "none" }}
+              >
+                <span>{t.label}</span>
+                <span className="text-[14px]">→</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -101,6 +226,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [addingToCart, setAddingToCart] = useState(false)
   const [addedToCart, setAddedToCart] = useState(false)
   const [addError, setAddError] = useState("")
+  const [activeInfoPanel, setActiveInfoPanel] = useState<string | null>(null)
   const addedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isMounted = useRef(true)
 
@@ -312,73 +438,109 @@ export default function ProductDetail({ product }: { product: Product }) {
       <div className="lg:grid lg:grid-cols-2 lg:gap-16">
         <ProductImages ref={imagesRef} images={displayImages} productTitle={product.title} editorialBlocks={editorial} />
 
-        <div className="lg:sticky lg:top-20 lg:self-start">
-          <div className="px-6 lg:pl-10 lg:pr-16 pt-5 lg:pt-10 pb-32 lg:pb-16">
-            {categoryLabel && <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-1.5">{categoryLabel}</p>}
-            <h1 className="text-[15px] lg:text-[17px] font-medium uppercase tracking-[0.08em]">{product.title}</h1>
+        <div className="lg:sticky lg:top-24 lg:self-start">
+          <div className="relative px-6 lg:pl-14 lg:pr-4 pt-5 lg:pt-1 pb-32 lg:pb-16">
+            {/* Category micro-label */}
+            {categoryLabel && (
+              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#6F6E6A]">{categoryLabel}</p>
+            )}
 
-            <div className="flex items-baseline gap-2 mt-1.5 mb-6">
-              {priceLabel && <span className="text-[14px] tracking-[0.03em]">{priceLabel}</span>}
-              {compareLabel && <span className="text-[13px] text-muted-foreground line-through">{compareLabel}</span>}
+            {/* Title — editorial, large */}
+            <h1 className="text-[28px] lg:text-[clamp(36px,3.4vw,52px)] font-medium tracking-[-0.035em] leading-[1.0] mt-4">
+              {product.title}
+            </h1>
+
+            {/* Price + shipping info */}
+            <div className="mt-5">
+              <span className="text-[22px] font-medium tracking-[-0.01em]">{priceLabel}</span>
+              {compareLabel && <span className="text-[15px] text-[#6F6E6A] line-through ml-3">{compareLabel}</span>}
+              <span className="text-[12px] text-[#6F6E6A] ml-2.5">TTC · Expédition offerte dès 80 €</span>
             </div>
 
-            <ProductOptions product={product} selectedOptions={selectedOptions} onOptionChange={onOptionChange} selectedVariant={selectedVariant} modelInfo={modelInfo} />
+            {/* Hairline separator */}
+            <div className="h-px bg-[#E3E1DC] my-7" />
 
-            {lowStock && <p className="text-[11px] text-red-600 mt-3">Plus que {selectedVariant?.inventory_quantity} en stock</p>}
+            {/* Options (color + size grid) */}
+            <ProductOptions product={product} selectedOptions={selectedOptions} onOptionChange={onOptionChange} selectedVariant={selectedVariant} />
+
+            {/* Low stock */}
+            {lowStock && (
+              <div className="flex items-center gap-2 mt-2.5 font-mono text-[10px] tracking-[0.14em] uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                Derniers exemplaires — Taille {selectedOptions[product.options?.find((o) => ["size", "taille", "pointure"].includes(o.title?.toLowerCase() || ""))?.id || ""] || ""}
+              </div>
+            )}
+
             {(addError || cartError) && <p className="text-[11px] text-red-600 mt-3">{addError || cartError}</p>}
 
-            {/* CTA desktop */}
-            <div className="mt-6 hidden lg:block">
-              <button onClick={handleAddToCart} disabled={!canAddToCart || addingToCart || !inStock} aria-busy={addingToCart}
-                className={`w-full h-[52px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all cursor-pointer ${!canAddToCart || !inStock ? "bg-muted text-muted-foreground cursor-not-allowed" : addedToCart ? "bg-foreground text-background" : "bg-foreground text-background hover:bg-foreground/90"}`}>
-                {ctaLabel}
+            {/* Primary CTA — split text */}
+            <div className="mt-5 hidden lg:block">
+              <button
+                onClick={handleAddToCart}
+                disabled={!canAddToCart || addingToCart || !inStock}
+                aria-busy={addingToCart}
+                className="w-full h-[62px] flex items-center justify-between px-6 text-[13px] font-medium uppercase tracking-[0.24em] transition-all cursor-pointer border-none"
+                style={{
+                  background: canAddToCart && inStock ? (addedToCart ? "#0A0A0A" : "#0A0A0A") : "#18181A",
+                  color: "#FAFAF8",
+                  opacity: canAddToCart && inStock ? 1 : 0.6,
+                  cursor: canAddToCart && inStock ? "pointer" : "not-allowed",
+                }}
+              >
+                <span className="flex items-center gap-2.5">
+                  {addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? (
+                    <>Ajouter au panier<span className="opacity-45">·</span>Taille {selectedOptions[product.options?.find((o) => ["size", "taille", "pointure"].includes(o.title?.toLowerCase() || ""))?.id || ""] || ""}</>
+                  ) : (
+                    <>
+                      {missingOptions.length > 0 ? "Sélectionner une taille" : "Épuisé"}
+                      {missingOptions.length > 0 && (
+                        <svg width="14" height="14" viewBox="0 0 14 14" className="opacity-60"><path d="M3 5l4 4 4-4" stroke="#FAFAF8" strokeWidth="1.4" fill="none" strokeLinecap="round" /></svg>
+                      )}
+                    </>
+                  )}
+                </span>
+                {priceLabel && <span className="tracking-[0.04em]">{priceLabel}</span>}
               </button>
             </div>
 
-            {/* Trust + stock */}
-            <div className="flex items-center gap-6 mt-5 text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 14l-4-4m0 0l4-4m-4 4h11a4 4 0 010 8h-1" /></svg>
-                Retours sous 14 jours
-              </span>
+            {/* Reassurance — 3-column grid */}
+            <div className="mt-7 grid grid-cols-3 border-t border-b border-[#E3E1DC]">
+              {[
+                { t: "Livraison", d: "Offerte dès 80 €" },
+                { t: "Retours", d: "30 jours gratuits" },
+                { t: "Boutique", d: "Retrait 24h · Marseille" },
+              ].map((r, i) => (
+                <div key={r.t} className="py-4 px-3.5" style={{ borderLeft: i > 0 ? "1px solid #E3E1DC" : "none" }}>
+                  <p className="font-mono text-[9px] tracking-[0.16em] uppercase text-[#6F6E6A]">{r.t}</p>
+                  <p className="mt-1.5 text-[13px] leading-snug">{r.d}</p>
+                </div>
+              ))}
             </div>
-            {canAddToCart && inStock && !lowStock && <p className="text-[11px] text-green-700 mt-3 uppercase tracking-[0.1em]">En stock</p>}
 
-            {/* Click & Collect */}
-            <div className="flex items-start gap-3 mt-5 pt-5 border-t border-border">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted-foreground mt-0.5 shrink-0">
-                <path d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72l1.189-1.19A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72M6.75 18h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .414.336.75.75.75z" />
-              </svg>
-              <div>
-                <p className="text-[12px] font-medium">Retrait en boutique disponible</p>
-                <p className="text-[11px] text-muted-foreground">Boutique Ice Industry Marseille — Prêt sous 24h</p>
+            {/* Info tab rows — click to open overlay */}
+            <div className="mt-8 border-t border-[#E3E1DC]">
+              {INFO_TABS.map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setActiveInfoPanel(t.key)}
+                  className="w-full bg-transparent border-none border-b border-[#E3E1DC] py-5 px-0.5 flex justify-between items-center cursor-pointer text-left transition-all hover:pl-2.5"
+                  style={{ borderBottom: "1px solid #E3E1DC" }}
+                >
+                  <span className="font-mono text-[11px] tracking-[0.18em] uppercase">{t.label}</span>
+                  <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 1v10M1 6h10" stroke="#0A0A0A" strokeWidth="1.2" /></svg>
+                </button>
+              ))}
+            </div>
+
+            {/* Model info — bottom */}
+            {modelInfo && (
+              <div className="mt-6 pt-4.5 border-t border-[#E3E1DC] text-[12px] text-[#6F6E6A] leading-relaxed">
+                {modelInfo}
               </div>
-            </div>
+            )}
 
-            {/* Tabs */}
-            <div className="mt-6 pt-6 border-t border-border">
-              <Tabs tabs={[
-                { label: "Détails", content: (
-                  <div className="space-y-3">
-                    {product.description && <p>{product.description}</p>}
-                    {product.material && <p>Composition : {product.material}</p>}
-                    {features && features.length > 0 && (
-                      <div className="grid grid-cols-1 gap-3 mt-4">
-                        {features.map((f, i) => <FeatureBlock key={i} title={f.title} text={f.text} />)}
-                      </div>
-                    )}
-                  </div>
-                )},
-                { label: "Livraison & Retours", content: (
-                  <div className="space-y-1.5">
-                    <p>Livraison standard : 3-5 jours ouvrés</p>
-                    <p>Livraison express : 1-2 jours ouvrés</p>
-                    <p className="mt-3">Retours gratuits sous 14 jours en France métropolitaine.</p>
-                    <p>Les articles doivent être retournés dans leur état d&apos;origine, non portés, avec les étiquettes.</p>
-                  </div>
-                )},
-              ]} />
-            </div>
+            {/* Info overlay panel */}
+            <InfoOverlay activeKey={activeInfoPanel} onOpen={setActiveInfoPanel} onClose={() => setActiveInfoPanel(null)} product={product} />
           </div>
         </div>
       </div>

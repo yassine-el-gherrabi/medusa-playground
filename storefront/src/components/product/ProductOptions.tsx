@@ -10,7 +10,6 @@ type ProductOptionsProps = {
   selectedOptions: Record<string, string>
   onOptionChange: (optionId: string, value: string) => void
   selectedVariant: NonNullable<Product["variants"]>[number] | null
-  modelInfo?: string | null
 }
 
 function isColorOption(title: string): boolean {
@@ -26,20 +25,16 @@ export default function ProductOptions({
   selectedOptions,
   onOptionChange,
   selectedVariant,
-  modelInfo,
 }: ProductOptionsProps) {
   if (!product.options || product.options.length === 0) return null
 
-  // Check stock for a specific option combo
   const isOptionInStock = (optionId: string, value: string): boolean => {
     if (!product.variants) return true
-    // Build a hypothetical selection with this option changed
     const hypothetical = { ...selectedOptions, [optionId]: value }
-    // Check if any variant matching this selection has stock
     return product.variants.some((variant) => {
       const matches = product.options!.every((opt) => {
         const sel = hypothetical[opt.id]
-        if (!sel) return true // unselected options = don't filter
+        if (!sel) return true
         const vo = variant.options?.find((o) => o.option_id === opt.id)
         return vo?.value === sel
       })
@@ -47,7 +42,6 @@ export default function ProductOptions({
     })
   }
 
-  // Separate color and size options for ordering: color → model info → size
   const colorOption = product.options.find((o) => isColorOption(o.title))
   const sizeOption = product.options.find((o) => isSizeOption(o.title))
   const otherOptions = product.options.filter((o) => !isColorOption(o.title) && !isSizeOption(o.title))
@@ -57,15 +51,11 @@ export default function ProductOptions({
     const colorImages = getColorImages(product)
     return (
       <div key={option.id}>
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[12px] uppercase tracking-[0.15em]">
-            Couleur
-            {selectedValue && (
-              <span className="text-muted-foreground ml-2 normal-case tracking-normal">
-                {selectedValue}
-              </span>
-            )}
-          </p>
+        <div className="flex items-baseline justify-between mb-3.5">
+          <p className="font-mono text-[11px] uppercase tracking-[0.16em]">Couleur</p>
+          {selectedValue && (
+            <span className="text-[13px] text-muted-foreground">{selectedValue}</span>
+          )}
         </div>
         <div className="flex flex-wrap gap-2.5">
           {option.values?.map((v) => {
@@ -80,8 +70,12 @@ export default function ProductOptions({
                 disabled={!inStock}
                 title={v.value}
                 className={`relative transition-all cursor-pointer ${
-                  thumbnail ? "w-20 h-[104px]" : "w-14 h-14"
+                  thumbnail ? "w-20 h-[104px]" : "w-10 h-10"
                 } ${!inStock ? "opacity-30 cursor-not-allowed" : ""}`}
+                style={!thumbnail ? {
+                  border: isSelected ? "2px solid #0A0A0A" : "1px solid #E3E1DC",
+                  boxShadow: isSelected ? "0 0 0 2px #FAFAF8 inset" : "none",
+                } : undefined}
               >
                 {thumbnail ? (
                   <Image
@@ -97,11 +91,13 @@ export default function ProductOptions({
                     style={{ backgroundColor: color }}
                   />
                 )}
-                <span
-                  className={`absolute -bottom-1.5 left-0 right-0 h-px transition-colors ${
-                    isSelected ? "bg-black" : "bg-transparent"
-                  }`}
-                />
+                {thumbnail && (
+                  <span
+                    className={`absolute -bottom-1.5 left-0 right-0 h-px transition-colors ${
+                      isSelected ? "bg-black" : "bg-transparent"
+                    }`}
+                  />
+                )}
                 {!inStock && (
                   <span className="absolute inset-0 flex items-center justify-center">
                     <span className="block w-[140%] h-px bg-black/40 -rotate-45" />
@@ -115,23 +111,28 @@ export default function ProductOptions({
     )
   }
 
-  const renderSizeButtons = (option: NonNullable<Product["options"]>[number]) => {
+  const renderSizeGrid = (option: NonNullable<Product["options"]>[number]) => {
     const selectedValue = selectedOptions[option.id]
+    const values = option.values || []
+    const colCount = Math.min(values.length, 6)
     return (
       <div key={option.id}>
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[12px] uppercase tracking-[0.15em]">
+        <div className="flex items-baseline justify-between mb-3">
+          <p className="font-mono text-[11px] uppercase tracking-[0.16em]">
             Taille
+            {selectedValue && (
+              <span className="text-muted-foreground ml-2">— {selectedValue}</span>
+            )}
           </p>
           <Link
             href="/guide-des-tailles"
-            className="text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
+            className="font-mono text-[10px] uppercase tracking-[0.14em] underline underline-offset-[3px] hover:text-foreground transition-colors"
           >
-            Guide des tailles
+            Guide des tailles ↗
           </Link>
         </div>
-        <div className="flex flex-wrap gap-6">
-          {option.values?.map((v) => {
+        <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${colCount}, 1fr)` }}>
+          {values.map((v) => {
             const isSelected = selectedValue === v.value
             const inStock = isOptionInStock(option.id, v.value)
             return (
@@ -139,20 +140,20 @@ export default function ProductOptions({
                 key={v.id}
                 onClick={() => inStock && onOptionChange(option.id, v.value)}
                 disabled={!inStock}
-                className={`relative text-[16px] pb-3 transition-colors cursor-pointer ${
-                  isSelected
-                    ? "text-foreground font-medium"
-                    : inStock
-                      ? "text-muted-foreground hover:text-foreground"
-                      : "text-black/20 line-through cursor-not-allowed"
-                }`}
+                className="relative h-[54px] text-[14px] font-medium tracking-[0.02em] transition-all cursor-pointer"
+                style={{
+                  background: isSelected ? "#0A0A0A" : "transparent",
+                  color: !inStock ? "#A3A19C" : isSelected ? "#FAFAF8" : "#0A0A0A",
+                  border: `1px solid ${isSelected ? "#0A0A0A" : "#E3E1DC"}`,
+                  cursor: !inStock ? "not-allowed" : "pointer",
+                }}
               >
                 {v.value}
-                <span
-                  className={`absolute bottom-0 left-0 right-0 h-px transition-colors ${
-                    isSelected ? "bg-black" : "bg-transparent"
-                  }`}
-                />
+                {!inStock && (
+                  <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <line x1="0" y1="100" x2="100" y2="0" stroke="#E3E1DC" strokeWidth="1" />
+                  </svg>
+                )}
               </button>
             )
           })}
@@ -163,31 +164,17 @@ export default function ProductOptions({
 
   return (
     <div className="space-y-6">
-      {/* 1. Color swatches */}
       {colorOption && renderColorSwatches(colorOption)}
-
-      {/* 2. Model info — between color and size, like Represent */}
-      {modelInfo && (
-        <p className="text-[12px] text-muted-foreground">
-          {modelInfo}
-        </p>
-      )}
-
-      {/* 3. Size buttons */}
-      {sizeOption && renderSizeButtons(sizeOption)}
-
-      {/* 4. Other options (material, etc.) */}
+      {sizeOption && renderSizeGrid(sizeOption)}
       {otherOptions.map((option) => {
         const selectedValue = selectedOptions[option.id]
         return (
           <div key={option.id}>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[12px] uppercase tracking-[0.15em]">
+            <div className="flex items-baseline justify-between mb-3">
+              <p className="font-mono text-[11px] uppercase tracking-[0.16em]">
                 {option.title}
                 {selectedValue && (
-                  <span className="text-muted-foreground ml-2 normal-case tracking-normal">
-                    {selectedValue}
-                  </span>
+                  <span className="text-muted-foreground ml-2">— {selectedValue}</span>
                 )}
               </p>
             </div>
