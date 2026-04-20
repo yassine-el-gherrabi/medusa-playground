@@ -51,7 +51,7 @@ function EditorialImage({
         src={image.url}
         alt={`${productTitle} — image ${index + 1}`}
         fill
-        className="object-cover"
+        className="object-contain"
         sizes={sizes}
         priority={priority}
         loading={priority ? "eager" : "lazy"}
@@ -213,7 +213,7 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
                   src={image.url}
                   alt={`${productTitle} — image ${i + 1}`}
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   sizes="100vw"
                   priority={i === 0}
                 />
@@ -239,7 +239,7 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
               src={hero.url}
               alt={`${productTitle} — image 1`}
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="(max-width: 1280px) 50vw, 640px"
               priority
             />
@@ -344,7 +344,7 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
                     src={image.url}
                     alt={`${productTitle} — image ${i + 1}`}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                     sizes="100vw"
                     priority={i < 3}
                   />
