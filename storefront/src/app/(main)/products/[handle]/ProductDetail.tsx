@@ -497,7 +497,7 @@ export default function ProductDetail({ product }: { product: Product }) {
         <ProductImages ref={imagesRef} images={displayImages} productTitle={product.title} editorialBlocks={editorial} />
 
         <div className="lg:sticky lg:top-24 lg:self-start">
-          <div className="relative px-6 lg:pl-14 lg:pr-4 pt-5 lg:pt-1 pb-32 lg:pb-16">
+          <div className="relative px-6 lg:pl-14 lg:pr-4 pt-5 lg:pt-1 pb-8 lg:pb-16">
             {/* Category micro-label */}
             {categoryLabel && (
               <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#6F6E6A]">{categoryLabel}</p>
