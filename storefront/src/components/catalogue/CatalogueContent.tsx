@@ -15,6 +15,7 @@ import MidLayout from "@/components/catalogue/MidLayout"
 import LookbookLayout from "@/components/catalogue/LookbookLayout"
 import ShopTheShoot from "@/components/catalogue/ShopTheShoot"
 import ProductCard from "@/components/product/ProductCard"
+import { ProductGridSkeleton } from "@/components/ui/Skeleton"
 import { COLOR_MAP } from "@/lib/product-helpers"
 import { sdk } from "@/lib/sdk"
 import { PRODUCT_FIELDS } from "@/lib/medusa/products"
@@ -415,8 +416,8 @@ export default function CatalogueContent({
         />
       )}
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="h-5 w-5 border-2 border-[var(--color-border)] border-t-[var(--color-ink)] rounded-full animate-spin" />
+        <div className="px-5 lg:px-8 py-7 lg:py-12">
+          <ProductGridSkeleton count={8} />
         </div>
       ) : displayProducts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 px-5 text-center">
