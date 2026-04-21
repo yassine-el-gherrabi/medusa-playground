@@ -42,7 +42,7 @@ function EditorialImage({
   return (
     <button
       onClick={() => onOpen(index)}
-      className="block w-full bg-[#f5f5f5] cursor-zoom-in overflow-hidden"
+      className="block w-full bg-[#f5f5f5] !cursor-zoom-in overflow-hidden border-none p-0"
     >
       <Image
         src={image.url}
@@ -327,13 +327,13 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
               className="overflow-y-auto h-dvh"
             >
               {images.map((image, i) => (
-                <div key={image.id} id={`gallery-img-${i}`} className="w-full bg-[#f5f5f5] mb-1.5 cursor-zoom-out" onClick={() => setGalleryOpen(false)}>
+                <div key={image.id} id={`gallery-img-${i}`} className="w-full cursor-zoom-out" onClick={() => setGalleryOpen(false)}>
                   <Image
                     src={image.url}
                     alt={`${productTitle} — image ${i + 1}`}
                     width={1200}
                     height={1500}
-                    className="w-full h-auto"
+                    className="w-full h-auto block"
                     sizes="100vw"
                     priority={i < 3}
                   />
