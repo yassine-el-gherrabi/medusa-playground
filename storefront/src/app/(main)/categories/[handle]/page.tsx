@@ -64,6 +64,7 @@ export default async function CategoryPage({ params }: Props) {
         initialCount={count}
         categoryId={category.id}
         subcategories={children}
+        showFilters
       />
     </div>
   )
