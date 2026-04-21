@@ -177,7 +177,7 @@ export default function CollectionFilterBar({
               <div
                 role="radiogroup"
                 aria-label="Densité de la grille"
-                className="hidden lg:flex border border-[var(--color-border)]"
+                className="hidden lg:flex"
               >
                 {([3, 4] as const).map((n) => (
                   <button
@@ -349,7 +349,7 @@ function FiltersDrawer({ open, onClose, filterOptions, activeFilters, onApply }:
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 border border-[var(--color-ink)] bg-transparent cursor-pointer flex items-center justify-center"
+            className="w-9 h-9 bg-transparent cursor-pointer flex items-center justify-center hover:opacity-60 transition-opacity"
             aria-label="Fermer les filtres"
           >
             <svg width="12" height="12" viewBox="0 0 11 11"><path d="M1 1l9 9M10 1l-9 9" stroke="currentColor" strokeWidth="1.2" /></svg>
@@ -590,10 +590,10 @@ function DensityIcon({ cols }: { cols: 3 | 4 }) {
   }
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <rect x="0" y="2" width="1.5" height="10" fill="currentColor" />
-      <rect x="4" y="2" width="1.5" height="10" fill="currentColor" />
-      <rect x="8.5" y="2" width="1.5" height="10" fill="currentColor" />
-      <rect x="12.5" y="2" width="1.5" height="10" fill="currentColor" />
+      <rect x="1" y="2" width="1.5" height="10" fill="currentColor" />
+      <rect x="4.5" y="2" width="1.5" height="10" fill="currentColor" />
+      <rect x="8" y="2" width="1.5" height="10" fill="currentColor" />
+      <rect x="11.5" y="2" width="1.5" height="10" fill="currentColor" />
     </svg>
   )
 }
