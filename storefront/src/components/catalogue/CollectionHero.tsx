@@ -58,16 +58,16 @@ export default function CollectionHero({
               <ol className="flex items-center gap-1.5 font-mono text-[10px] tracking-[0.14em] uppercase">
                 {breadcrumbs.map((crumb, i) => (
                   <li key={crumb.href} className="flex items-center gap-1.5">
-                    {i > 0 && <span className="text-white/40">/</span>}
+                    {i > 0 && <span className="text-white">/</span>}
                     {i < breadcrumbs.length - 1 ? (
                       <Link
                         href={crumb.href}
-                        className="text-white/60 hover:text-white transition-colors"
+                        className="text-white hover:text-white transition-colors"
                       >
                         {crumb.label}
                       </Link>
                     ) : (
-                      <span className="text-white/60">{crumb.label}</span>
+                      <span className="text-white">{crumb.label}</span>
                     )}
                   </li>
                 ))}
@@ -78,7 +78,7 @@ export default function CollectionHero({
           )}
 
           {(itemCount !== undefined || season) && (
-            <span className="hidden lg:block font-mono text-[10px] tracking-[0.14em] uppercase text-white/60">
+            <span className="hidden lg:block font-mono text-[10px] tracking-[0.14em] uppercase text-white">
               {itemCount !== undefined && `${itemCount} pièces`}
               {itemCount !== undefined && season && " · "}
               {season}
@@ -93,13 +93,13 @@ export default function CollectionHero({
         <div className="flex items-end justify-between gap-8">
           <div className="max-w-[85%] lg:max-w-[70%]">
             <div className="flex items-center gap-4 mb-3 lg:mb-4">
-              <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-white/50 whitespace-nowrap">
+              <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-white whitespace-nowrap">
                 {displayLabel} · {title}
               </span>
               <div className="h-px flex-1 bg-white/30" />
             </div>
             <h1
-              className="font-bold text-white uppercase tracking-tight"
+              className="font-bold text-white tracking-tight"
               style={{
                 fontSize: "clamp(36px, 10vw, 56px)",
                 lineHeight: 0.95,
@@ -118,7 +118,7 @@ export default function CollectionHero({
           {/* Scroll indicator (desktop only) */}
           <div className="hidden lg:flex flex-col items-center gap-3 shrink-0">
             <span
-              className="font-mono text-[10px] tracking-[0.18em] uppercase text-white/50"
+              className="font-mono text-[10px] tracking-[0.18em] uppercase text-white"
               style={{
                 writingMode: "vertical-rl",
                 textOrientation: "mixed",
