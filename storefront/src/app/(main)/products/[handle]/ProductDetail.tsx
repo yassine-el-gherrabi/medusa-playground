@@ -148,7 +148,7 @@ function InfoOverlay({
             ["Retrait boutique", "Gratuit", "Marseille · 24h"],
             ["International", "Dès 14,90 €", "Europe · Monde"],
           ].map(([t, p, d]) => (
-            <div key={t} className="bg-[#FAFAF8] p-5">
+            <div key={t} className="bg-white p-5">
               <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-[#6F6E6A]">{t}</div>
               <div className="mt-2.5 text-[17px] font-medium tracking-[-0.01em]">{p}</div>
               <div className="mt-1 text-[12px] text-[#1F1F1F]">{d}</div>
@@ -490,9 +490,6 @@ export default function ProductDetail({ product }: { product: Product }) {
                   ) : (
                     <>
                       {missingOptions.length > 0 ? "Sélectionner une taille" : "Épuisé"}
-                      {missingOptions.length > 0 && (
-                        <svg width="12" height="12" viewBox="0 0 14 14" className="opacity-60"><path d="M3 5l4 4 4-4" stroke="#FAFAF8" strokeWidth="1.4" fill="none" strokeLinecap="round" /></svg>
-                      )}
                     </>
                   )}
                 </span>
