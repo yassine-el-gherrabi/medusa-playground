@@ -159,7 +159,7 @@ export default function ProductCard({ product, showSwatches = false }: { product
                   className={`relative cursor-pointer shrink-0 ${thumb ? "w-20 h-[104px]" : "w-9 h-9"} ${isActive ? "" : "opacity-50 hover:opacity-80"} transition-opacity`}
                 >
                   {thumb ? (
-                    <Image src={thumb} alt={c.label} fill className="object-cover" sizes="80px" />
+                    <Image src={thumb} alt={c.label} fill className="object-cover" sizes="240px" />
                   ) : (
                     <span className="block w-full h-full" style={{ backgroundColor: COLOR_MAP[c.value] || "#ccc" }} />
                   )}
