@@ -101,7 +101,7 @@ function ShootHeader({ shootData }: { shootData: ShootData }) {
 
 function ShootImage({ shootData }: { shootData: ShootData }) {
   return (
-    <div className="relative w-full aspect-[4/5] lg:aspect-[16/10]">
+    <div className="relative w-full aspect-[4/5] lg:aspect-[21/9] lg:max-h-[500px]">
       <div className="lg:hidden absolute inset-0">
         {shootData.image_url ? (
           <Image
@@ -145,10 +145,10 @@ function DesktopRail({
 
   return (
     <div className="hidden lg:block">
-      {/* Numbered tabs */}
+      {/* Numbered tabs — max 6 visible, scroll if more */}
       <div
-        className="grid border-t border-white/10"
-        style={{ gridTemplateColumns: `repeat(${products.length}, 1fr)` }}
+        className={`border-t border-white/10 ${products.length <= 6 ? "grid" : "flex overflow-x-auto"}`}
+        style={products.length <= 6 ? { gridTemplateColumns: `repeat(${products.length}, 1fr)` } : { scrollbarWidth: "none" }}
       >
         {products.map((product, i) => {
           const isActive = i === activeIdx
@@ -157,9 +157,10 @@ function DesktopRail({
               key={product.id}
               onClick={() => setActiveIdx(i)}
               onMouseEnter={() => setActiveIdx(i)}
-              className={`relative py-5 px-5 text-left transition-colors cursor-pointer ${
+              className={`relative py-5 px-5 text-left transition-colors cursor-pointer border-none shrink-0 ${
                 isActive ? "bg-white/[0.06]" : ""
-              } ${i < products.length - 1 ? "border-r border-white/10" : ""}`}
+              } ${i < products.length - 1 ? "border-r border-r-white/10" : ""}`}
+              style={products.length > 6 ? { minWidth: 200 } : undefined}
             >
               {isActive && (
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-white" />
@@ -192,6 +193,12 @@ function DesktopDetailStrip({ product }: { product: Product }) {
   const { addItem } = useCart()
   const sizes = useMemo(() => extractSizes(product), [product])
   const variants = useMemo(() => buildVariantMap(product), [product])
+  const colors = useMemo(() => {
+    const opt = product.options?.find((o) => ["couleur", "color"].includes(o.title?.toLowerCase() || ""))
+    return opt?.values?.map((v) => v.value) || []
+  }, [product])
+
+  const [selectedColor, setSelectedColor] = useState(colors[0] || "")
   const [selectedSize, setSelectedSize] = useState("")
   const [adding, setAdding] = useState(false)
   const [added, setAdded] = useState(false)
@@ -199,8 +206,8 @@ function DesktopDetailStrip({ product }: { product: Product }) {
   const priceStr = productPriceStr(product)
   const category = productCategory(product)
 
-  const canAdd = selectedSize && isSizeInStock(variants, "Noir", selectedSize)
-  const variantId = selectedSize ? findVariantId(variants, "Noir", selectedSize) : null
+  const canAdd = selectedSize && selectedColor && isSizeInStock(variants, selectedColor, selectedSize)
+  const variantId = selectedSize && selectedColor ? findVariantId(variants, selectedColor, selectedSize) : null
 
   const handleAdd = useCallback(async () => {
     if (!variantId || adding) return
@@ -217,41 +224,61 @@ function DesktopDetailStrip({ product }: { product: Product }) {
   }, [variantId, adding, addItem])
 
   return (
-    <div className="flex items-center py-7 px-8 gap-10 border-t border-white/10">
+    <div className="flex items-center py-5 px-8 gap-8 border-t border-white/10">
       {/* Thumbnail */}
-      <div className="w-[80px] h-[80px] shrink-0 bg-[#1a1a1a] relative overflow-hidden">
+      <div className="w-[60px] h-[60px] shrink-0 bg-[#1a1a1a] relative overflow-hidden">
         {product.thumbnail && (
           <Image
             src={product.thumbnail}
             alt={product.title ?? ""}
             fill
             className="object-cover"
+            sizes="120px"
           />
         )}
       </div>
 
       {/* Info */}
-      <div className="shrink-0">
+      <div className="shrink-0 min-w-[120px]">
         {category && (
           <p className="font-mono text-[10px] tracking-[0.18em] uppercase text-white/55">
             {category}
           </p>
         )}
-        <p className="text-[15px] font-medium mt-1">{product.title}</p>
+        <p className="text-[14px] font-medium mt-1">{product.title}</p>
       </div>
+
+      {/* Colors (if multiple) */}
+      {colors.length > 1 && (
+        <div className="flex flex-row gap-1">
+          {colors.map((c) => (
+            <button
+              key={c}
+              onClick={() => { setSelectedColor(c); setSelectedSize("") }}
+              className={`px-2.5 py-1.5 text-[11px] font-mono uppercase tracking-[0.1em] transition-colors cursor-pointer border ${
+                selectedColor === c
+                  ? "bg-white/20 text-white border-white/40"
+                  : "text-white/50 border-white/15 hover:border-white/40"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Sizes */}
       {sizes.length > 0 && (
         <div className="flex flex-row gap-1.5">
           {sizes.map((s) => {
-            const inStock = isSizeInStock(variants, "Noir", s.value)
+            const inStock = isSizeInStock(variants, selectedColor, s.value)
             const isSelected = selectedSize === s.value
             return (
               <button
                 key={s.value}
                 onClick={() => inStock && setSelectedSize(s.value)}
                 disabled={!inStock}
-                className={`relative w-[44px] h-[40px] text-[13px] font-medium tracking-[0.02em] transition-all border cursor-pointer ${
+                className={`relative w-[40px] h-[36px] text-[12px] font-medium tracking-[0.02em] transition-all border cursor-pointer ${
                   isSelected
                     ? "bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-surface)]"
                     : !inStock
@@ -381,8 +408,9 @@ function MobileSheet({
   const priceStr = productPriceStr(product)
   const category = productCategory(product)
 
-  const canAdd = selectedSize && isSizeInStock(variants, "Noir", selectedSize)
-  const variantId = selectedSize ? findVariantId(variants, "Noir", selectedSize) : null
+  const defaultColor = product.options?.find((o) => ["couleur", "color"].includes(o.title?.toLowerCase() || ""))?.values?.[0]?.value || "Noir"
+  const canAdd = selectedSize && isSizeInStock(variants, defaultColor, selectedSize)
+  const variantId = selectedSize ? findVariantId(variants, defaultColor, selectedSize) : null
 
   const handleAdd = useCallback(async () => {
     if (!variantId || adding) return
