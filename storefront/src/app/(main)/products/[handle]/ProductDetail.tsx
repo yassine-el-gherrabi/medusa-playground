@@ -427,7 +427,7 @@ export default function ProductDetail({ product }: { product: Product }) {
         <section className="px-6 lg:px-10 py-12 lg:py-16 border-t border-border" aria-label="Complétez le look">
           <h2 className="text-[11px] font-medium uppercase tracking-[0.15em] mb-6">Complétez le look</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-0.5">
-            {relatedProducts.map((p) => <ProductCard key={p.id} product={p} />)}
+            {relatedProducts.map((p) => <ProductCard key={p.id} product={p} showSwatches />)}
           </div>
         </section>
       )}
@@ -437,7 +437,7 @@ export default function ProductDetail({ product }: { product: Product }) {
         <section className="px-6 lg:px-10 py-12 lg:py-16 border-t border-border" aria-label="Recommandations">
           <h2 className="text-[11px] font-medium uppercase tracking-[0.15em] mb-6">Vous aimerez aussi</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-0.5">
-            {alsoLikeProducts.slice(0, alsoLikeVisible).map((p) => <ProductCard key={p.id} product={p} />)}
+            {alsoLikeProducts.slice(0, alsoLikeVisible).map((p) => <ProductCard key={p.id} product={p} showSwatches />)}
           </div>
           {alsoLikeVisible < alsoLikeProducts.length && (
             <div className="flex justify-center mt-8">
@@ -459,7 +459,7 @@ export default function ProductDetail({ product }: { product: Product }) {
         <section className="px-6 lg:px-10 py-12 lg:py-16 border-t border-border" aria-label="Récemment consultés">
           <h2 className="text-[11px] font-medium uppercase tracking-[0.15em] mb-6">Récemment consultés</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-0.5">
-            {recentProducts.map((p) => <ProductCard key={p.id} product={p} />)}
+            {recentProducts.map((p) => <ProductCard key={p.id} product={p} showSwatches />)}
           </div>
         </section>
       )}

@@ -42,7 +42,7 @@ export default function ProductGrid({
 
   const gridItems: React.ReactNode[] = []
   products.forEach((product, i) => {
-    gridItems.push(<ProductCard key={product.id} product={product} />)
+    gridItems.push(<ProductCard key={product.id} product={product} showSwatches />)
     if (i === 7 && editorialInsert) {
       gridItems.push(
         <EditorialInsert key="editorial-insert" kicker={editorialInsert.kicker} headline={editorialInsert.headline} />

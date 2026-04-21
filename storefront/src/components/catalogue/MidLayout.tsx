@@ -82,7 +82,7 @@ export default function MidLayout({ products, density }: MidLayoutProps) {
       {remaining.length > 0 && (
         <div className={`grid ${colsClass} ${gapClass}`}>
           {remaining.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} showSwatches />
           ))}
         </div>
       )}

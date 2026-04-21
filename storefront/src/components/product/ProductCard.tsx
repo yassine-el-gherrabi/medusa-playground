@@ -19,6 +19,7 @@ import {
   getSecondImage,
   getColorThumbnail,
   getCompareAtPrice,
+  COLOR_MAP,
 } from "@/lib/product-helpers"
 
 /**
@@ -28,7 +29,7 @@ import {
  * Features: hover image swap, [+] quick-add, glass bar sizes (desktop),
  * mobile bottom sheet with colors + sizes + images, color name text.
  */
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product, showSwatches = false }: { product: Product; showSwatches?: boolean }) {
   const { addItem } = useCart()
 
   const colors = extractColors(product)
@@ -144,7 +145,32 @@ export default function ProductCard({ product }: { product: Product }) {
             {priceLabel && <span className="text-[12px] md:text-[13px] tracking-[0.03em]">{priceLabel}</span>}
           </div>
         </div>
-        <p className="text-[11px] text-muted-foreground mt-1">{activeColor}{colors.length > 1 && ` · ${colors.length} couleurs`}</p>
+        {showSwatches && colors.length > 1 ? (
+          <div className="flex gap-1.5 mt-2">
+            {colors.map((c) => {
+              const thumb = getColorThumbnail(colorImages, c.value)
+              const isActive = activeColor === c.value
+              return (
+                <button
+                  key={c.value}
+                  onClick={() => setActiveColor(c.value)}
+                  title={c.label}
+                  aria-label={`Couleur ${c.label}`}
+                  className={`relative cursor-pointer shrink-0 ${thumb ? "w-8 h-10" : "w-5 h-5"} ${isActive ? "" : "opacity-50 hover:opacity-80"} transition-opacity`}
+                >
+                  {thumb ? (
+                    <Image src={thumb} alt={c.label} fill className="object-cover" sizes="32px" />
+                  ) : (
+                    <span className="block w-full h-full" style={{ backgroundColor: COLOR_MAP[c.value] || "#ccc" }} />
+                  )}
+                  {isActive && <span className="absolute -bottom-1 left-0 right-0 h-px bg-[var(--color-ink)]" />}
+                </button>
+              )
+            })}
+          </div>
+        ) : (
+          <p className="text-[11px] text-muted-foreground mt-1">{activeColor}{colors.length > 1 && ` · ${colors.length} couleurs`}</p>
+        )}
       </div>
 
       {/* Mobile bottom sheet */}
