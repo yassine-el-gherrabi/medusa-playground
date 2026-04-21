@@ -144,13 +144,13 @@ export default function CollectionFilterBar({
           </div>
         )}
 
-        {/* Main bar */}
-        <div className="flex items-center justify-between px-4 lg:px-8 py-3 lg:py-4 gap-3 lg:gap-6">
-          {/* Left: filters button + count */}
-          <div className="flex items-center gap-3 lg:gap-4">
+        {/* Main bar — pure typography, no borders */}
+        <div className="flex items-center justify-between px-5 lg:px-8 py-4 lg:py-5">
+          {/* Left: filters + count */}
+          <div className="flex items-center gap-5 lg:gap-6">
             <button
               onClick={() => setFiltersOpen(true)}
-              className="flex items-center gap-2.5 bg-transparent border border-transparent px-3.5 py-2.5 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer hover:border-[var(--color-ink)] transition-colors"
+              className="flex items-center gap-2 bg-transparent border-none p-0 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer hover:opacity-50 transition-opacity"
               aria-label="Ouvrir les filtres"
             >
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
@@ -158,9 +158,7 @@ export default function CollectionFilterBar({
               </svg>
               Filtres
               {badgeCount > 0 && (
-                <span className="ml-0.5 flex items-center justify-center w-[18px] h-[18px] bg-[var(--color-ink)] text-[var(--color-surface)] rounded-full text-[9px] font-mono leading-none">
-                  {badgeCount}
-                </span>
+                <span className="ml-0.5 text-[9px]">({badgeCount})</span>
               )}
             </button>
 
@@ -172,22 +170,20 @@ export default function CollectionFilterBar({
           </div>
 
           {/* Right: density + sort */}
-          <div className="flex items-center gap-3 lg:gap-3.5">
+          <div className="flex items-center gap-4 lg:gap-5">
             {showDensity && (
               <div
                 role="radiogroup"
                 aria-label="Densité de la grille"
-                className="hidden lg:flex"
+                className="hidden lg:flex items-center gap-1"
               >
                 {([3, 4] as const).map((n) => (
                   <button
                     key={n}
                     aria-checked={density === n}
                     onClick={() => onDensityChange(n)}
-                    className={`w-9 h-9 flex items-center justify-center cursor-pointer transition-all ${
-                      density === n
-                        ? "bg-[var(--color-ink)] text-[var(--color-surface)] border-none"
-                        : "bg-white text-[var(--color-ink)] border border-transparent hover:border-[var(--color-ink)]"
+                    className={`w-7 h-7 flex items-center justify-center cursor-pointer transition-opacity border-none bg-transparent p-0 ${
+                      density === n ? "opacity-100" : "opacity-30 hover:opacity-60"
                     }`}
                   >
                     <DensityIcon cols={n} />
@@ -199,7 +195,7 @@ export default function CollectionFilterBar({
             <div ref={sortRef} className="relative">
               <button
                 onClick={() => setSortOpen((v) => !v)}
-                className="flex items-center gap-2.5 bg-transparent border-none py-2.5 px-1 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer hover:opacity-60 transition-opacity"
+                className="flex items-center gap-2 bg-transparent border-none p-0 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer hover:opacity-50 transition-opacity"
               >
                 <span className="hidden lg:inline">Tri · {currentLabel}</span>
                 <span className="lg:hidden">Tri</span>
@@ -217,14 +213,12 @@ export default function CollectionFilterBar({
                     <button
                       key={option.value}
                       onClick={() => handleQuickSort(option.value)}
-                      className={`block w-full text-left py-3 px-4 text-[13px] cursor-pointer transition-colors ${
+                      className={`block w-full text-left py-3 px-4 text-[13px] cursor-pointer transition-colors border-none hover:bg-[var(--color-bg-subtle)] ${
                         sortOrder === option.value
-                          ? "bg-[var(--color-ink)] text-[var(--color-surface)] border-none"
-                          : "bg-white text-[var(--color-ink)] border border-transparent hover:border-[var(--color-ink)]"
+                          ? "bg-[var(--color-ink)] text-[var(--color-surface)] hover:bg-[var(--color-ink)]"
+                          : "bg-white text-[var(--color-ink)]"
                       }`}
-                      style={{
-                        borderBottom: "1px solid var(--color-border)",
-                      }}
+                      style={{ borderBottom: "1px solid var(--color-border)" }}
                     >
                       {option.label}
                     </button>
