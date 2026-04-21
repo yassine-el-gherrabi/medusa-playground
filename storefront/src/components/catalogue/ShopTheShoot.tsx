@@ -101,7 +101,7 @@ function ShootHeader({ shootData }: { shootData: ShootData }) {
 
 function ShootImage({ shootData }: { shootData: ShootData }) {
   return (
-    <div className="relative w-full" style={{ aspectRatio: "4/5" }}>
+    <div className="relative w-full aspect-[4/5] lg:aspect-[16/10]">
       <div className="lg:hidden absolute inset-0">
         {shootData.image_url ? (
           <Image
@@ -114,7 +114,7 @@ function ShootImage({ shootData }: { shootData: ShootData }) {
           <div className="w-full h-full bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a]" />
         )}
       </div>
-      <div className="hidden lg:block absolute inset-0" style={{ aspectRatio: "16/10" }}>
+      <div className="hidden lg:block absolute inset-0">
         {shootData.image_url ? (
           <Image
             src={shootData.image_url}
