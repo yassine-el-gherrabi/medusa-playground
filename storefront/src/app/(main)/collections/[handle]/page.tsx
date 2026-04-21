@@ -1,11 +1,12 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import EditorialHero from "@/components/common/EditorialHero"
-import EditorialBlock from "@/components/common/EditorialBlock"
-import InlineProductRow from "@/components/common/InlineProductRow"
 import { getCollectionByHandle } from "@/lib/medusa/collections"
 import { getProducts } from "@/lib/medusa/products"
-import { DEFAULT_REGION } from "@/lib/constants"
+import { DEFAULT_REGION, SITE_NAME, SITE_URL } from "@/lib/constants"
+import CollectionHero from "@/components/catalogue/CollectionHero"
+import Manifesto from "@/components/catalogue/Manifesto"
+import CatalogueContent from "@/components/catalogue/CatalogueContent"
+import type { CollectionMeta } from "@/types/catalogue"
 
 type Props = { params: Promise<{ handle: string }> }
 
@@ -15,16 +16,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!collection) return { title: "Collection introuvable" }
 
+  const meta = (collection.metadata ?? {}) as unknown as CollectionMeta
+
   return {
-    title: collection.title,
+    title: `${collection.title} — ${SITE_NAME}`,
     description:
-      (collection.metadata as Record<string, string>)?.description ||
-      `Découvrez la collection ${collection.title} par Ice Industry.`,
+      meta.description ??
+      `Découvrez la collection ${collection.title} par ${SITE_NAME}.`,
     openGraph: {
-      title: collection.title,
-      images: (collection.metadata as Record<string, string>)?.hero_image
-        ? [{ url: (collection.metadata as Record<string, string>).hero_image }]
-        : undefined,
+      title: `${collection.title} — ${SITE_NAME}`,
+      description:
+        meta.description ??
+        `Découvrez la collection ${collection.title} par ${SITE_NAME}.`,
+      images: meta.hero_image ? [{ url: meta.hero_image }] : undefined,
+    },
+    alternates: {
+      canonical: `${SITE_URL}/collections/${handle}`,
     },
   }
 }
@@ -35,49 +42,47 @@ export default async function CollectionPage({ params }: Props) {
 
   if (!collection) notFound()
 
-  const { products } = await getProducts({
+  const { products, count } = await getProducts({
     regionId: DEFAULT_REGION,
     collectionId: [collection.id],
-    limit: 20,
-  }).catch(() => ({ products: [], count: 0 }))
+    limit: 12,
+  }).catch(() => ({ products: [] as import("@/types").Product[], count: 0 }))
 
-  const meta = collection.metadata as Record<string, unknown> | null
-  const gallery = (meta?.shoot_gallery as string[]) || []
+  const meta = (collection.metadata ?? {}) as unknown as CollectionMeta
+
+  const breadcrumbs = [
+    { label: "Accueil", href: "/" },
+    { label: "Collections", href: "/boutique" },
+    { label: collection.title, href: `/collections/${handle}` },
+  ]
 
   return (
     <div className="-mt-16 animate-fade-in">
-      <EditorialHero
+      <CollectionHero
         title={collection.title}
-        description={meta?.description as string}
-        imageUrl={meta?.hero_image as string}
+        season={meta.season}
+        itemCount={count}
+        imageUrl={meta.hero_image}
+        headline={meta.hero_line}
+        breadcrumbs={breadcrumbs}
       />
 
-      {gallery.length > 0 && (
-        <div className="mt-1">
-          {gallery.map((img, i) => (
-            <EditorialBlock
-              key={i}
-              imageUrl={img}
-              reverse={i % 2 !== 0}
-              title={i === 0 ? "L'univers de la capsule" : undefined}
-              text={i === 0 ? (meta?.description as string) : undefined}
-            />
-          ))}
-        </div>
+      {meta.manifesto && (
+        <Manifesto
+          title={collection.title}
+          description={meta.description}
+          kicker={meta.season}
+          body={meta.manifesto}
+        />
       )}
 
-      <div className="py-16">
-        <div className="max-w-7xl mx-auto px-4 mb-10">
-          <h2 className="text-2xl font-bold">Les pièces de la collection</h2>
-        </div>
-        {products.length > 0 ? (
-          <InlineProductRow products={products} />
-        ) : (
-          <p className="text-center text-muted-foreground py-12">
-            Aucun produit dans cette collection.
-          </p>
-        )}
-      </div>
+      <CatalogueContent
+        initialProducts={products}
+        initialCount={count}
+        collectionId={collection.id}
+        editorialBlocks={meta.editorial_blocks}
+        shootData={meta.shoot}
+      />
     </div>
   )
 }

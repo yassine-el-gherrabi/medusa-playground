@@ -14,12 +14,13 @@ export async function getProducts(params: {
   categoryId?: string[]
   collectionId?: string[]
   q?: string
+  order?: string
 }): Promise<{ products: Product[]; count: number }> {
   const { products, count } = await sdk.store.product.list(
     {
       limit: params.limit ?? 20,
       offset: params.offset ?? 0,
-      order: "-created_at",
+      order: params.order ?? "-created_at",
       ...(params.regionId && { region_id: params.regionId }),
       fields: PRODUCT_FIELDS,
       ...(params.categoryId && { category_id: params.categoryId }),

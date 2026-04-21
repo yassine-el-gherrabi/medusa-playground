@@ -1,45 +1,57 @@
-import { Suspense } from "react"
 import type { Metadata } from "next"
-import EditorialHero from "@/components/common/EditorialHero"
-import BoutiqueContent from "./BoutiqueContent"
-import { ProductGridSkeleton } from "@/components/ui/Skeleton"
+import CollectionHero from "@/components/catalogue/CollectionHero"
+import CatalogueContent from "@/components/catalogue/CatalogueContent"
 import { getCategories } from "@/lib/medusa/categories"
-import { getCollections } from "@/lib/medusa/collections"
 import { getProducts } from "@/lib/medusa/products"
 import { DEFAULT_REGION } from "@/lib/constants"
 
 export const metadata: Metadata = {
-  title: "Boutique",
+  title: "Boutique — Ice Industry",
   description:
     "Découvrez toutes les pièces Ice Industry. Capsules exclusives, vêtements, accessoires et chaussures.",
+  openGraph: {
+    title: "Boutique — Ice Industry",
+    description:
+      "Découvrez toutes les pièces Ice Industry. Capsules exclusives, vêtements, accessoires et chaussures.",
+  },
 }
 
 export default async function BoutiquePage() {
-  const [categories, collections, { products, count }] = await Promise.all([
+  const [categories, { products, count }] = await Promise.all([
     getCategories().catch(() => []),
-    getCollections().catch(() => []),
     getProducts({ regionId: DEFAULT_REGION, limit: 12 }).catch(() => ({
       products: [],
       count: 0,
     })),
   ])
 
+  // Map root categories as subcategories for tab filtering
+  const subcategories = categories.map((cat) => ({
+    id: cat.id,
+    handle: cat.handle || cat.id,
+    name: cat.name,
+  }))
+
+  const breadcrumbs = [
+    { label: "Accueil", href: "/" },
+    { label: "Boutique", href: "/boutique" },
+  ]
+
   return (
-    <div className="-mt-16 animate-fade-in">
-      <EditorialHero
+    <div className="animate-fade-in">
+      <CollectionHero
         title="Boutique"
         label="Catalogue"
-        imageUrl="/images/hero-ice2.webp"
+        headline="Toute la collection"
+        breadcrumbs={breadcrumbs}
+        itemCount={count}
       />
 
-      <Suspense fallback={<div className="max-w-7xl mx-auto px-4 pb-20"><ProductGridSkeleton count={12} /></div>}>
-        <BoutiqueContent
-          initialProducts={products}
-          initialCount={count}
-          categories={categories}
-          collections={collections}
-        />
-      </Suspense>
+      <CatalogueContent
+        initialProducts={products}
+        initialCount={count}
+        subcategories={subcategories}
+      />
     </div>
   )
 }
