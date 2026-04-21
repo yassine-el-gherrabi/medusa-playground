@@ -4,7 +4,7 @@ import { useState, useCallback } from "react"
 import { sdk } from "@/lib/sdk"
 import type { Product } from "@/types"
 
-const PRODUCT_FIELDS = "*variants.calculated_price"
+import { PRODUCT_FIELDS } from "@/lib/medusa/products"
 
 type FetchParams = {
   regionId: string
