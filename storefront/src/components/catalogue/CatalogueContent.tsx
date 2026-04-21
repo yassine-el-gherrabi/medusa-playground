@@ -31,6 +31,7 @@ type CatalogueContentProps = {
   editorialBlocks?: { kicker: string; headline: string }[]
   shootData?: ShootData
   subcategories?: { id: string; handle: string; name: string }[]
+  showFilters?: boolean
 }
 
 function getLayoutMode(count: number) {
@@ -163,6 +164,7 @@ export default function CatalogueContent({
   editorialBlocks,
   shootData,
   subcategories,
+  showFilters = false,
 }: CatalogueContentProps) {
   const { region } = useRegion()
   const [density, setDensity] = useDensity()
@@ -372,20 +374,22 @@ export default function CatalogueContent({
     )
   }
 
-  // --- Layout: mid (4-8 products) — filter bar sort only ---
+  // --- Layout: mid (4-8 products) ---
   if (layoutMode === "mid") {
     return (
       <>
-        <CollectionFilterBar
-          sortOrder={sortOrder}
-          onSortChange={handleSortChange}
-          density={density}
-          onDensityChange={setDensity}
-          productCount={displayCount}
-          filterOptions={filterOptions}
-          activeFilters={activeFilters}
-          onFiltersApply={handleFiltersApply}
-        />
+        {showFilters && (
+          <CollectionFilterBar
+            sortOrder={sortOrder}
+            onSortChange={handleSortChange}
+            density={density}
+            onDensityChange={setDensity}
+            productCount={displayCount}
+            filterOptions={filterOptions}
+            activeFilters={activeFilters}
+            onFiltersApply={handleFiltersApply}
+          />
+        )}
         <MidLayout products={displayProducts} density={density} />
         {shootSection}
       </>
@@ -395,19 +399,21 @@ export default function CatalogueContent({
   // --- Layout: grid (9+ products) ---
   return (
     <>
-      <CollectionFilterBar
-        sortOrder={sortOrder}
-        onSortChange={handleSortChange}
-        density={density}
-        onDensityChange={setDensity}
-        subcategories={subcategories}
-        activeSubcategory={activeSubcategory}
-        onSubcategoryChange={handleSubcategoryChange}
-        productCount={displayCount}
-        filterOptions={filterOptions}
-        activeFilters={activeFilters}
-        onFiltersApply={handleFiltersApply}
-      />
+      {showFilters && (
+        <CollectionFilterBar
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
+          density={density}
+          onDensityChange={setDensity}
+          subcategories={subcategories}
+          activeSubcategory={activeSubcategory}
+          onSubcategoryChange={handleSubcategoryChange}
+          productCount={displayCount}
+          filterOptions={filterOptions}
+          activeFilters={activeFilters}
+          onFiltersApply={handleFiltersApply}
+        />
+      )}
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="h-5 w-5 border-2 border-[var(--color-border)] border-t-[var(--color-ink)] rounded-full animate-spin" />

@@ -52,6 +52,7 @@ export default async function BoutiquePage() {
         initialProducts={products}
         initialCount={count}
         subcategories={subcategories}
+        showFilters
       />
     </div>
   )
