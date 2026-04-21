@@ -27,24 +27,14 @@ export default function CollectionHero({
       data-header-theme="dark"
       className="relative -mt-16 overflow-hidden bg-[var(--color-ink)] h-[480px] lg:h-[620px] flex flex-col"
     >
-      {/* Background image */}
-      {imageUrl ? (
-        <Image
-          src={imageUrl}
-          alt={title}
-          fill
-          className="object-cover"
-          priority
-        />
-      ) : (
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 60% at 50% 40%, #1a1a1a 0%, #0A0A0A 100%)",
-          }}
-        />
-      )}
+      {/* Background image — fallback to Ice Industry hero */}
+      <Image
+        src={imageUrl || "https://api.iceindustry.fr/images/hero/HERO_DESK_ICE2.webp"}
+        alt={title}
+        fill
+        className="object-cover"
+        priority
+      />
 
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
