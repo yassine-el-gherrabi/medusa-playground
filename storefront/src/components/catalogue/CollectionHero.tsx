@@ -46,8 +46,8 @@ export default function CollectionHero({
         />
       )}
 
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-ink)] via-[var(--color-ink)]/40 to-transparent" />
+      {/* Gradient overlay — same as homepage hero */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
 
       {/* Content overlay */}
       <div className="relative z-10">
