@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
 import ProductCard from "@/components/product/ProductCard"
 import { getDensityClasses, type DensityLevel } from "@/hooks/useDensity"
@@ -16,76 +15,83 @@ export default function MidLayout({ products, density }: MidLayoutProps) {
   if (products.length === 0) return null
 
   const [featured, ...remaining] = products
-  const featuredImage =
-    featured.thumbnail || featured.images?.[0]?.url || ""
   const priceData = getProductPrice(featured)
   const priceLabel = priceData
     ? formatPrice(priceData.amount, priceData.currencyCode)
     : ""
-  const categoryName = featured.categories?.[0]?.name
   const productUrl = `/products/${featured.handle}`
 
   const { cols: colsClass, gap: gapClass } = getDensityClasses(density)
 
   return (
-    <section aria-label="Produits" className="px-5 lg:px-8 py-7 lg:py-12">
-      {/* Featured first product */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 mb-10 lg:mb-16">
-        {/* Image */}
-        <Link href={productUrl} className="block">
-          <div className="relative aspect-[4/5] w-full bg-[var(--color-bg-subtle)] overflow-hidden">
-            {featuredImage && (
-              <Image
-                src={featuredImage}
-                alt={`${featured.title} — Ice Industry`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            )}
-          </div>
-        </Link>
+    <section aria-label="Produits" className="px-3.5 lg:px-8 py-7 lg:py-12">
+      {/* Featured first product — desktop only */}
+      <div
+        className="hidden lg:grid items-center mb-20"
+        style={{ gridTemplateColumns: "2fr 3fr", gap: 48 }}
+      >
+        {/* Text side (left) */}
+        <div>
+          <span
+            className="font-mono uppercase text-[var(--color-muted)]"
+            style={{ fontSize: 11, letterSpacing: "0.22em" }}
+          >
+            Pièce signature
+          </span>
 
-        {/* Text content */}
-        <div className="lg:sticky lg:self-start lg:top-24">
-          {categoryName && (
-            <span className="font-mono text-[11px] tracking-[0.16em] uppercase text-[var(--color-muted)]">
-              {categoryName}
-            </span>
-          )}
-
-          <h2 className="text-[28px] font-medium tracking-[-0.02em] mt-3">
+          <h2
+            className="font-medium mt-[18px]"
+            style={{
+              fontSize: 32,
+              letterSpacing: "-0.03em",
+              lineHeight: 1.02,
+            }}
+          >
             {featured.title}
           </h2>
 
           {priceLabel && (
-            <p className="text-[17px] font-medium mt-4">{priceLabel}</p>
+            <p className="font-medium mt-3.5" style={{ fontSize: 17 }}>
+              {priceLabel}
+            </p>
           )}
 
           {featured.description && (
-            <p className="text-[14px] text-[var(--color-body)] leading-relaxed mt-4">
+            <p
+              className="max-w-[420px] text-[var(--color-body)] mt-5"
+              style={{ fontSize: 15, lineHeight: 1.7 }}
+            >
               {featured.description}
             </p>
           )}
 
           <Link
             href={productUrl}
-            className="flex items-center justify-between w-full h-[52px] px-5 mt-8 bg-[var(--color-ink)] text-[var(--color-surface)] text-[11px] font-medium uppercase tracking-[0.2em] transition-opacity hover:opacity-90"
+            className="inline-block mt-7 bg-[var(--color-ink)] text-[var(--color-surface)] font-mono uppercase transition-opacity hover:opacity-90 cursor-pointer"
+            style={{
+              padding: "16px 24px",
+              fontSize: 11,
+              letterSpacing: "0.22em",
+            }}
           >
-            <span>Voir le produit</span>
-            <span>{priceLabel}</span>
+            Voir la fiche produit ↗
           </Link>
         </div>
+
+        {/* Image side (right) */}
+        <ProductCard product={featured} showSwatches />
       </div>
 
-      {/* Remaining products in standard grid */}
-      {remaining.length > 0 && (
-        <div className={`grid ${colsClass} ${gapClass}`}>
-          {remaining.map((product) => (
-            <ProductCard key={product.id} product={product} showSwatches />
-          ))}
+      {/* Product grid — mobile shows ALL, desktop shows remaining */}
+      <div className={`grid ${colsClass} ${gapClass}`}>
+        {/* On mobile, include featured product; on desktop, skip it */}
+        <div className="contents lg:hidden">
+          <ProductCard product={featured} showSwatches />
         </div>
-      )}
+        {remaining.map((product) => (
+          <ProductCard key={product.id} product={product} showSwatches />
+        ))}
+      </div>
     </section>
   )
 }

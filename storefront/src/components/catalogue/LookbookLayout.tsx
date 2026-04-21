@@ -1,7 +1,7 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
+import ProductCard from "@/components/product/ProductCard"
 import { getProductPrice, formatPrice } from "@/lib/utils"
 import type { Product } from "@/types"
 
@@ -13,9 +13,8 @@ export default function LookbookLayout({ products }: LookbookLayoutProps) {
   if (products.length === 0) return null
 
   return (
-    <section aria-label="Produits">
+    <section aria-label="Produits" className="py-9 lg:py-20">
       {products.map((product, index) => {
-        const image = product.thumbnail || product.images?.[0]?.url || ""
         const priceData = getProductPrice(product)
         const priceLabel = priceData
           ? formatPrice(priceData.amount, priceData.currencyCode)
@@ -33,92 +32,218 @@ export default function LookbookLayout({ products }: LookbookLayoutProps) {
         return (
           <article
             key={product.id}
-            className="py-[60px] lg:py-[120px] px-5 lg:px-16 border-b border-[var(--color-border)]"
+            className="pb-12 lg:pb-[120px] px-3.5 lg:px-16"
           >
             <div
-              className={`grid grid-cols-1 lg:gap-20 ${
-                isEven
-                  ? "lg:grid-cols-[3fr_2fr]"
-                  : "lg:grid-cols-[2fr_3fr]"
-              }`}
+              className="grid grid-cols-1 items-center"
+              style={{
+                gap: "clamp(20px, 4vw, 80px)",
+                ...(typeof window !== "undefined" || true
+                  ? {}
+                  : {}),
+              }}
             >
-              {/* Image side */}
-              <div className={`${!isEven ? "lg:order-2" : ""}`}>
-                <Link href={productUrl} className="block">
-                  <div className="relative aspect-[4/5] w-full bg-[var(--color-bg-subtle)] overflow-hidden">
-                    {image && (
-                      <Image
-                        src={image}
-                        alt={`${product.title} — Ice Industry`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 1024px) 100vw, 60vw"
-                      />
-                    )}
-                  </div>
-                </Link>
+              {/* Desktop: alternating layout via CSS direction trick */}
+              <div
+                className="hidden lg:grid items-center"
+                style={{
+                  gridTemplateColumns: isEven ? "3fr 2fr" : "2fr 3fr",
+                  gap: 80,
+                  direction: isEven ? "ltr" : "rtl",
+                }}
+              >
+                {/* Image side */}
+                <div style={{ direction: "ltr" }}>
+                  <ProductCard product={product} showSwatches />
+                </div>
+
+                {/* Text side */}
+                <div style={{ direction: "ltr" }} className="py-6">
+                  {categoryName && (
+                    <span
+                      className="font-mono uppercase text-[var(--color-muted)]"
+                      style={{
+                        fontSize: 10,
+                        letterSpacing: "0.18em",
+                      }}
+                    >
+                      {categoryName}
+                    </span>
+                  )}
+
+                  <h2
+                    className="font-medium mt-5"
+                    style={{
+                      fontSize: 28,
+                      letterSpacing: "-0.02em",
+                      lineHeight: 1.02,
+                    }}
+                  >
+                    {product.title}
+                  </h2>
+
+                  {priceLabel && (
+                    <p className="font-medium mt-3" style={{ fontSize: 17 }}>
+                      {priceLabel}
+                    </p>
+                  )}
+
+                  {product.description && (
+                    <p
+                      className="text-[var(--color-body)] mt-4 max-w-[440px]"
+                      style={{ fontSize: 14, lineHeight: 1.7 }}
+                    >
+                      {product.description}
+                    </p>
+                  )}
+
+                  {/* Specs grid */}
+                  {hasSpecs && (
+                    <div
+                      className="mt-6 max-w-[420px] border-t border-[var(--color-border)]"
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "140px 1fr",
+                        gap: 0,
+                      }}
+                    >
+                      {material && (
+                        <>
+                          <span
+                            className="font-mono uppercase text-[var(--color-muted)] py-3 border-b border-[var(--color-border)]"
+                            style={{ fontSize: 10, letterSpacing: "0.16em" }}
+                          >
+                            Matière
+                          </span>
+                          <span className="text-[14px] py-3 border-b border-[var(--color-border)]">
+                            {material}
+                          </span>
+                        </>
+                      )}
+                      {weight && (
+                        <>
+                          <span
+                            className="font-mono uppercase text-[var(--color-muted)] py-3 border-b border-[var(--color-border)]"
+                            style={{ fontSize: 10, letterSpacing: "0.16em" }}
+                          >
+                            Poids
+                          </span>
+                          <span className="text-[14px] py-3 border-b border-[var(--color-border)]">
+                            {weight}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* CTA */}
+                  <Link
+                    href={productUrl}
+                    className="inline-block mt-8 bg-[var(--color-ink)] text-[var(--color-surface)] font-mono uppercase transition-opacity hover:opacity-90 cursor-pointer"
+                    style={{
+                      padding: "16px 24px",
+                      fontSize: 11,
+                      letterSpacing: "0.22em",
+                    }}
+                  >
+                    Voir la fiche produit ↗
+                  </Link>
+                </div>
               </div>
 
-              {/* Text side */}
-              <div
-                className={`self-center mt-6 lg:mt-0 ${
-                  !isEven ? "lg:order-1" : ""
-                }`}
-              >
-                {categoryName && (
-                  <span className="font-mono text-[10px] tracking-[0.16em] uppercase text-[var(--color-muted)]">
-                    {categoryName}
-                  </span>
-                )}
+              {/* Mobile: image first, then text */}
+              <div className="lg:hidden">
+                <ProductCard product={product} showSwatches />
 
-                <h2 className="text-[22px] font-medium mt-2">
-                  {product.title}
-                </h2>
+                <div className="mt-5">
+                  {categoryName && (
+                    <span
+                      className="font-mono uppercase text-[var(--color-muted)]"
+                      style={{
+                        fontSize: 10,
+                        letterSpacing: "0.18em",
+                      }}
+                    >
+                      {categoryName}
+                    </span>
+                  )}
 
-                {priceLabel && (
-                  <p className="text-[17px] font-medium mt-3">{priceLabel}</p>
-                )}
+                  <h2
+                    className="font-medium mt-3.5"
+                    style={{
+                      fontSize: 24,
+                      letterSpacing: "-0.02em",
+                      lineHeight: 1.02,
+                    }}
+                  >
+                    {product.title}
+                  </h2>
 
-                {product.description && (
-                  <p className="text-[14px] text-[var(--color-body)] leading-relaxed mt-4">
-                    {product.description}
-                  </p>
-                )}
+                  {priceLabel && (
+                    <p className="font-medium mt-3" style={{ fontSize: 17 }}>
+                      {priceLabel}
+                    </p>
+                  )}
 
-                {/* Specs grid */}
-                {hasSpecs && (
-                  <div className="grid mt-6" style={{ gridTemplateColumns: "140px 1fr" }}>
-                    {material && (
-                      <>
-                        <span className="font-mono text-[10px] tracking-[0.16em] uppercase text-[var(--color-muted)] py-3 border-b border-[var(--color-border)]">
-                          Matière
-                        </span>
-                        <span className="text-[14px] py-3 border-b border-[var(--color-border)]">
-                          {material}
-                        </span>
-                      </>
-                    )}
-                    {weight && (
-                      <>
-                        <span className="font-mono text-[10px] tracking-[0.16em] uppercase text-[var(--color-muted)] py-3 border-b border-[var(--color-border)]">
-                          Poids
-                        </span>
-                        <span className="text-[14px] py-3 border-b border-[var(--color-border)]">
-                          {weight}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                )}
+                  {product.description && (
+                    <p
+                      className="text-[var(--color-body)] mt-4"
+                      style={{ fontSize: 14, lineHeight: 1.7 }}
+                    >
+                      {product.description}
+                    </p>
+                  )}
 
-                {/* CTA */}
-                <Link
-                  href={productUrl}
-                  className="flex items-center justify-between w-full h-[52px] px-5 mt-8 bg-[var(--color-ink)] text-[var(--color-surface)] text-[11px] font-medium uppercase tracking-[0.2em] transition-opacity hover:opacity-90"
-                >
-                  <span>Voir le produit</span>
-                  <span>{priceLabel}</span>
-                </Link>
+                  {hasSpecs && (
+                    <div
+                      className="mt-5 border-t border-[var(--color-border)]"
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "140px 1fr",
+                        gap: 0,
+                      }}
+                    >
+                      {material && (
+                        <>
+                          <span
+                            className="font-mono uppercase text-[var(--color-muted)] py-3 border-b border-[var(--color-border)]"
+                            style={{ fontSize: 10, letterSpacing: "0.16em" }}
+                          >
+                            Matière
+                          </span>
+                          <span className="text-[14px] py-3 border-b border-[var(--color-border)]">
+                            {material}
+                          </span>
+                        </>
+                      )}
+                      {weight && (
+                        <>
+                          <span
+                            className="font-mono uppercase text-[var(--color-muted)] py-3 border-b border-[var(--color-border)]"
+                            style={{ fontSize: 10, letterSpacing: "0.16em" }}
+                          >
+                            Poids
+                          </span>
+                          <span className="text-[14px] py-3 border-b border-[var(--color-border)]">
+                            {weight}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  <Link
+                    href={productUrl}
+                    className="inline-block mt-7 bg-[var(--color-ink)] text-[var(--color-surface)] font-mono uppercase transition-opacity hover:opacity-90 cursor-pointer"
+                    style={{
+                      padding: "16px 24px",
+                      fontSize: 11,
+                      letterSpacing: "0.22em",
+                    }}
+                  >
+                    Voir la fiche produit ↗
+                  </Link>
+                </div>
               </div>
             </div>
           </article>
