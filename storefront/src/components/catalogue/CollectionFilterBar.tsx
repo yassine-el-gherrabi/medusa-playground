@@ -184,13 +184,11 @@ export default function CollectionFilterBar({
                     key={n}
                     aria-checked={density === n}
                     onClick={() => onDensityChange(n)}
-                    className={`w-9 h-9 flex items-center justify-center cursor-pointer transition-all border-none ${
-                      density === n ? "" : "hover:bg-[var(--color-bg-subtle)]"
+                    className={`w-9 h-9 flex items-center justify-center cursor-pointer transition-all ${
+                      density === n
+                        ? "bg-[var(--color-ink)] text-[var(--color-surface)] border-none"
+                        : "bg-white text-[var(--color-ink)] border border-transparent hover:border-[var(--color-ink)]"
                     }`}
-                    style={{
-                      background: density === n ? "var(--color-ink)" : "transparent",
-                      color: density === n ? "var(--color-surface)" : "var(--color-ink)",
-                    }}
                   >
                     <DensityIcon cols={n} />
                   </button>
@@ -219,12 +217,12 @@ export default function CollectionFilterBar({
                     <button
                       key={option.value}
                       onClick={() => handleQuickSort(option.value)}
-                      className={`block w-full text-left py-3 px-4 text-[13px] cursor-pointer transition-colors border-none ${
-                        sortOrder === option.value ? "" : "hover:bg-[var(--color-bg-subtle)]"
+                      className={`block w-full text-left py-3 px-4 text-[13px] cursor-pointer transition-colors ${
+                        sortOrder === option.value
+                          ? "bg-[var(--color-ink)] text-[var(--color-surface)] border-none"
+                          : "bg-white text-[var(--color-ink)] border border-transparent hover:border-[var(--color-ink)]"
                       }`}
                       style={{
-                        background: sortOrder === option.value ? "var(--color-ink)" : "white",
-                        color: sortOrder === option.value ? "var(--color-surface)" : "var(--color-ink)",
                         borderBottom: "1px solid var(--color-border)",
                       }}
                     >
