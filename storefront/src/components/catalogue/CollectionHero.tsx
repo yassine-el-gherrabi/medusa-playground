@@ -49,29 +49,25 @@ export default function CollectionHero({
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
 
-      {/* Content — flexbox layout, no absolute positioning */}
+      {/* Content */}
       <div className="relative z-10 flex flex-col flex-1 pt-20 lg:pt-24 pb-6 lg:pb-10 px-5 lg:px-16">
-        {/* Top row: breadcrumb left, count right */}
+        {/* Top row */}
         <div className="flex justify-between items-start">
           {breadcrumbs && breadcrumbs.length > 0 ? (
             <nav aria-label="Fil d'Ariane">
               <ol className="flex items-center gap-1.5 font-mono text-[10px] tracking-[0.14em] uppercase">
                 {breadcrumbs.map((crumb, i) => (
                   <li key={crumb.href} className="flex items-center gap-1.5">
-                    {i > 0 && (
-                      <span className="text-[rgba(250,250,248,0.35)]">/</span>
-                    )}
+                    {i > 0 && <span className="text-white/40">/</span>}
                     {i < breadcrumbs.length - 1 ? (
                       <Link
                         href={crumb.href}
-                        className="text-[rgba(250,250,248,0.55)] hover:text-[rgba(250,250,248,0.8)] transition-colors"
+                        className="text-white/60 hover:text-white transition-colors"
                       >
                         {crumb.label}
                       </Link>
                     ) : (
-                      <span className="text-[rgba(250,250,248,0.55)]">
-                        {crumb.label}
-                      </span>
+                      <span className="text-white/60">{crumb.label}</span>
                     )}
                   </li>
                 ))}
@@ -82,7 +78,7 @@ export default function CollectionHero({
           )}
 
           {(itemCount !== undefined || season) && (
-            <span className="hidden lg:block font-mono text-[10px] tracking-[0.14em] uppercase text-[rgba(250,250,248,0.55)]">
+            <span className="hidden lg:block font-mono text-[10px] tracking-[0.14em] uppercase text-white/60">
               {itemCount !== undefined && `${itemCount} pièces`}
               {itemCount !== undefined && season && " · "}
               {season}
@@ -90,24 +86,23 @@ export default function CollectionHero({
           )}
         </div>
 
-        {/* Spacer — pushes title to bottom */}
+        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Bottom row: label line + title, with scroll indicator on the right */}
+        {/* Bottom row */}
         <div className="flex items-end justify-between gap-8">
           <div className="max-w-[85%] lg:max-w-[70%]">
             <div className="flex items-center gap-4 mb-3 lg:mb-4">
-              <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-[rgba(250,250,248,0.55)] whitespace-nowrap">
+              <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-white/50 whitespace-nowrap">
                 {displayLabel} · {title}
               </span>
               <div className="h-px flex-1 bg-white/30" />
             </div>
             <h1
-              className="font-medium text-[var(--color-surface)]"
+              className="font-bold text-white uppercase tracking-tight"
               style={{
                 fontSize: "clamp(36px, 10vw, 56px)",
                 lineHeight: 0.95,
-                letterSpacing: "-0.03em",
               }}
             >
               <span
@@ -123,7 +118,7 @@ export default function CollectionHero({
           {/* Scroll indicator (desktop only) */}
           <div className="hidden lg:flex flex-col items-center gap-3 shrink-0">
             <span
-              className="font-mono text-[10px] tracking-[0.18em] uppercase text-[rgba(250,250,248,0.55)]"
+              className="font-mono text-[10px] tracking-[0.18em] uppercase text-white/50"
               style={{
                 writingMode: "vertical-rl",
                 textOrientation: "mixed",
@@ -135,7 +130,7 @@ export default function CollectionHero({
               className="w-[2px] h-10"
               style={{
                 background:
-                  "linear-gradient(to bottom, rgba(250,250,248,0.6), rgba(250,250,248,0))",
+                  "linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(255,255,255,0))",
                 backgroundSize: "2px 40px",
                 animation: "scrollLine 2s linear infinite",
               }}
