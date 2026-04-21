@@ -30,7 +30,7 @@ const HERO_SLIDES: HeroSlide[] = [
     headline: "Terrain Sauvage",
     subline: "Collection Hiver 2026",
     cta: "Découvrir la collection",
-    ctaHref: "/collections/capsule-arctic",
+    ctaHref: "/collections/seamless-bi-material",
   },
   {
     type: "image",
