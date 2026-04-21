@@ -337,12 +337,32 @@ export default async function seedNewProducts({ container }: ExecArgs) {
 
   // ── Create collections ──
   const collectionNames = [...new Set(products.map((p) => p.collection))]
-  const collectionDescriptions: Record<string, string> = {
-    "Nylon Patchwork": "Coutures courbes en nylon technique. La signature Ice Industry.",
-    "Softshell Mesh": "Panneaux mesh et softshell. Performance et style urbain.",
-    "Fleece": "Coton fleece premium. Confort et durabilité au quotidien.",
-    "Matelassé": "Doudounes matelassées. Protection contre le froid marseillais.",
-    "Accessoires Ice": "Lunettes, casquettes et accessoires Ice Industry.",
+  const collectionData: Record<string, { description: string; season: string; manifesto: string }> = {
+    "Nylon Patchwork": {
+      description: "Coutures courbes en nylon technique. La signature Ice Industry.",
+      season: "Printemps · Été 2026",
+      manifesto: "Née dans les rues de Marseille, la collection Nylon Patchwork repousse les limites du streetwear technique. Chaque pièce est construite autour de coutures courbes signature, assemblées sur des machines industrielles japonaises. Le nylon haute densité résiste au vent et à l'eau tout en offrant une silhouette sculptée. Une collection pensée pour ceux qui bougent, qui créent, qui ne s'arrêtent jamais.",
+    },
+    "Softshell Mesh": {
+      description: "Panneaux mesh et softshell. Performance et style urbain.",
+      season: "Printemps · Été 2026",
+      manifesto: "La collection Softshell Mesh fusionne l'ingénierie outdoor avec l'esthétique urbaine. Chaque vêtement intègre des panneaux mesh stratégiques pour la ventilation et un tissu softshell triple couche pour la protection. Des coutures thermosoudées, des zips étanches YKK — des détails qui font la différence entre un vêtement et un outil de vie quotidienne.",
+    },
+    "Fleece": {
+      description: "Coton fleece premium. Confort et durabilité au quotidien.",
+      season: "Automne · Hiver 2026",
+      manifesto: "Le fleece Ice Industry, c'est le confort sans compromis. Du coton brossé 400 g/m² qui vieillit bien, des bords-côtes nervurés qui tiennent dans le temps, des surpiqûres ton-sur-ton qui racontent l'attention au détail. Chaque pièce est pensée pour être portée tous les jours, du matin au soir, de la rue au canapé.",
+    },
+    "Matelassé": {
+      description: "Doudounes matelassées. Protection contre le froid marseillais.",
+      season: "Automne · Hiver 2026",
+      manifesto: "Même à Marseille, le mistral ne pardonne pas. La collection Matelassé est notre réponse au froid — du duvet synthétique haute performance dans des silhouettes épurées. Matelassage asymétrique, poches sécurisées, capuches amovibles. Chaque doudoune est un bouclier contre les éléments, sans sacrifier le style.",
+    },
+    "Accessoires Ice": {
+      description: "Lunettes, casquettes et accessoires Ice Industry.",
+      season: "Toutes saisons",
+      manifesto: "Les accessoires Ice Industry complètent la silhouette. Chaque pièce porte la même attention au détail que nos vêtements — logo brodé avec précision, matériaux sélectionnés pour durer, design qui traverse les saisons sans se démoder.",
+    },
   }
 
   logger.info(`Creating ${collectionNames.length} collections...`)
@@ -352,8 +372,10 @@ export default async function seedNewProducts({ container }: ExecArgs) {
         title: name,
         handle: name.toLowerCase().replace(/ /g, "-").replace(/é/g, "e"),
         metadata: {
-          description: collectionDescriptions[name] || "",
-          hero_image: `https://images.unsplash.com/photo-1551028719-00167b16eac5?w=1600&q=80`,
+          description: collectionData[name]?.description || "",
+          season: collectionData[name]?.season || "",
+          manifesto: collectionData[name]?.manifesto || "",
+          hero_image: "https://api.iceindustry.fr/images/hero/HERO_DESK_ICE2.webp",
         },
       })),
     },
