@@ -133,7 +133,7 @@ export default function ProductOptions({
             Guide des tailles
           </AnimatedLink>
         </div>
-        <div className="flex bg-black/80 backdrop-blur-md rounded-[2px] border border-white/15 overflow-hidden">
+        <div className="flex bg-white/80 backdrop-blur-md rounded-[2px] border border-black/10 overflow-hidden">
           {values.map((v) => {
             const isSelected = selectedValue === v.value
             const inStock = isOptionInStock(option.id, v.value)
@@ -142,12 +142,12 @@ export default function ProductOptions({
                 key={v.id}
                 onClick={() => inStock && onOptionChange(option.id, v.value)}
                 disabled={!inStock}
-                className={`flex-1 h-[46px] text-[13px] font-medium tracking-[0.02em] transition-colors border-r border-white/15 last:border-r-0 cursor-pointer ${
+                className={`flex-1 h-[46px] text-[13px] font-medium tracking-[0.02em] transition-colors border-r border-black/10 last:border-r-0 cursor-pointer ${
                   isSelected
-                    ? "bg-white/20 text-white"
+                    ? "bg-black/10 text-[#0A0A0A]"
                     : !inStock
-                      ? "text-white/20 line-through cursor-not-allowed"
-                      : "text-white/70 hover:text-white hover:bg-white/10"
+                      ? "text-black/20 line-through cursor-not-allowed"
+                      : "text-black/60 hover:text-[#0A0A0A] hover:bg-black/5"
                 }`}
               >
                 {v.value}
