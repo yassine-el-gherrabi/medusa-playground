@@ -11,6 +11,10 @@ import {
   buildVariantMap,
   findVariantId,
   isSizeInStock,
+  isColorInStock,
+  getColorImages,
+  getColorThumbnail,
+  getImageForColor,
 } from "@/lib/product-helpers"
 import { getProductPrice, formatPrice } from "@/lib/utils"
 import type { Product } from "@/types"
@@ -190,6 +194,7 @@ function DesktopDetailStrip({ product }: { product: Product }) {
   const { addItem } = useCart()
   const sizes = useMemo(() => extractSizes(product), [product])
   const variants = useMemo(() => buildVariantMap(product), [product])
+  const colorImages = useMemo(() => getColorImages(product), [product])
   const colors = useMemo(() => {
     const opt = product.options?.find((o) => ["couleur", "color"].includes(o.title?.toLowerCase() || ""))
     return opt?.values?.map((v) => v.value) || []
@@ -202,6 +207,9 @@ function DesktopDetailStrip({ product }: { product: Product }) {
 
   const priceStr = productPriceStr(product)
   const category = productCategory(product)
+
+  // Get the image for the selected color
+  const activeImage = useMemo(() => getImageForColor(product, colorImages, selectedColor), [product, colorImages, selectedColor])
 
   const canAdd = selectedSize && selectedColor && isSizeInStock(variants, selectedColor, selectedSize)
   const variantId = selectedSize && selectedColor ? findVariantId(variants, selectedColor, selectedSize) : null
@@ -221,13 +229,13 @@ function DesktopDetailStrip({ product }: { product: Product }) {
   }, [variantId, adding, addItem])
 
   return (
-    <div className="flex items-center py-5 px-8 gap-8 border-t border-white/10">
-      {/* Thumbnail */}
-      <div className="w-[60px] h-[60px] shrink-0 bg-[#1a1a1a] relative overflow-hidden">
-        {product.thumbnail && (
+    <div className="flex items-center py-5 px-8 gap-6 border-t border-white/10">
+      {/* Thumbnail — changes with selected color */}
+      <div className="w-[60px] h-[78px] shrink-0 bg-[#1a1a1a] relative overflow-hidden">
+        {activeImage && (
           <Image
-            src={product.thumbnail}
-            alt={product.title ?? ""}
+            src={activeImage}
+            alt={`${product.title} — ${selectedColor}`}
             fill
             className="object-cover"
             sizes="120px"
@@ -236,31 +244,47 @@ function DesktopDetailStrip({ product }: { product: Product }) {
       </div>
 
       {/* Info */}
-      <div className="shrink-0 min-w-[120px]">
+      <div className="shrink-0 min-w-[100px]">
         {category && (
           <p className="font-mono text-[10px] tracking-[0.18em] uppercase text-white/55">
             {category}
           </p>
         )}
         <p className="text-[14px] font-medium mt-1">{product.title}</p>
+        <p className="text-[12px] text-white/60 mt-0.5">{priceStr}</p>
       </div>
 
-      {/* Colors (if multiple) */}
+      {/* Color swatches — thumbnail photos */}
       {colors.length > 1 && (
-        <div className="flex flex-row gap-1">
-          {colors.map((c) => (
-            <button
-              key={c}
-              onClick={() => { setSelectedColor(c); setSelectedSize("") }}
-              className={`px-2.5 py-1.5 text-[11px] font-mono uppercase tracking-[0.1em] transition-colors cursor-pointer border ${
-                selectedColor === c
-                  ? "bg-white/20 text-white border-white/40"
-                  : "text-white/50 border-white/15 hover:border-white/40"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
+        <div className="flex flex-row gap-1.5">
+          {colors.map((c) => {
+            const thumb = getColorThumbnail(colorImages, c)
+            const isActive = selectedColor === c
+            const inStock = isColorInStock(variants, c)
+            return (
+              <button
+                key={c}
+                onClick={() => { setSelectedColor(c); setSelectedSize("") }}
+                title={c}
+                aria-label={`Couleur ${c}${!inStock ? " (épuisé)" : ""}`}
+                className={`relative shrink-0 cursor-pointer transition-opacity ${
+                  thumb ? "w-10 h-[52px]" : "w-8 h-8"
+                } ${!inStock ? "opacity-30" : isActive ? "opacity-100" : "opacity-50 hover:opacity-80"}`}
+              >
+                {thumb ? (
+                  <Image src={thumb} alt={c} fill className="object-cover" sizes="80px" />
+                ) : (
+                  <span className="block w-full h-full border border-white/25" style={{ backgroundColor: c === "Noir" ? "#000" : c === "Gris" ? "#888" : "#ccc" }} />
+                )}
+                {isActive && <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-white" />}
+                {!inStock && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <span className="block w-[140%] h-px bg-white/50 -rotate-45" />
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </div>
       )}
 
@@ -275,6 +299,7 @@ function DesktopDetailStrip({ product }: { product: Product }) {
                 key={s.value}
                 onClick={() => inStock && setSelectedSize(s.value)}
                 disabled={!inStock}
+                aria-label={`Taille ${s.value}${!inStock ? " (épuisé)" : ""}`}
                 className={`relative w-[40px] h-[36px] text-[12px] font-medium tracking-[0.02em] transition-all border cursor-pointer ${
                   isSelected
                     ? "bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-surface)]"
@@ -299,7 +324,7 @@ function DesktopDetailStrip({ product }: { product: Product }) {
       <button
         onClick={handleAdd}
         disabled={!canAdd && !added}
-        className={`min-w-[240px] h-[52px] px-6 flex items-center justify-between text-[14px] font-medium transition-all cursor-pointer ${
+        className={`ml-auto min-w-[200px] h-[46px] px-5 flex items-center justify-between text-[12px] font-medium uppercase tracking-[0.1em] transition-all cursor-pointer border-none ${
           added
             ? "bg-[#2a5d3a] text-white"
             : canAdd
@@ -309,10 +334,10 @@ function DesktopDetailStrip({ product }: { product: Product }) {
       >
         <span>
           {added
-            ? "\u2713 Ajout\u00e9"
+            ? "✓ Ajouté"
             : selectedSize
-              ? `Ajouter \u00b7 ${selectedSize}`
-              : "S\u00e9lectionner une taille"}
+              ? `Ajouter · ${selectedColor} · ${selectedSize}`
+              : "Sélectionner une taille"}
         </span>
         <span>{priceStr}</span>
       </button>
@@ -398,16 +423,23 @@ function MobileSheet({
   const { addItem } = useCart()
   const sizes = useMemo(() => extractSizes(product), [product])
   const variants = useMemo(() => buildVariantMap(product), [product])
+  const colorImages = useMemo(() => getColorImages(product), [product])
+  const colors = useMemo(() => {
+    const opt = product.options?.find((o) => ["couleur", "color"].includes(o.title?.toLowerCase() || ""))
+    return opt?.values?.map((v) => v.value) || []
+  }, [product])
+
+  const [selectedColor, setSelectedColor] = useState(colors[0] || "")
   const [selectedSize, setSelectedSize] = useState("")
   const [adding, setAdding] = useState(false)
   const [added, setAdded] = useState(false)
 
   const priceStr = productPriceStr(product)
   const category = productCategory(product)
+  const activeImage = useMemo(() => getImageForColor(product, colorImages, selectedColor), [product, colorImages, selectedColor])
 
-  const defaultColor = product.options?.find((o) => ["couleur", "color"].includes(o.title?.toLowerCase() || ""))?.values?.[0]?.value || "Noir"
-  const canAdd = selectedSize && isSizeInStock(variants, defaultColor, selectedSize)
-  const variantId = selectedSize ? findVariantId(variants, defaultColor, selectedSize) : null
+  const canAdd = selectedSize && selectedColor && isSizeInStock(variants, selectedColor, selectedSize)
+  const variantId = selectedSize && selectedColor ? findVariantId(variants, selectedColor, selectedSize) : null
 
   const handleAdd = useCallback(async () => {
     if (!variantId || adding) return
@@ -454,22 +486,51 @@ function MobileSheet({
           </button>
         </div>
 
-        {/* Product image */}
+        {/* Product image — changes with color */}
         <div className="relative w-full" style={{ aspectRatio: "1/1" }}>
-          {product.thumbnail ? (
+          {activeImage ? (
             <Image
-              src={product.thumbnail}
-              alt={product.title ?? ""}
+              src={activeImage}
+              alt={`${product.title} — ${selectedColor}`}
               fill
               className="object-cover"
+              sizes="100vw"
             />
           ) : (
-            <div className="w-full h-full bg-[var(--color-surface-warm)]" />
+            <div className="w-full h-full bg-[var(--color-bg-subtle)]" />
           )}
         </div>
 
+        {/* Color swatches (mobile) */}
+        {colors.length > 1 && (
+          <div className="flex gap-2 px-5 pt-4">
+            {colors.map((c) => {
+              const thumb = getColorThumbnail(colorImages, c)
+              const isActive = selectedColor === c
+              const inStock = isColorInStock(variants, c)
+              return (
+                <button
+                  key={c}
+                  onClick={() => { setSelectedColor(c); setSelectedSize("") }}
+                  aria-label={`Couleur ${c}`}
+                  className={`relative shrink-0 cursor-pointer transition-opacity ${
+                    thumb ? "w-12 h-16" : "w-8 h-8"
+                  } ${!inStock ? "opacity-30" : isActive ? "opacity-100" : "opacity-50"}`}
+                >
+                  {thumb ? (
+                    <Image src={thumb} alt={c} fill className="object-cover" sizes="96px" />
+                  ) : (
+                    <span className="block w-full h-full border border-[var(--color-border)]" style={{ backgroundColor: c === "Noir" ? "#000" : "#ccc" }} />
+                  )}
+                  {isActive && <span className="absolute -bottom-1 left-0 right-0 h-px bg-[var(--color-ink)]" />}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
         {/* Details */}
-        <div className="px-5 pt-5 pb-3">
+        <div className="px-5 pt-4 pb-3">
           {category && (
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase text-[var(--color-muted)]">
               {category}
@@ -494,7 +555,7 @@ function MobileSheet({
               style={{ gridTemplateColumns: `repeat(${colCount}, 1fr)` }}
             >
               {sizes.map((s) => {
-                const inStock = isSizeInStock(variants, "Noir", s.value)
+                const inStock = isSizeInStock(variants, selectedColor, s.value)
                 const isSelected = selectedSize === s.value
                 return (
                   <button
