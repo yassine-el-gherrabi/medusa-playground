@@ -165,7 +165,7 @@ function InfoOverlay({
   return (
     <div
       aria-hidden={!isOpen}
-      className="absolute inset-0 bg-[#FAFAF8] flex flex-col transition-all duration-300"
+      className="absolute inset-0 bg-white flex flex-col transition-all duration-300"
       style={{
         opacity: isOpen ? 1 : 0,
         pointerEvents: isOpen ? "auto" : "none",
@@ -187,9 +187,7 @@ function InfoOverlay({
               className="flex items-center gap-2.5 bg-transparent border-none cursor-pointer font-mono text-[10px] tracking-[0.18em] uppercase p-0"
             >
               Fermer
-              <span className="w-[34px] h-[34px] border border-[#0A0A0A] flex items-center justify-center">
-                <svg width="11" height="11" viewBox="0 0 11 11"><path d="M1 1l9 9M10 1l-9 9" stroke="#0A0A0A" strokeWidth="1.2" /></svg>
-              </span>
+              <svg width="11" height="11" viewBox="0 0 11 11"><path d="M1 1l9 9M10 1l-9 9" stroke="#0A0A0A" strokeWidth="1.2" /></svg>
             </button>
           </div>
 
