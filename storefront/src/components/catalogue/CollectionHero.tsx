@@ -116,25 +116,22 @@ export default function CollectionHero({
           </div>
 
           {/* Scroll indicator (desktop only) */}
-          <div className="hidden lg:flex flex-col items-center gap-3 shrink-0">
+          <div className="hidden lg:flex flex-col items-center gap-3.5 shrink-0">
             <span
-              className="font-mono text-[10px] tracking-[0.18em] uppercase text-white"
+              className="font-mono text-[10px] tracking-[0.22em] uppercase text-white"
               style={{
                 writingMode: "vertical-rl",
-                textOrientation: "mixed",
+                transform: "rotate(180deg)",
               }}
             >
               Découvrir
             </span>
-            <div
-              className="w-[2px] h-10"
-              style={{
-                background:
-                  "linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(255,255,255,0))",
-                backgroundSize: "2px 40px",
-                animation: "scrollLine 2s linear infinite",
-              }}
-            />
+            <div className="w-px h-16 bg-white/35 relative overflow-hidden">
+              <div
+                className="absolute top-0 left-0 right-0 h-6 bg-white"
+                style={{ animation: "scrollHint 2.2s ease-in-out infinite" }}
+              />
+            </div>
           </div>
         </div>
       </div>

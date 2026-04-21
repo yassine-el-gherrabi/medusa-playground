@@ -180,7 +180,7 @@ body {
   to { transform: translateY(0); }
 }
 
-@keyframes scrollLine {
-  0% { background-position: 0 -40px; }
-  100% { background-position: 0 40px; }
+@keyframes scrollHint {
+  0%, 100% { transform: translateY(-100%); }
+  50% { transform: translateY(280%); }
 }
