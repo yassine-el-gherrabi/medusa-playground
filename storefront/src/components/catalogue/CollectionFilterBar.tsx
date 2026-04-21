@@ -150,7 +150,7 @@ export default function CollectionFilterBar({
           <div className="flex items-center gap-3 lg:gap-4">
             <button
               onClick={() => setFiltersOpen(true)}
-              className="flex items-center gap-2.5 bg-transparent border border-[var(--color-ink)] px-3.5 py-2.5 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer"
+              className="flex items-center gap-2.5 bg-transparent border border-[var(--color-ink)] px-3.5 py-2.5 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer hover:bg-[var(--color-ink)] hover:text-[var(--color-surface)] transition-colors"
               aria-label="Ouvrir les filtres"
             >
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
@@ -184,7 +184,9 @@ export default function CollectionFilterBar({
                     key={n}
                     aria-checked={density === n}
                     onClick={() => onDensityChange(n)}
-                    className="w-9 h-9 flex items-center justify-center cursor-pointer transition-all border-none"
+                    className={`w-9 h-9 flex items-center justify-center cursor-pointer transition-all border-none ${
+                      density === n ? "" : "hover:bg-[var(--color-bg-subtle)]"
+                    }`}
                     style={{
                       background: density === n ? "var(--color-ink)" : "transparent",
                       color: density === n ? "var(--color-surface)" : "var(--color-ink)",
@@ -199,7 +201,7 @@ export default function CollectionFilterBar({
             <div ref={sortRef} className="relative">
               <button
                 onClick={() => setSortOpen((v) => !v)}
-                className="flex items-center gap-2.5 bg-transparent border-none py-2.5 px-1 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer"
+                className="flex items-center gap-2.5 bg-transparent border-none py-2.5 px-1 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer hover:opacity-60 transition-opacity"
               >
                 <span className="hidden lg:inline">Tri · {currentLabel}</span>
                 <span className="lg:hidden">Tri</span>
@@ -217,7 +219,9 @@ export default function CollectionFilterBar({
                     <button
                       key={option.value}
                       onClick={() => handleQuickSort(option.value)}
-                      className="block w-full text-left py-3 px-4 text-[13px] cursor-pointer transition-colors border-none"
+                      className={`block w-full text-left py-3 px-4 text-[13px] cursor-pointer transition-colors border-none ${
+                        sortOrder === option.value ? "" : "hover:bg-[var(--color-bg-subtle)]"
+                      }`}
                       style={{
                         background: sortOrder === option.value ? "var(--color-ink)" : "white",
                         color: sortOrder === option.value ? "var(--color-surface)" : "var(--color-ink)",
