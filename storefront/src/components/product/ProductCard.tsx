@@ -145,8 +145,8 @@ export default function ProductCard({ product, showSwatches = false }: { product
             {priceLabel && <span className="text-[12px] md:text-[13px] tracking-[0.03em]">{priceLabel}</span>}
           </div>
         </div>
-        {showSwatches && colors.length > 1 ? (
-          <div className="flex gap-1.5 mt-2">
+        {showSwatches && colors.length > 1 && (
+          <div className="hidden md:flex gap-1.5 mt-2">
             {colors.map((c) => {
               const thumb = getColorThumbnail(colorImages, c.value)
               const isActive = activeColor === c.value
@@ -159,7 +159,7 @@ export default function ProductCard({ product, showSwatches = false }: { product
                   className={`relative cursor-pointer shrink-0 ${thumb ? "w-20 h-[104px]" : "w-9 h-9"} ${isActive ? "" : "opacity-50 hover:opacity-80"} transition-opacity`}
                 >
                   {thumb ? (
-                    <Image src={thumb} alt={c.label} fill className="object-cover" sizes="32px" />
+                    <Image src={thumb} alt={c.label} fill className="object-cover" sizes="80px" />
                   ) : (
                     <span className="block w-full h-full" style={{ backgroundColor: COLOR_MAP[c.value] || "#ccc" }} />
                   )}
@@ -168,9 +168,8 @@ export default function ProductCard({ product, showSwatches = false }: { product
               )
             })}
           </div>
-        ) : (
-          <p className="text-[11px] text-muted-foreground mt-1">{activeColor}{colors.length > 1 && ` · ${colors.length} couleurs`}</p>
         )}
+        <p className={`text-[11px] text-muted-foreground mt-1 ${showSwatches && colors.length > 1 ? "md:hidden" : ""}`}>{activeColor}{colors.length > 1 && ` · ${colors.length} couleurs`}</p>
       </div>
 
       {/* Mobile bottom sheet */}
