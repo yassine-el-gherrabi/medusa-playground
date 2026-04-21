@@ -147,7 +147,7 @@ export default function ProductOptions({
                     ? "bg-[#0A0A0A] text-[#FAFAF8] border-[#0A0A0A] cursor-pointer"
                     : !inStock
                       ? "bg-transparent text-[#A3A19C] border-[#E3E1DC] cursor-not-allowed"
-                      : "bg-transparent text-[#0A0A0A] border-[#E3E1DC] cursor-pointer hover:bg-[#F4F2ED] hover:border-[#0A0A0A]"
+                      : "bg-transparent text-[#0A0A0A] border-[#E3E1DC] cursor-pointer hover:border-[#0A0A0A]"
                 }`}
               >
                 {v.value}
