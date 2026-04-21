@@ -318,6 +318,8 @@ function FiltersDrawer({ open, onClose, filterOptions, activeFilters, onApply }:
     onApply(draft)
   }
 
+  if (typeof document === "undefined") return null
+
   return createPortal(
     <>
       {/* Backdrop */}
