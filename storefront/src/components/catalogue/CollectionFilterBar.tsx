@@ -11,6 +11,7 @@ type CollectionFilterBarProps = {
   activeSubcategory?: string
   onSubcategoryChange?: (id: string) => void
   productCount?: number
+  showDensity?: boolean
 }
 
 const SORT_OPTIONS = [
@@ -30,33 +31,41 @@ export default function CollectionFilterBar({
   activeSubcategory,
   onSubcategoryChange,
   productCount,
+  showDensity = true,
 }: CollectionFilterBarProps) {
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [sortOpen, setSortOpen] = useState(false)
+  const sortRef = useRef<HTMLDivElement>(null)
 
-  // Close dropdown on outside click
+  // Close sort dropdown on outside click
   useEffect(() => {
-    if (!dropdownOpen) return
+    if (!sortOpen) return
     const handleClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false)
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false)
       }
     }
     document.addEventListener("click", handleClick)
     return () => document.removeEventListener("click", handleClick)
-  }, [dropdownOpen])
+  }, [sortOpen])
 
   const currentLabel =
-    SORT_OPTIONS.find((o) => o.value === sortOrder)?.label ?? "Trier"
+    SORT_OPTIONS.find((o) => o.value === sortOrder)?.label ?? "Nouveautés"
 
   return (
-    <div className="border-b border-[var(--color-border)]">
+    <div
+      className="sticky top-14 lg:top-[66px] z-20 border-b border-[var(--color-border)]"
+      style={{
+        background: "rgba(250,250,248,0.92)",
+        backdropFilter: "blur(14px) saturate(160%)",
+        WebkitBackdropFilter: "blur(14px) saturate(160%)",
+      }}
+    >
       {/* Subcategory tabs (if provided) */}
       {subcategories && subcategories.length > 0 && onSubcategoryChange && (
-        <div className="flex gap-2 overflow-x-auto px-5 lg:px-8 pt-3 pb-3 border-b border-[var(--color-border)] scrollbar-none">
+        <div className="flex gap-2 overflow-x-auto px-4 lg:px-8 pt-3 pb-3 border-b border-[var(--color-border)]" style={{ scrollbarWidth: "none" }}>
           <button
             onClick={() => onSubcategoryChange("")}
-            className={`font-mono text-[10px] tracking-[0.14em] uppercase px-3 py-1.5 whitespace-nowrap transition-colors ${
+            className={`font-mono text-[10px] tracking-[0.14em] uppercase px-3 py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
               !activeSubcategory
                 ? "bg-[var(--color-ink)] text-[var(--color-surface)]"
                 : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
@@ -68,7 +77,7 @@ export default function CollectionFilterBar({
             <button
               key={sub.id}
               onClick={() => onSubcategoryChange(sub.id)}
-              className={`font-mono text-[10px] tracking-[0.14em] uppercase px-3 py-1.5 whitespace-nowrap transition-colors ${
+              className={`font-mono text-[10px] tracking-[0.14em] uppercase px-3 py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeSubcategory === sub.id
                   ? "bg-[var(--color-ink)] text-[var(--color-surface)]"
                   : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
@@ -80,53 +89,84 @@ export default function CollectionFilterBar({
         </div>
       )}
 
-      {/* Main bar: count left, sort + density right */}
-      <div className="flex items-center justify-between px-5 lg:px-8 py-3 lg:py-4">
-        {/* Left: product count */}
-        <span className="font-mono text-[10px] tracking-[0.16em] uppercase text-[var(--color-muted)]">
-          {productCount !== undefined ? `${productCount} produits` : ""}
-        </span>
+      {/* Main bar */}
+      <div className="flex items-center justify-between px-4 lg:px-8 py-3 lg:py-4 gap-3 lg:gap-6">
+        {/* Left: filters button + count */}
+        <div className="flex items-center gap-3 lg:gap-4">
+          {/* Filters button */}
+          <button
+            className="flex items-center gap-2.5 bg-transparent border border-[var(--color-ink)] px-3.5 lg:px-4.5 py-2.5 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer"
+            aria-label="Ouvrir les filtres"
+          >
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+              <path d="M1 3h10M3 6h6M5 9h2" stroke="currentColor" strokeWidth="1.4" />
+            </svg>
+            Filtres
+          </button>
 
-        {/* Right: sort + density */}
-        <div className="flex items-center gap-4">
-          {/* Sort dropdown */}
-          <div ref={dropdownRef} className="relative">
-            <button
-              onClick={() => setDropdownOpen((v) => !v)}
-              className="flex items-center gap-1.5 font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--color-body)]"
+          {/* Product count (desktop) */}
+          {productCount !== undefined && (
+            <span className="hidden lg:block font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-muted)]">
+              {productCount} pièces
+            </span>
+          )}
+        </div>
+
+        {/* Right: density + sort */}
+        <div className="flex items-center gap-3 lg:gap-3.5">
+          {/* Density toggle — desktop only, grid mode only */}
+          {showDensity && (
+            <div
+              role="radiogroup"
+              aria-label="Densité de la grille"
+              className="hidden lg:flex border border-[var(--color-border)]"
             >
-              {currentLabel}
+              {([3, 4] as const).map((n) => (
+                <button
+                  key={n}
+                  aria-checked={density === n}
+                  onClick={() => onDensityChange(n)}
+                  className="w-9 h-9 flex items-center justify-center cursor-pointer transition-all"
+                  style={{
+                    background: density === n ? "var(--color-ink)" : "transparent",
+                    color: density === n ? "var(--color-surface)" : "var(--color-ink)",
+                    border: "none",
+                  }}
+                >
+                  <DensityIcon cols={n} />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Sort dropdown */}
+          <div ref={sortRef} className="relative">
+            <button
+              onClick={() => setSortOpen((v) => !v)}
+              className="flex items-center gap-2.5 bg-transparent border-none py-2.5 px-1 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer"
+            >
+              <span className="hidden lg:inline">Tri · {currentLabel}</span>
+              <span className="lg:hidden">Tri</span>
               <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                className={`transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+                width="9" height="9" viewBox="0 0 10 10" fill="none"
+                className={`transition-transform duration-200 ${sortOpen ? "rotate-180" : ""}`}
               >
-                <path
-                  d="M3 4.5L6 7.5L9 4.5"
-                  stroke="currentColor"
-                  strokeWidth="1.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+                <path d="M2 3l3 4 3-4" stroke="currentColor" strokeWidth="1.4" fill="none" />
               </svg>
             </button>
 
-            {dropdownOpen && (
-              <div className="absolute top-full right-0 mt-2 bg-white border border-[var(--color-border)] shadow-md min-w-[220px] z-10">
+            {sortOpen && (
+              <div className="absolute right-0 top-full mt-2 min-w-[220px] bg-white border border-[var(--color-border)] shadow-lg z-10">
                 {SORT_OPTIONS.map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => {
-                      onSortChange(option.value)
-                      setDropdownOpen(false)
+                    onClick={() => { onSortChange(option.value); setSortOpen(false) }}
+                    className="block w-full text-left py-3 px-4 border-none border-b border-[var(--color-border)] text-[13px] cursor-pointer transition-colors"
+                    style={{
+                      background: sortOrder === option.value ? "var(--color-surface-warm, #F4F2ED)" : "transparent",
+                      borderBottom: "1px solid var(--color-border)",
+                      fontFamily: "inherit",
                     }}
-                    className={`block w-full text-left py-3 px-4 font-mono text-[11px] tracking-[0.14em] uppercase hover:bg-[var(--color-bg-subtle)] cursor-pointer transition-colors ${
-                      sortOrder === option.value
-                        ? "font-medium text-[var(--color-ink)]"
-                        : "text-[var(--color-muted)]"
-                    }`}
                   >
                     {option.label}
                   </button>
@@ -134,49 +174,28 @@ export default function CollectionFilterBar({
               </div>
             )}
           </div>
-
-          {/* Density toggle — desktop only */}
-          <div
-            role="radiogroup"
-            aria-label="Densit\u00e9 de la grille"
-            className="hidden lg:flex items-center gap-1"
-          >
-            <button
-              aria-checked={density === 3}
-              onClick={() => onDensityChange(3)}
-              className={`w-8 h-8 flex items-center justify-center transition-colors ${
-                density === 3
-                  ? "bg-[var(--color-ink)] text-[var(--color-surface)]"
-                  : "bg-transparent text-[var(--color-muted)] border border-[var(--color-border)]"
-              }`}
-            >
-              {/* 3 vertical bars icon */}
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <rect x="1" y="2" width="2" height="10" fill="currentColor" />
-                <rect x="6" y="2" width="2" height="10" fill="currentColor" />
-                <rect x="11" y="2" width="2" height="10" fill="currentColor" />
-              </svg>
-            </button>
-            <button
-              aria-checked={density === 4}
-              onClick={() => onDensityChange(4)}
-              className={`w-8 h-8 flex items-center justify-center transition-colors ${
-                density === 4
-                  ? "bg-[var(--color-ink)] text-[var(--color-surface)]"
-                  : "bg-transparent text-[var(--color-muted)] border border-[var(--color-border)]"
-              }`}
-            >
-              {/* 4 vertical bars icon */}
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <rect x="0" y="2" width="1.5" height="10" fill="currentColor" />
-                <rect x="4" y="2" width="1.5" height="10" fill="currentColor" />
-                <rect x="8.5" y="2" width="1.5" height="10" fill="currentColor" />
-                <rect x="12.5" y="2" width="1.5" height="10" fill="currentColor" />
-              </svg>
-            </button>
-          </div>
         </div>
       </div>
     </div>
+  )
+}
+
+function DensityIcon({ cols }: { cols: 3 | 4 }) {
+  if (cols === 3) {
+    return (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <rect x="1" y="2" width="2" height="10" fill="currentColor" />
+        <rect x="6" y="2" width="2" height="10" fill="currentColor" />
+        <rect x="11" y="2" width="2" height="10" fill="currentColor" />
+      </svg>
+    )
+  }
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <rect x="0" y="2" width="1.5" height="10" fill="currentColor" />
+      <rect x="4" y="2" width="1.5" height="10" fill="currentColor" />
+      <rect x="8.5" y="2" width="1.5" height="10" fill="currentColor" />
+      <rect x="12.5" y="2" width="1.5" height="10" fill="currentColor" />
+    </svg>
   )
 }
