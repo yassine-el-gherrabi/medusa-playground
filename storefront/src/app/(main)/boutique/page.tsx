@@ -43,6 +43,7 @@ export default async function BoutiquePage() {
         title="Boutique"
         label="Catalogue"
         headline="Toute la collection"
+        imageUrl="https://api.iceindustry.fr/images/hero/HERO_DESK_ICE2.webp"
         breadcrumbs={breadcrumbs}
         itemCount={count}
       />
