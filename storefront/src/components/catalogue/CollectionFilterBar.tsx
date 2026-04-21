@@ -270,6 +270,9 @@ function FiltersDrawer({ open, onClose, filterOptions, activeFilters, onApply }:
 
   const draftActiveCount = countActiveFilters(draft, filterOptions.priceRange)
 
+  // Flatten all size groups into a single deduplicated list
+  const allSizes = [...new Set(filterOptions.sizeGroups.flatMap((g) => g.sizes))]
+
   // ── Draft updaters ──
 
   const setDraftSort = (value: string) => {
@@ -419,35 +422,29 @@ function FiltersDrawer({ open, onClose, filterOptions, activeFilters, onApply }:
             </div>
           )}
 
-          {/* Section: TAILLE (grouped) */}
-          {filterOptions.sizeGroups.length > 0 && (
+          {/* Section: TAILLE */}
+          {allSizes.length > 0 && (
             <div className="pb-6 mb-6 border-b border-[var(--color-border)]">
-              {filterOptions.sizeGroups.map((group) => (
-                <div key={group.label} className="mb-4 last:mb-0">
-                  <p className="font-mono text-[10px] tracking-[0.18em] uppercase mb-3 text-[var(--color-muted)]">
-                    Taille · {group.label}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {group.sizes.map((size) => {
-                      const isActive = draft.sizes.includes(size)
-                      return (
-                        <button
-                          key={size}
-                          onClick={() => toggleSize(size)}
-                          className="min-w-[42px] py-2.5 px-3 text-[13px] text-center cursor-pointer transition-colors"
-                          style={{
-                            background: isActive ? "var(--color-ink)" : "transparent",
-                            color: isActive ? "var(--color-surface)" : "var(--color-ink)",
-                            border: isActive ? "1px solid var(--color-ink)" : "1px solid var(--color-border)",
-                          }}
-                        >
-                          {size}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              ))}
+              <p className="font-mono text-[11px] tracking-[0.18em] uppercase mb-4">Taille</p>
+              <div className="flex flex-wrap gap-2">
+                {allSizes.map((size) => {
+                  const isActive = draft.sizes.includes(size)
+                  return (
+                    <button
+                      key={size}
+                      onClick={() => toggleSize(size)}
+                      className="min-w-[42px] py-2.5 px-3 text-[13px] text-center cursor-pointer transition-colors"
+                      style={{
+                        background: isActive ? "var(--color-ink)" : "transparent",
+                        color: isActive ? "var(--color-surface)" : "var(--color-ink)",
+                        border: isActive ? "1px solid var(--color-ink)" : "1px solid var(--color-border)",
+                      }}
+                    >
+                      {size}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           )}
 
