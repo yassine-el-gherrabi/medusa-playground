@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { useScrollLock } from "@/hooks/useScrollLock"
+import { useEscapeKey } from "@/hooks/useEscapeKey"
 
 type CollectionFilterBarProps = {
   sortOrder: string
@@ -16,8 +18,7 @@ type CollectionFilterBarProps = {
 
 const SORT_OPTIONS = [
   { value: "-created_at", label: "Nouveautés" },
-  { value: "title", label: "A-Z" },
-  { value: "-title", label: "Z-A" },
+  { value: "created_at", label: "Plus anciens" },
   { value: "variants.calculated_price", label: "Prix croissant" },
   { value: "-variants.calculated_price", label: "Prix décroissant" },
 ]
@@ -34,151 +35,260 @@ export default function CollectionFilterBar({
   showDensity = true,
 }: CollectionFilterBarProps) {
   const [sortOpen, setSortOpen] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const sortRef = useRef<HTMLDivElement>(null)
 
-  // Close sort dropdown on outside click
   useEffect(() => {
     if (!sortOpen) return
     const handleClick = (e: MouseEvent) => {
-      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
-        setSortOpen(false)
-      }
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setSortOpen(false)
     }
     document.addEventListener("click", handleClick)
     return () => document.removeEventListener("click", handleClick)
   }, [sortOpen])
 
-  const currentLabel =
-    SORT_OPTIONS.find((o) => o.value === sortOrder)?.label ?? "Nouveautés"
+  const currentLabel = SORT_OPTIONS.find((o) => o.value === sortOrder)?.label ?? "Nouveautés"
 
   return (
-    <div
-      className="sticky top-14 lg:top-[66px] z-20 border-b border-[var(--color-border)]"
-      style={{
-        background: "rgba(250,250,248,0.92)",
-        backdropFilter: "blur(14px) saturate(160%)",
-        WebkitBackdropFilter: "blur(14px) saturate(160%)",
-      }}
-    >
-      {/* Subcategory tabs (if provided) */}
-      {subcategories && subcategories.length > 0 && onSubcategoryChange && (
-        <div className="flex gap-2 overflow-x-auto px-4 lg:px-8 pt-3 pb-3 border-b border-[var(--color-border)]" style={{ scrollbarWidth: "none" }}>
-          <button
-            onClick={() => onSubcategoryChange("")}
-            className={`font-mono text-[10px] tracking-[0.14em] uppercase px-3 py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
-              !activeSubcategory
-                ? "bg-[var(--color-ink)] text-[var(--color-surface)]"
-                : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
-            }`}
-          >
-            Tout
-          </button>
-          {subcategories.map((sub) => (
+    <>
+      <div
+        className="sticky top-14 lg:top-[66px] z-20 border-b border-[var(--color-border)]"
+        style={{
+          background: "rgba(250,250,248,0.92)",
+          backdropFilter: "blur(14px) saturate(160%)",
+          WebkitBackdropFilter: "blur(14px) saturate(160%)",
+        }}
+      >
+        {/* Subcategory tabs */}
+        {subcategories && subcategories.length > 0 && onSubcategoryChange && (
+          <div className="flex gap-2 overflow-x-auto px-4 lg:px-8 pt-3 pb-3 border-b border-[var(--color-border)]" style={{ scrollbarWidth: "none" }}>
             <button
-              key={sub.id}
-              onClick={() => onSubcategoryChange(sub.id)}
+              onClick={() => onSubcategoryChange("")}
               className={`font-mono text-[10px] tracking-[0.14em] uppercase px-3 py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
-                activeSubcategory === sub.id
+                !activeSubcategory
                   ? "bg-[var(--color-ink)] text-[var(--color-surface)]"
                   : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
               }`}
             >
-              {sub.name}
+              Tout
             </button>
-          ))}
-        </div>
-      )}
-
-      {/* Main bar */}
-      <div className="flex items-center justify-between px-4 lg:px-8 py-3 lg:py-4 gap-3 lg:gap-6">
-        {/* Left: filters button + count */}
-        <div className="flex items-center gap-3 lg:gap-4">
-          {/* Filters button */}
-          <button
-            className="flex items-center gap-2.5 bg-transparent border border-[var(--color-ink)] px-3.5 lg:px-4.5 py-2.5 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer"
-            aria-label="Ouvrir les filtres"
-          >
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-              <path d="M1 3h10M3 6h6M5 9h2" stroke="currentColor" strokeWidth="1.4" />
-            </svg>
-            Filtres
-          </button>
-
-          {/* Product count (desktop) */}
-          {productCount !== undefined && (
-            <span className="hidden lg:block font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-muted)]">
-              {productCount} pièces
-            </span>
-          )}
-        </div>
-
-        {/* Right: density + sort */}
-        <div className="flex items-center gap-3 lg:gap-3.5">
-          {/* Density toggle — desktop only, grid mode only */}
-          {showDensity && (
-            <div
-              role="radiogroup"
-              aria-label="Densité de la grille"
-              className="hidden lg:flex border border-[var(--color-border)]"
-            >
-              {([3, 4] as const).map((n) => (
-                <button
-                  key={n}
-                  aria-checked={density === n}
-                  onClick={() => onDensityChange(n)}
-                  className="w-9 h-9 flex items-center justify-center cursor-pointer transition-all"
-                  style={{
-                    background: density === n ? "var(--color-ink)" : "transparent",
-                    color: density === n ? "var(--color-surface)" : "var(--color-ink)",
-                    border: "none",
-                  }}
-                >
-                  <DensityIcon cols={n} />
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Sort dropdown */}
-          <div ref={sortRef} className="relative">
-            <button
-              onClick={() => setSortOpen((v) => !v)}
-              className="flex items-center gap-2.5 bg-transparent border-none py-2.5 px-1 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer"
-            >
-              <span className="hidden lg:inline">Tri · {currentLabel}</span>
-              <span className="lg:hidden">Tri</span>
-              <svg
-                width="9" height="9" viewBox="0 0 10 10" fill="none"
-                className={`transition-transform duration-200 ${sortOpen ? "rotate-180" : ""}`}
+            {subcategories.map((sub) => (
+              <button
+                key={sub.id}
+                onClick={() => onSubcategoryChange(sub.id)}
+                className={`font-mono text-[10px] tracking-[0.14em] uppercase px-3 py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
+                  activeSubcategory === sub.id
+                    ? "bg-[var(--color-ink)] text-[var(--color-surface)]"
+                    : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+                }`}
               >
-                <path d="M2 3l3 4 3-4" stroke="currentColor" strokeWidth="1.4" fill="none" />
+                {sub.name}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Main bar */}
+        <div className="flex items-center justify-between px-4 lg:px-8 py-3 lg:py-4 gap-3 lg:gap-6">
+          {/* Left: filters button + count */}
+          <div className="flex items-center gap-3 lg:gap-4">
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className="flex items-center gap-2.5 bg-transparent border border-[var(--color-ink)] px-3.5 py-2.5 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer"
+              aria-label="Ouvrir les filtres"
+            >
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                <path d="M1 3h10M3 6h6M5 9h2" stroke="currentColor" strokeWidth="1.4" />
               </svg>
+              Filtres
             </button>
 
-            {sortOpen && (
-              <div className="absolute right-0 top-full mt-2 min-w-[220px] bg-white border border-[var(--color-border)] shadow-lg z-10">
-                {SORT_OPTIONS.map((option) => (
+            {productCount !== undefined && (
+              <span className="hidden lg:block font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-muted)]">
+                {productCount} pièces
+              </span>
+            )}
+          </div>
+
+          {/* Right: density + sort */}
+          <div className="flex items-center gap-3 lg:gap-3.5">
+            {showDensity && (
+              <div
+                role="radiogroup"
+                aria-label="Densité de la grille"
+                className="hidden lg:flex border border-[var(--color-border)]"
+              >
+                {([3, 4] as const).map((n) => (
                   <button
-                    key={option.value}
-                    onClick={() => { onSortChange(option.value); setSortOpen(false) }}
-                    className="block w-full text-left py-3 px-4 border-none border-b border-[var(--color-border)] text-[13px] cursor-pointer transition-colors"
+                    key={n}
+                    aria-checked={density === n}
+                    onClick={() => onDensityChange(n)}
+                    className="w-9 h-9 flex items-center justify-center cursor-pointer transition-all border-none"
                     style={{
-                      background: sortOrder === option.value ? "var(--color-surface-warm, #F4F2ED)" : "transparent",
-                      borderBottom: "1px solid var(--color-border)",
-                      fontFamily: "inherit",
+                      background: density === n ? "var(--color-ink)" : "transparent",
+                      color: density === n ? "var(--color-surface)" : "var(--color-ink)",
                     }}
                   >
-                    {option.label}
+                    <DensityIcon cols={n} />
                   </button>
                 ))}
               </div>
             )}
+
+            <div ref={sortRef} className="relative">
+              <button
+                onClick={() => setSortOpen((v) => !v)}
+                className="flex items-center gap-2.5 bg-transparent border-none py-2.5 px-1 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer"
+              >
+                <span className="hidden lg:inline">Tri · {currentLabel}</span>
+                <span className="lg:hidden">Tri</span>
+                <svg
+                  width="9" height="9" viewBox="0 0 10 10" fill="none"
+                  className={`transition-transform duration-200 ${sortOpen ? "rotate-180" : ""}`}
+                >
+                  <path d="M2 3l3 4 3-4" stroke="currentColor" strokeWidth="1.4" fill="none" />
+                </svg>
+              </button>
+
+              {sortOpen && (
+                <div className="absolute right-0 top-full mt-2 min-w-[220px] bg-white border border-[var(--color-border)] shadow-lg z-10">
+                  {SORT_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => { onSortChange(option.value); setSortOpen(false) }}
+                      className="block w-full text-left py-3 px-4 text-[13px] cursor-pointer transition-colors border-none"
+                      style={{
+                        background: sortOrder === option.value ? "var(--color-ink)" : "white",
+                        color: sortOrder === option.value ? "var(--color-surface)" : "var(--color-ink)",
+                        borderBottom: "1px solid var(--color-border)",
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Filters drawer */}
+      <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} />
+    </>
   )
 }
+
+// ── Filters Drawer ──
+
+function FiltersDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  useScrollLock(open)
+  useEscapeKey(open, useCallback(() => onClose(), [onClose]))
+
+  const filterGroups = [
+    { title: "Catégorie", options: ["T-Shirts", "Sweats", "Vestes", "Pantalons", "Accessoires"] },
+    { title: "Taille", options: ["XS", "S", "M", "L", "XL", "XXL"] },
+    { title: "Couleur", options: ["Noir", "Crème", "Anthracite", "Gris", "Marine"] },
+    { title: "Prix", options: ["< 100 €", "100–200 €", "200–400 €", "> 400 €"] },
+  ]
+
+  const [selected, setSelected] = useState<Record<string, string[]>>({})
+
+  const toggle = (group: string, value: string) => {
+    setSelected((prev) => {
+      const current = prev[group] || []
+      return {
+        ...prev,
+        [group]: current.includes(value) ? current.filter((v) => v !== value) : [...current, value],
+      }
+    })
+  }
+
+  const activeCount = Object.values(selected).flat().length
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 z-[80] transition-all duration-300 ${open ? "bg-black/45 backdrop-blur-sm pointer-events-auto" : "bg-transparent backdrop-blur-none pointer-events-none"}`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Panel */}
+      <div
+        role="dialog"
+        aria-label="Filtres"
+        aria-modal={open}
+        className={`fixed top-0 right-0 h-full w-full sm:w-[460px] z-[81] bg-white flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${open ? "translate-x-0" : "translate-x-full"}`}
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center px-6 lg:px-9 pt-6 lg:pt-9 pb-8 shrink-0">
+          <div>
+            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--color-muted)]">Affiner</span>
+            <h3 className="text-[28px] font-medium tracking-[-0.02em] mt-1.5">Filtres</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 border border-[var(--color-ink)] bg-transparent cursor-pointer flex items-center justify-center"
+            aria-label="Fermer les filtres"
+          >
+            <svg width="12" height="12" viewBox="0 0 11 11"><path d="M1 1l9 9M10 1l-9 9" stroke="currentColor" strokeWidth="1.2" /></svg>
+          </button>
+        </div>
+
+        {/* Filter groups */}
+        <div className="flex-1 overflow-y-auto px-6 lg:px-9">
+          {filterGroups.map((group) => (
+            <div key={group.title} className="pb-6 mb-6 border-b border-[var(--color-border)]">
+              <p className="font-mono text-[11px] tracking-[0.18em] uppercase mb-4">{group.title}</p>
+              <div className="flex flex-wrap gap-2">
+                {group.options.map((opt) => {
+                  const isActive = (selected[group.title] || []).includes(opt)
+                  return (
+                    <button
+                      key={opt}
+                      onClick={() => toggle(group.title, opt)}
+                      className="py-2.5 px-3.5 text-[13px] cursor-pointer transition-colors"
+                      style={{
+                        background: isActive ? "var(--color-ink)" : "transparent",
+                        color: isActive ? "var(--color-surface)" : "var(--color-ink)",
+                        border: isActive ? "1px solid var(--color-ink)" : "1px solid var(--color-border)",
+                      }}
+                    >
+                      {opt}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="shrink-0 px-6 lg:px-9 py-6 border-t border-[var(--color-border)]">
+          <div className="grid grid-cols-[1fr_2fr] gap-2.5">
+            <button
+              onClick={() => setSelected({})}
+              className="bg-transparent border border-[var(--color-ink)] py-4 px-4 font-mono text-[10px] tracking-[0.22em] uppercase cursor-pointer"
+            >
+              Effacer{activeCount > 0 ? ` (${activeCount})` : ""}
+            </button>
+            <button
+              onClick={onClose}
+              className="border-none py-4 px-4 font-mono text-[12px] font-medium tracking-[0.22em] uppercase cursor-pointer"
+              style={{ background: "var(--color-ink)", color: "var(--color-surface)" }}
+            >
+              Voir les résultats
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ── Density icon ──
 
 function DensityIcon({ cols }: { cols: 3 | 4 }) {
   if (cols === 3) {
