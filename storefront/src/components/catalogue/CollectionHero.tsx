@@ -25,17 +25,33 @@ export default function CollectionHero({
   return (
     <section
       data-header-theme="dark"
-      className="relative -mt-16 overflow-hidden bg-[var(--color-ink)] h-[55vh] lg:h-[60vh] min-h-[400px] lg:min-h-[480px] max-h-[560px] lg:max-h-[680px]"
+      className="relative -mt-16 overflow-hidden bg-[var(--color-ink)] h-[480px] lg:h-auto lg:grid lg:grid-rows-1"
     >
-      {/* Background */}
+      {/* Background image — on desktop it's in the grid flow and gives height */}
       {imageUrl ? (
-        <Image
-          src={imageUrl}
-          alt={title}
-          fill
-          className="object-cover"
-          priority
-        />
+        <>
+          {/* Desktop: image in flow via grid, gives natural height */}
+          <div className="hidden lg:block lg:row-span-full lg:col-span-full">
+            <Image
+              src={imageUrl}
+              alt={title}
+              width={1920}
+              height={1080}
+              className="w-full h-auto block"
+              priority
+            />
+          </div>
+          {/* Mobile: absolute fill (height fixed at 480px) */}
+          <div className="lg:hidden absolute inset-0">
+            <Image
+              src={imageUrl}
+              alt={title}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        </>
       ) : (
         <div
           className="absolute inset-0"
@@ -49,96 +65,96 @@ export default function CollectionHero({
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-ink)] via-[var(--color-ink)]/40 to-transparent" />
 
-      {/* Top-left: Breadcrumbs */}
-      {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav
-          aria-label="Fil d'Ariane"
-          className="absolute top-20 lg:top-24 left-5 lg:left-10 z-10"
-        >
-          <ol className="flex items-center gap-1.5 font-mono text-[10px] tracking-[0.14em] uppercase">
-            {breadcrumbs.map((crumb, i) => (
-              <li key={crumb.href} className="flex items-center gap-1.5">
-                {i > 0 && (
-                  <span className="text-[rgba(250,250,248,0.35)]">/</span>
-                )}
-                {i < breadcrumbs.length - 1 ? (
-                  <Link
-                    href={crumb.href}
-                    className="text-[rgba(250,250,248,0.55)] hover:text-[rgba(250,250,248,0.8)] transition-colors"
-                  >
-                    {crumb.label}
-                  </Link>
-                ) : (
-                  <span className="text-[rgba(250,250,248,0.55)]">
-                    {crumb.label}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ol>
-        </nav>
-      )}
-
-      {/* Top-right: Item count + Season (desktop only) */}
-      {(itemCount !== undefined || season) && (
-        <div className="absolute top-20 lg:top-24 right-10 z-10 hidden lg:block">
-          <span className="font-mono text-[10px] tracking-[0.14em] uppercase text-[rgba(250,250,248,0.55)]">
-            {itemCount !== undefined && `${itemCount} pièces`}
-            {itemCount !== undefined && season && " · "}
-            {season}
-          </span>
-        </div>
-      )}
-
-      {/* Bottom-left: Label + Headline/Title */}
-      <div className="absolute bottom-6 lg:bottom-14 left-5 lg:left-16 z-10 max-w-[85%] lg:max-w-[70%]">
-        {/* Label line */}
-        <div className="flex items-center gap-4 mb-4 lg:mb-5">
-          <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-[rgba(250,250,248,0.55)] whitespace-nowrap">
-            {displayLabel} · {title}
-          </span>
-          <div className="h-px flex-1 bg-white/30" />
-        </div>
-
-        {/* Main heading */}
-        <h1
-          className="font-medium text-[var(--color-surface)]"
-          style={{
-            fontSize: "clamp(44px, 14vw, 72px)",
-            lineHeight: 0.92,
-            letterSpacing: "-0.04em",
-          }}
-        >
-          <span
-            className="hidden lg:block"
-            style={{ fontSize: "clamp(72px, 8vw, 128px)" }}
+      {/* Content overlay — positioned over the image via grid overlap */}
+      <div className="lg:row-span-full lg:col-span-full relative z-10">
+        {/* Top-left: Breadcrumbs */}
+        {breadcrumbs && breadcrumbs.length > 0 && (
+          <nav
+            aria-label="Fil d'Ariane"
+            className="absolute top-20 lg:top-24 left-5 lg:left-10"
           >
-            {headline || title}
-          </span>
-          <span className="lg:hidden">{headline || title}</span>
-        </h1>
-      </div>
+            <ol className="flex items-center gap-1.5 font-mono text-[10px] tracking-[0.14em] uppercase">
+              {breadcrumbs.map((crumb, i) => (
+                <li key={crumb.href} className="flex items-center gap-1.5">
+                  {i > 0 && (
+                    <span className="text-[rgba(250,250,248,0.35)]">/</span>
+                  )}
+                  {i < breadcrumbs.length - 1 ? (
+                    <Link
+                      href={crumb.href}
+                      className="text-[rgba(250,250,248,0.55)] hover:text-[rgba(250,250,248,0.8)] transition-colors"
+                    >
+                      {crumb.label}
+                    </Link>
+                  ) : (
+                    <span className="text-[rgba(250,250,248,0.55)]">
+                      {crumb.label}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )}
 
-      {/* Bottom-right: Scroll indicator (desktop only) */}
-      <div className="absolute bottom-14 right-10 z-10 hidden lg:flex flex-col items-center gap-3">
-        <span
-          className="font-mono text-[10px] tracking-[0.18em] uppercase text-[rgba(250,250,248,0.55)]"
-          style={{
-            writingMode: "vertical-rl",
-            textOrientation: "mixed",
-          }}
-        >
-          Découvrir
-        </span>
-        <div
-          className="w-[2px] h-10"
-          style={{
-            background:
-              "linear-gradient(to bottom, rgba(250,250,248,0.6), rgba(250,250,248,0))",
-            backgroundSize: "2px 40px",
-            animation: "scrollLine 2s linear infinite",
-          }}
-        />
+        {/* Top-right: Item count + Season (desktop only) */}
+        {(itemCount !== undefined || season) && (
+          <div className="absolute top-20 lg:top-24 right-10 hidden lg:block">
+            <span className="font-mono text-[10px] tracking-[0.14em] uppercase text-[rgba(250,250,248,0.55)]">
+              {itemCount !== undefined && `${itemCount} pièces`}
+              {itemCount !== undefined && season && " · "}
+              {season}
+            </span>
+          </div>
+        )}
+
+        {/* Bottom-left: Label + Headline/Title */}
+        <div className="absolute bottom-6 lg:bottom-14 left-5 lg:left-16 max-w-[85%] lg:max-w-[70%]">
+          <div className="flex items-center gap-4 mb-4 lg:mb-5">
+            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-[rgba(250,250,248,0.55)] whitespace-nowrap">
+              {displayLabel} · {title}
+            </span>
+            <div className="h-px flex-1 bg-white/30" />
+          </div>
+          <h1
+            className="font-medium text-[var(--color-surface)]"
+            style={{
+              fontSize: "clamp(44px, 14vw, 72px)",
+              lineHeight: 0.92,
+              letterSpacing: "-0.04em",
+            }}
+          >
+            <span
+              className="hidden lg:block"
+              style={{ fontSize: "clamp(72px, 8vw, 128px)" }}
+            >
+              {headline || title}
+            </span>
+            <span className="lg:hidden">{headline || title}</span>
+          </h1>
+        </div>
+
+        {/* Bottom-right: Scroll indicator (desktop only) */}
+        <div className="absolute bottom-14 right-10 hidden lg:flex flex-col items-center gap-3">
+          <span
+            className="font-mono text-[10px] tracking-[0.18em] uppercase text-[rgba(250,250,248,0.55)]"
+            style={{
+              writingMode: "vertical-rl",
+              textOrientation: "mixed",
+            }}
+          >
+            Découvrir
+          </span>
+          <div
+            className="w-[2px] h-10"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(250,250,248,0.6), rgba(250,250,248,0))",
+              backgroundSize: "2px 40px",
+              animation: "scrollLine 2s linear infinite",
+            }}
+          />
+        </div>
       </div>
     </section>
   )
