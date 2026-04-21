@@ -175,7 +175,7 @@ export default function CollectionFilterBar({
               <div
                 role="radiogroup"
                 aria-label="Densité de la grille"
-                className="hidden lg:flex items-center gap-1"
+                className="flex items-center gap-1"
               >
                 {([3, 4] as const).map((n) => (
                   <button
