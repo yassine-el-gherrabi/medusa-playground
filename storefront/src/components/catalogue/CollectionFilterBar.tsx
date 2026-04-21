@@ -112,12 +112,7 @@ export default function CollectionFilterBar({
   return (
     <>
       <div
-        className="sticky top-14 lg:top-[66px] z-20 border-b border-[var(--color-border)]"
-        style={{
-          background: "rgba(250,250,248,0.92)",
-          backdropFilter: "blur(14px) saturate(160%)",
-          WebkitBackdropFilter: "blur(14px) saturate(160%)",
-        }}
+        className="border-b border-[var(--color-border)] bg-white"
       >
         {/* Subcategory tabs */}
         {subcategories && subcategories.length > 0 && onSubcategoryChange && (
