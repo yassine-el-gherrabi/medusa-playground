@@ -25,8 +25,8 @@ export function useDensity(defaultLevel: DensityLevel = 1): [DensityLevel, (d: D
 // Grid class mapping
 export function getDensityClasses(level: DensityLevel) {
   switch (level) {
-    case 0: return { cols: "grid-cols-1 lg:grid-cols-3", gap: "gap-x-2 gap-y-5 lg:gap-x-14 lg:gap-y-6" }
-    case 1: return { cols: "grid-cols-2 lg:grid-cols-4", gap: "gap-x-2 gap-y-5 lg:gap-x-10 lg:gap-y-4" }
-    case 2: return { cols: "grid-cols-3 lg:grid-cols-6", gap: "gap-x-1.5 gap-y-4 lg:gap-x-6 lg:gap-y-3" }
+    case 0: return { cols: "grid-cols-1 lg:grid-cols-3", gap: "gap-0.5" }
+    case 1: return { cols: "grid-cols-2 lg:grid-cols-4", gap: "gap-0.5" }
+    case 2: return { cols: "grid-cols-3 lg:grid-cols-6", gap: "gap-0.5" }
   }
 }
