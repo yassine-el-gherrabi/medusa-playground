@@ -156,7 +156,7 @@ export default function ProductCard({ product, showSwatches = false }: { product
                   onClick={() => setActiveColor(c.value)}
                   title={c.label}
                   aria-label={`Couleur ${c.label}`}
-                  className={`relative cursor-pointer shrink-0 ${thumb ? "w-8 h-10" : "w-5 h-5"} ${isActive ? "" : "opacity-50 hover:opacity-80"} transition-opacity`}
+                  className={`relative cursor-pointer shrink-0 ${thumb ? "w-12 h-16" : "w-6 h-6"} ${isActive ? "" : "opacity-50 hover:opacity-80"} transition-opacity`}
                 >
                   {thumb ? (
                     <Image src={thumb} alt={c.label} fill className="object-cover" sizes="32px" />
