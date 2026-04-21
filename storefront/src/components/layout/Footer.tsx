@@ -307,9 +307,6 @@ export default function Footer() {
                     </Link>
                   </li>
                 ))}
-                <li>
-                  <CookieSettingsButton />
-                </li>
               </ul>
             </FooterAccordion>
           </div>
@@ -320,6 +317,8 @@ export default function Footer() {
       <div className="bg-white border-t border-black/10 py-6 px-6 lg:px-12">
         <p className="text-[10px] text-black uppercase tracking-wider text-center">
           &copy; 2026 Ice Industry. Tous droits réservés.
+          <span className="mx-2 text-black/30">·</span>
+          <CookieSettingsButton />
         </p>
       </div>
     </footer>

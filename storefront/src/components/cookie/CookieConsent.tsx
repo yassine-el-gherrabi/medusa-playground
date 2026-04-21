@@ -257,7 +257,7 @@ export default function CookieConsent() {
                 <div className="flex gap-3 mb-3">
                   <button
                     onClick={handleAcceptAll}
-                    className="flex-1 h-11 uppercase tracking-[0.18em] text-[11px] font-medium transition-colors duration-200 hover:opacity-80"
+                    className="flex-1 h-11 cursor-pointer uppercase tracking-[0.18em] text-[11px] font-medium transition-opacity duration-200 hover:opacity-80"
                     style={{
                       background: "var(--color-ink)",
                       color: "var(--color-surface)",
@@ -267,7 +267,7 @@ export default function CookieConsent() {
                   </button>
                   <button
                     onClick={handleRefuseAll}
-                    className="flex-1 h-11 uppercase tracking-[0.18em] text-[11px] font-medium transition-colors duration-200 hover:opacity-80"
+                    className="flex-1 h-11 cursor-pointer uppercase tracking-[0.18em] text-[11px] font-medium transition-all duration-200 hover:bg-[var(--color-ink)] hover:text-[var(--color-surface)]"
                     style={{
                       background: "transparent",
                       color: "var(--color-ink)",
@@ -279,7 +279,7 @@ export default function CookieConsent() {
                 </div>
                 <button
                   onClick={() => setShowDetails(true)}
-                  className="w-full text-center py-2 text-[11px] uppercase tracking-[0.15em] transition-colors duration-200"
+                  className="w-full text-center py-2 cursor-pointer text-[11px] uppercase tracking-[0.15em] transition-colors duration-200 hover:text-[var(--color-ink)]"
                   style={{ color: "var(--color-muted)" }}
                 >
                   Personnaliser mes choix
@@ -291,7 +291,7 @@ export default function CookieConsent() {
                 <div className="flex gap-3 mb-3">
                   <button
                     onClick={handleSavePreferences}
-                    className="flex-1 h-11 uppercase tracking-[0.18em] text-[11px] font-medium transition-colors duration-200 hover:opacity-80"
+                    className="flex-1 h-11 cursor-pointer uppercase tracking-[0.18em] text-[11px] font-medium transition-opacity duration-200 hover:opacity-80"
                     style={{
                       background: "var(--color-ink)",
                       color: "var(--color-surface)",
@@ -301,7 +301,7 @@ export default function CookieConsent() {
                   </button>
                   <button
                     onClick={handleAcceptAll}
-                    className="flex-1 h-11 uppercase tracking-[0.18em] text-[11px] font-medium transition-colors duration-200 hover:opacity-80"
+                    className="flex-1 h-11 cursor-pointer uppercase tracking-[0.18em] text-[11px] font-medium transition-all duration-200 hover:bg-[var(--color-ink)] hover:text-[var(--color-surface)]"
                     style={{
                       background: "transparent",
                       color: "var(--color-ink)",
@@ -313,7 +313,7 @@ export default function CookieConsent() {
                 </div>
                 <button
                   onClick={() => setShowDetails(false)}
-                  className="w-full text-center py-2 text-[11px] uppercase tracking-[0.15em] transition-colors duration-200"
+                  className="w-full text-center py-2 cursor-pointer text-[11px] uppercase tracking-[0.15em] transition-colors duration-200 hover:text-[var(--color-ink)]"
                   style={{ color: "var(--color-muted)" }}
                 >
                   ← Retour
@@ -339,9 +339,9 @@ export function CookieSettingsButton() {
   return (
     <button
       onClick={handleOpen}
-      className="text-left hover:opacity-60 transition-opacity duration-200"
+      className="cursor-pointer text-[10px] text-black/50 hover:text-black transition-colors duration-200 uppercase tracking-wider"
     >
-      Gérer les cookies
+      Cookies
     </button>
   )
 }
