@@ -273,10 +273,24 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [activeInfoPanel, setActiveInfoPanel] = useState<string | null>(null)
   const addedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isMounted = useRef(true)
+  const mobileCtaRef = useRef<HTMLDivElement>(null)
+  const [showStickyMobileCta, setShowStickyMobileCta] = useState(false)
 
   useEffect(() => {
     isMounted.current = true
     return () => { isMounted.current = false; if (addedTimerRef.current) clearTimeout(addedTimerRef.current) }
+  }, [])
+
+  // ── Mobile sticky CTA visibility ──
+  useEffect(() => {
+    const el = mobileCtaRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => setShowStickyMobileCta(!entry.isIntersecting),
+      { threshold: 0 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
   }, [])
 
   // ── Recently viewed ──
@@ -516,7 +530,26 @@ export default function ProductDetail({ product }: { product: Product }) {
 
             {(addError || cartError) && <p className="text-[11px] text-red-600 mt-3">{addError || cartError}</p>}
 
-            {/* Primary CTA — split text */}
+            {/* Mobile inline CTA — anchor for sticky detection */}
+            <div ref={mobileCtaRef} className="mt-5 lg:hidden">
+              <button
+                onClick={handleAddToCart}
+                disabled={!canAddToCart || addingToCart || !inStock}
+                aria-busy={addingToCart}
+                className="w-full h-[52px] flex items-center justify-between px-5 text-[11px] font-medium uppercase tracking-[0.2em] transition-all cursor-pointer border-none"
+                style={{
+                  background: canAddToCart && inStock ? "#0A0A0A" : "#18181A",
+                  color: "#FAFAF8",
+                  opacity: canAddToCart && inStock ? 1 : 0.6,
+                  cursor: canAddToCart && inStock ? "pointer" : "not-allowed",
+                }}
+              >
+                <span>{addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? `Ajouter · ${selectedColor || ""}` : missingOptions.length > 0 ? "Sélectionner une taille" : "Épuisé"}</span>
+                {priceLabel && <span className="tracking-[0.04em]">{priceLabel}</span>}
+              </button>
+            </div>
+
+            {/* Desktop CTA — split text */}
             <div className="mt-5 hidden lg:block">
               <button
                 onClick={handleAddToCart}
@@ -623,14 +656,42 @@ export default function ProductDetail({ product }: { product: Product }) {
         </section>
       )}
 
-      {/* Sticky mobile CTA */}
+      {/* Sticky mobile CTA — appears when inline CTA scrolls out of view */}
       {typeof document !== "undefined" &&
         createPortal(
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
-            <button onClick={handleAddToCart} disabled={!canAddToCart || addingToCart || !inStock} aria-busy={addingToCart}
-              className={`w-full h-[52px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all ${!canAddToCart || !inStock ? "bg-muted text-muted-foreground cursor-not-allowed" : addedToCart ? "bg-foreground text-background" : "bg-foreground text-background cursor-pointer"}`}>
-              {ctaLabelWithPrice}
-            </button>
+          <div
+            className="lg:hidden fixed bottom-0 left-0 right-0 z-50 transition-all duration-300"
+            style={{
+              transform: showStickyMobileCta ? "translateY(0)" : "translateY(100%)",
+              opacity: showStickyMobileCta ? 1 : 0,
+              pointerEvents: showStickyMobileCta ? "auto" : "none",
+            }}
+          >
+            <div
+              className="border-t border-[#E3E1DC]/70"
+              style={{
+                background: "rgba(250,250,248,0.9)",
+                backdropFilter: "blur(16px) saturate(170%)",
+                WebkitBackdropFilter: "blur(16px) saturate(170%)",
+                padding: "12px 14px calc(12px + env(safe-area-inset-bottom, 20px))",
+              }}
+            >
+              <button
+                onClick={handleAddToCart}
+                disabled={!canAddToCart || addingToCart || !inStock}
+                aria-busy={addingToCart}
+                className="w-full h-[52px] flex items-center justify-between px-5 text-[11px] font-medium uppercase tracking-[0.2em] border-none cursor-pointer"
+                style={{
+                  background: canAddToCart && inStock ? "#0A0A0A" : "#18181A",
+                  color: "#FAFAF8",
+                  opacity: canAddToCart && inStock ? 1 : 0.6,
+                  cursor: canAddToCart && inStock ? "pointer" : "not-allowed",
+                }}
+              >
+                <span>{addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? `Ajouter · ${selectedColor || ""}` : missingOptions.length > 0 ? "Sélectionner une taille" : "Épuisé"}</span>
+                {priceLabel && <span className="tracking-[0.04em]">{priceLabel}</span>}
+              </button>
+            </div>
           </div>,
           document.body
         )}
