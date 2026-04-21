@@ -93,8 +93,8 @@ export default function CollectionHero({
         )}
 
         {/* Bottom-left: Label + Headline/Title */}
-        <div className="absolute bottom-6 lg:bottom-14 left-5 lg:left-16 max-w-[85%] lg:max-w-[70%]">
-          <div className="flex items-center gap-4 mb-4 lg:mb-5">
+        <div className="absolute bottom-8 lg:bottom-10 left-5 lg:left-16 max-w-[85%] lg:max-w-[70%]">
+          <div className="flex items-center gap-4 mb-3 lg:mb-4">
             <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-[rgba(250,250,248,0.55)] whitespace-nowrap">
               {displayLabel} · {title}
             </span>
@@ -103,14 +103,14 @@ export default function CollectionHero({
           <h1
             className="font-medium text-[var(--color-surface)]"
             style={{
-              fontSize: "clamp(44px, 14vw, 72px)",
-              lineHeight: 0.92,
-              letterSpacing: "-0.04em",
+              fontSize: "clamp(36px, 10vw, 56px)",
+              lineHeight: 0.95,
+              letterSpacing: "-0.03em",
             }}
           >
             <span
               className="hidden lg:block"
-              style={{ fontSize: "clamp(72px, 8vw, 128px)" }}
+              style={{ fontSize: "clamp(48px, 5vw, 80px)" }}
             >
               {headline || title}
             </span>
