@@ -13,7 +13,8 @@ import { useRegion } from "@/providers/RegionProvider"
 import { DEFAULT_REGION } from "@/lib/constants"
 import { PRODUCT_FIELDS } from "@/lib/medusa/products"
 import { sdk } from "@/lib/sdk"
-import { getColorImages, getCompareAtPrice } from "@/lib/product-helpers"
+import Image from "next/image"
+import { getColorImages, getCompareAtPrice, extractColors, extractSizes, buildVariantMap, findVariantId, isSizeInStock, getColorThumbnail, COLOR_MAP } from "@/lib/product-helpers"
 import type { EditorialBlock } from "@/components/product/ProductImages"
 import type { Product } from "@/types"
 
@@ -262,6 +263,207 @@ function InfoOverlay({
   )
 }
 
+// ── Quick Select Drawer (slide-in for color + size selection) ──
+
+function QuickSelectDrawer({
+  open,
+  onClose,
+  product,
+  onAddToCart,
+  adding,
+  added,
+}: {
+  open: boolean
+  onClose: () => void
+  product: Product
+  onAddToCart: (variantId: string) => Promise<void>
+  adding: boolean
+  added: boolean
+}) {
+  const colors = extractColors(product)
+  const sizes = extractSizes(product)
+  const variants = buildVariantMap(product)
+  const colorImages = getColorImages(product)
+
+  const [drawerColor, setDrawerColor] = useState(colors[0]?.value || "")
+  const [drawerSize, setDrawerSize] = useState("")
+
+  // Reset on open
+  useEffect(() => {
+    if (open) setDrawerSize("")
+  }, [open])
+
+  // Escape key
+  useEffect(() => {
+    if (!open) return
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose() }
+    document.addEventListener("keydown", h)
+    return () => document.removeEventListener("keydown", h)
+  }, [open, onClose])
+
+  // Body scroll lock
+  useEffect(() => {
+    if (open) {
+      const scrollY = window.scrollY
+      document.body.style.position = "fixed"
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = "100%"
+      return () => {
+        document.body.style.position = ""
+        document.body.style.top = ""
+        document.body.style.width = ""
+        window.scrollTo(0, scrollY)
+      }
+    }
+  }, [open])
+
+  const canAdd = !!drawerSize && !!drawerColor
+  const variantId = canAdd ? findVariantId(variants, drawerColor, drawerSize) : null
+  const inStock = drawerSize ? isSizeInStock(variants, drawerColor, drawerSize) : true
+
+  const handleAdd = async () => {
+    if (!variantId) return
+    await onAddToCart(variantId)
+  }
+
+  const priceData = getProductPrice(product)
+  const price = priceData ? formatPrice(priceData.amount, priceData.currencyCode) : ""
+
+  return createPortal(
+    <>
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 z-[60] transition-all duration-300 ${open ? "bg-black/30 backdrop-blur-sm pointer-events-auto" : "bg-transparent backdrop-blur-none pointer-events-none"}`}
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <div
+        role="dialog"
+        aria-label="Sélection rapide"
+        aria-modal={open}
+        className={`fixed top-0 right-0 h-full w-full sm:w-[420px] z-[61] bg-white flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${open ? "translate-x-0" : "translate-x-full"}`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 h-16 border-b border-[#E3E1DC] shrink-0">
+          <h2 className="text-[11px] font-medium tracking-[0.15em] uppercase">Sélection rapide</h2>
+          <button onClick={onClose} className="p-2 -mr-2 cursor-pointer" aria-label="Fermer">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1" /></svg>
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          {/* Product summary */}
+          <div className="flex gap-4 mb-6 pb-6 border-b border-[#E3E1DC]">
+            {product.thumbnail && (
+              <div className="w-20 h-24 bg-[#f5f5f5] relative shrink-0">
+                <Image src={product.thumbnail} alt={product.title} fill className="object-cover" sizes="80px" />
+              </div>
+            )}
+            <div>
+              <p className="text-[14px] font-medium">{product.title}</p>
+              <p className="text-[14px] text-[#6F6E6A] mt-1">{price}</p>
+            </div>
+          </div>
+
+          {/* Color */}
+          {colors.length > 0 && (
+            <div className="mb-6">
+              <div className="flex items-baseline justify-between mb-3">
+                <p className="font-mono text-[11px] uppercase tracking-[0.16em]">Couleur</p>
+                <span className="text-[13px] text-[#6F6E6A]">{drawerColor}</span>
+              </div>
+              <div className="flex gap-2.5">
+                {colors.map((c) => {
+                  const thumb = getColorThumbnail(colorImages, c.value)
+                  const isSelected = drawerColor === c.value
+                  const color = COLOR_MAP[c.value] || "#cccccc"
+                  return (
+                    <button
+                      key={c.value}
+                      onClick={() => { setDrawerColor(c.value); setDrawerSize("") }}
+                      className={`relative cursor-pointer ${thumb ? "w-16 h-20" : "w-10 h-10"}`}
+                      style={!thumb ? {
+                        backgroundColor: color,
+                        border: isSelected ? "2px solid #0A0A0A" : "1px solid #E3E1DC",
+                        boxShadow: isSelected ? "0 0 0 2px #fff inset" : "none",
+                      } : undefined}
+                    >
+                      {thumb && (
+                        <Image src={thumb} alt={c.label} fill className="object-cover" sizes="64px" />
+                      )}
+                      {thumb && (
+                        <span className={`absolute -bottom-1.5 left-0 right-0 h-px transition-colors ${isSelected ? "bg-black" : "bg-transparent"}`} />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Sizes */}
+          {sizes.length > 0 && (
+            <div>
+              <p className="font-mono text-[11px] uppercase tracking-[0.16em] mb-3">
+                Taille
+                {drawerSize && <span className="text-[#6F6E6A] ml-2">— {drawerSize}</span>}
+              </p>
+              <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.min(sizes.length, 6)}, 1fr)` }}>
+                {sizes.map((s) => {
+                  const isSelected = drawerSize === s.value
+                  const inStk = isSizeInStock(variants, drawerColor, s.value)
+                  return (
+                    <button
+                      key={s.value}
+                      onClick={() => inStk && setDrawerSize(s.value)}
+                      disabled={!inStk}
+                      className={`relative h-[46px] text-[13px] font-medium tracking-[0.02em] transition-all border cursor-pointer ${
+                        isSelected
+                          ? "bg-[#0A0A0A] text-[#FAFAF8] border-[#0A0A0A]"
+                          : !inStk
+                            ? "bg-transparent text-[#A3A19C] border-[#E3E1DC] cursor-not-allowed"
+                            : "bg-transparent text-[#0A0A0A] border-[#E3E1DC] hover:border-[#0A0A0A]"
+                      }`}
+                    >
+                      {s.value}
+                      {!inStk && (
+                        <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                          <line x1="0" y1="100" x2="100" y2="0" stroke="#E3E1DC" strokeWidth="1" />
+                        </svg>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Fixed bottom CTA */}
+        <div className="shrink-0 px-6 py-4 border-t border-[#E3E1DC]">
+          <button
+            onClick={handleAdd}
+            disabled={!canAdd || adding || !inStock}
+            className="w-full h-[52px] flex items-center justify-between px-5 text-[11px] font-medium uppercase tracking-[0.2em] border-none cursor-pointer transition-all"
+            style={{
+              background: canAdd && inStock ? "#0A0A0A" : "#18181A",
+              color: "#FAFAF8",
+              opacity: canAdd && inStock ? 1 : 0.6,
+              cursor: canAdd && inStock ? "pointer" : "not-allowed",
+            }}
+          >
+            <span>{adding ? "Ajout..." : added ? "Ajouté ✓" : canAdd ? `Ajouter · ${drawerColor} · ${drawerSize}` : "Sélectionner une taille"}</span>
+            {price && <span className="tracking-[0.04em]">{price}</span>}
+          </button>
+        </div>
+      </div>
+    </>,
+    document.body
+  )
+}
+
 // ── Main PDP ──
 
 export default function ProductDetail({ product }: { product: Product }) {
@@ -277,6 +479,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   const desktopCtaRef = useRef<HTMLDivElement>(null)
   const [showStickyMobileCta, setShowStickyMobileCta] = useState(false)
   const [showDesktopMiniCta, setShowDesktopMiniCta] = useState(false)
+  const [quickSelectOpen, setQuickSelectOpen] = useState(false)
 
   useEffect(() => {
     isMounted.current = true
@@ -547,18 +750,12 @@ export default function ProductDetail({ product }: { product: Product }) {
             {/* Mobile inline CTA — anchor for sticky detection */}
             <div ref={mobileCtaRef} className="mt-5 lg:hidden">
               <button
-                onClick={handleAddToCart}
-                disabled={!canAddToCart || addingToCart || !inStock}
+                onClick={canAddToCart && inStock ? handleAddToCart : () => setQuickSelectOpen(true)}
                 aria-busy={addingToCart}
                 className="w-full h-[52px] flex items-center justify-between px-5 text-[11px] font-medium uppercase tracking-[0.2em] transition-all cursor-pointer border-none"
-                style={{
-                  background: canAddToCart && inStock ? "#0A0A0A" : "#18181A",
-                  color: "#FAFAF8",
-                  opacity: canAddToCart && inStock ? 1 : 0.6,
-                  cursor: canAddToCart && inStock ? "pointer" : "not-allowed",
-                }}
+                style={{ background: "#0A0A0A", color: "#FAFAF8" }}
               >
-                <span>{addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? `Ajouter · ${selectedColor || ""}` : missingOptions.length > 0 ? "Sélectionner une taille" : "Épuisé"}</span>
+                <span>{addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? `Ajouter · ${selectedColor || ""}` : "Sélectionner une taille"}</span>
                 {priceLabel && <span className="tracking-[0.04em]">{priceLabel}</span>}
               </button>
             </div>
@@ -566,25 +763,15 @@ export default function ProductDetail({ product }: { product: Product }) {
             {/* Desktop CTA — split text */}
             <div ref={desktopCtaRef} className="mt-5 hidden lg:block">
               <button
-                onClick={handleAddToCart}
-                disabled={!canAddToCart || addingToCart || !inStock}
+                onClick={canAddToCart && inStock ? handleAddToCart : () => setQuickSelectOpen(true)}
                 aria-busy={addingToCart}
                 className="w-full h-[52px] flex items-center justify-between px-5 text-[11px] font-medium uppercase tracking-[0.2em] transition-all cursor-pointer border-none"
-                style={{
-                  background: canAddToCart && inStock ? (addedToCart ? "#0A0A0A" : "#0A0A0A") : "#18181A",
-                  color: "#FAFAF8",
-                  opacity: canAddToCart && inStock ? 1 : 0.6,
-                  cursor: canAddToCart && inStock ? "pointer" : "not-allowed",
-                }}
+                style={{ background: "#0A0A0A", color: "#FAFAF8" }}
               >
                 <span className="flex items-center gap-2">
                   {addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? (
                     <>Ajouter<span className="opacity-40">·</span>{selectedColor || ""}<span className="opacity-40">·</span>{selectedOptions[product.options?.find((o) => ["size", "taille", "pointure"].includes(o.title?.toLowerCase() || ""))?.id || ""] || ""}</>
-                  ) : (
-                    <>
-                      {missingOptions.length > 0 ? "Sélectionner une taille" : "Épuisé"}
-                    </>
-                  )}
+                  ) : "Sélectionner une taille"}
                 </span>
                 {priceLabel && <span className="tracking-[0.04em]">{priceLabel}</span>}
               </button>
@@ -735,24 +922,40 @@ export default function ProductDetail({ product }: { product: Product }) {
               }}
             >
               <button
-                onClick={handleAddToCart}
-                disabled={!canAddToCart || addingToCart || !inStock}
+                onClick={canAddToCart && inStock ? handleAddToCart : () => setQuickSelectOpen(true)}
                 aria-busy={addingToCart}
                 className="w-full h-[52px] flex items-center justify-between px-5 text-[11px] font-medium uppercase tracking-[0.2em] border-none cursor-pointer"
-                style={{
-                  background: canAddToCart && inStock ? "#0A0A0A" : "#18181A",
-                  color: "#FAFAF8",
-                  opacity: canAddToCart && inStock ? 1 : 0.6,
-                  cursor: canAddToCart && inStock ? "pointer" : "not-allowed",
-                }}
+                style={{ background: "#0A0A0A", color: "#FAFAF8" }}
               >
-                <span>{addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? `Ajouter · ${selectedColor || ""}` : missingOptions.length > 0 ? "Sélectionner une taille" : "Épuisé"}</span>
+                <span>{addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? `Ajouter · ${selectedColor || ""}` : "Sélectionner une taille"}</span>
                 {priceLabel && <span className="tracking-[0.04em]">{priceLabel}</span>}
               </button>
             </div>
           </div>,
           document.body
         )}
+
+      {/* Quick Select Drawer */}
+      {typeof document !== "undefined" && (
+        <QuickSelectDrawer
+          open={quickSelectOpen}
+          onClose={() => setQuickSelectOpen(false)}
+          product={product}
+          onAddToCart={async (variantId) => {
+            setAddingToCart(true); setAddError("")
+            try {
+              await addItem(variantId, 1)
+              if (!isMounted.current) return
+              setAddedToCart(true)
+              if (addedTimerRef.current) clearTimeout(addedTimerRef.current)
+              addedTimerRef.current = setTimeout(() => { if (isMounted.current) { setAddedToCart(false); setQuickSelectOpen(false) } }, 1500)
+            } catch (err) { if (isMounted.current) setAddError(err instanceof Error ? err.message : "Erreur") }
+            finally { if (isMounted.current) setAddingToCart(false) }
+          }}
+          adding={addingToCart}
+          added={addedToCart}
+        />
+      )}
     </div>
   )
 }
