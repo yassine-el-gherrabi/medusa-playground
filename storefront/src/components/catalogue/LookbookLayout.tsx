@@ -34,17 +34,8 @@ export default function LookbookLayout({ products }: LookbookLayoutProps) {
             key={product.id}
             className="pb-12 lg:pb-[120px] px-3.5 lg:px-16"
           >
+            {/* Desktop: alternating layout via CSS direction trick */}
             <div
-              className="grid grid-cols-1 items-center"
-              style={{
-                gap: "clamp(20px, 4vw, 80px)",
-                ...(typeof window !== "undefined" || true
-                  ? {}
-                  : {}),
-              }}
-            >
-              {/* Desktop: alternating layout via CSS direction trick */}
-              <div
                 className="hidden lg:grid items-center"
                 style={{
                   gridTemplateColumns: isEven ? "3fr 2fr" : "2fr 3fr",
@@ -245,7 +236,6 @@ export default function LookbookLayout({ products }: LookbookLayoutProps) {
                   </Link>
                 </div>
               </div>
-            </div>
           </article>
         )
       })}
