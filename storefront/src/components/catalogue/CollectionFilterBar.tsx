@@ -3,6 +3,32 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useScrollLock } from "@/hooks/useScrollLock"
 import { useEscapeKey } from "@/hooks/useEscapeKey"
+import { COLOR_MAP } from "@/lib/product-helpers"
+
+// ── Types ──
+
+export type FilterState = {
+  sort: string
+  categories: string[]
+  sizes: string[]
+  colors: string[]
+  priceRange: [number, number] | null
+}
+
+export type FilterOptions = {
+  categories: string[]
+  sizeGroups: { label: string; sizes: string[] }[]
+  colors: { name: string; hex: string }[]
+  priceRange: [number, number]
+}
+
+export const DEFAULT_FILTERS: FilterState = {
+  sort: "-created_at",
+  categories: [],
+  sizes: [],
+  colors: [],
+  priceRange: null,
+}
 
 type CollectionFilterBarProps = {
   sortOrder: string
@@ -14,14 +40,31 @@ type CollectionFilterBarProps = {
   onSubcategoryChange?: (id: string) => void
   productCount?: number
   showDensity?: boolean
+  filterOptions: FilterOptions
+  activeFilters: FilterState
+  onFiltersApply: (filters: FilterState) => void
 }
 
 const SORT_OPTIONS = [
-  { value: "-created_at", label: "Nouveautés" },
-  { value: "created_at", label: "Plus anciens" },
-  { value: "variants.calculated_price", label: "Prix croissant" },
+  { value: "-created_at", label: "Plus récent" },
+  { value: "created_at", label: "Moins récent" },
   { value: "-variants.calculated_price", label: "Prix décroissant" },
+  { value: "variants.calculated_price", label: "Prix croissant" },
 ]
+
+function countActiveFilters(filters: FilterState, defaultPriceRange: [number, number]): number {
+  let count = 0
+  count += filters.categories.length
+  count += filters.sizes.length
+  count += filters.colors.length
+  if (
+    filters.priceRange &&
+    (filters.priceRange[0] !== defaultPriceRange[0] || filters.priceRange[1] !== defaultPriceRange[1])
+  ) {
+    count += 1
+  }
+  return count
+}
 
 export default function CollectionFilterBar({
   sortOrder,
@@ -33,6 +76,9 @@ export default function CollectionFilterBar({
   onSubcategoryChange,
   productCount,
   showDensity = true,
+  filterOptions,
+  activeFilters,
+  onFiltersApply,
 }: CollectionFilterBarProps) {
   const [sortOpen, setSortOpen] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -47,7 +93,21 @@ export default function CollectionFilterBar({
     return () => document.removeEventListener("click", handleClick)
   }, [sortOpen])
 
-  const currentLabel = SORT_OPTIONS.find((o) => o.value === sortOrder)?.label ?? "Nouveautés"
+  const currentLabel = SORT_OPTIONS.find((o) => o.value === sortOrder)?.label ?? "Plus récent"
+  const badgeCount = countActiveFilters(activeFilters, filterOptions.priceRange)
+
+  const handleQuickSort = (value: string) => {
+    onSortChange(value)
+    setSortOpen(false)
+  }
+
+  const handleFiltersApply = useCallback(
+    (filters: FilterState) => {
+      onFiltersApply(filters)
+      setFiltersOpen(false)
+    },
+    [onFiltersApply]
+  )
 
   return (
     <>
@@ -101,6 +161,11 @@ export default function CollectionFilterBar({
                 <path d="M1 3h10M3 6h6M5 9h2" stroke="currentColor" strokeWidth="1.4" />
               </svg>
               Filtres
+              {badgeCount > 0 && (
+                <span className="ml-0.5 flex items-center justify-center w-[18px] h-[18px] bg-[var(--color-ink)] text-[var(--color-surface)] rounded-full text-[9px] font-mono leading-none">
+                  {badgeCount}
+                </span>
+              )}
             </button>
 
             {productCount !== undefined && (
@@ -155,7 +220,7 @@ export default function CollectionFilterBar({
                   {SORT_OPTIONS.map((option) => (
                     <button
                       key={option.value}
-                      onClick={() => { onSortChange(option.value); setSortOpen(false) }}
+                      onClick={() => handleQuickSort(option.value)}
                       className="block w-full text-left py-3 px-4 text-[13px] cursor-pointer transition-colors border-none"
                       style={{
                         background: sortOrder === option.value ? "var(--color-ink)" : "white",
@@ -174,37 +239,88 @@ export default function CollectionFilterBar({
       </div>
 
       {/* Filters drawer */}
-      <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} />
+      <FiltersDrawer
+        open={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        filterOptions={filterOptions}
+        activeFilters={activeFilters}
+        onApply={handleFiltersApply}
+      />
     </>
   )
 }
 
 // ── Filters Drawer ──
 
-function FiltersDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+type FiltersDrawerProps = {
+  open: boolean
+  onClose: () => void
+  filterOptions: FilterOptions
+  activeFilters: FilterState
+  onApply: (filters: FilterState) => void
+}
+
+function FiltersDrawer({ open, onClose, filterOptions, activeFilters, onApply }: FiltersDrawerProps) {
   useScrollLock(open)
   useEscapeKey(open, useCallback(() => onClose(), [onClose]))
 
-  const filterGroups = [
-    { title: "Catégorie", options: ["T-Shirts", "Sweats", "Vestes", "Pantalons", "Accessoires"] },
-    { title: "Taille", options: ["XS", "S", "M", "L", "XL", "XXL"] },
-    { title: "Couleur", options: ["Noir", "Crème", "Anthracite", "Gris", "Marine"] },
-    { title: "Prix", options: ["< 100 €", "100–200 €", "200–400 €", "> 400 €"] },
-  ]
+  // Draft state — local copy that only commits on "Voir les résultats"
+  const [draft, setDraft] = useState<FilterState>(activeFilters)
 
-  const [selected, setSelected] = useState<Record<string, string[]>>({})
+  // Sync draft when drawer opens
+  useEffect(() => {
+    if (open) setDraft(activeFilters)
+  }, [open, activeFilters])
 
-  const toggle = (group: string, value: string) => {
-    setSelected((prev) => {
-      const current = prev[group] || []
-      return {
-        ...prev,
-        [group]: current.includes(value) ? current.filter((v) => v !== value) : [...current, value],
-      }
+  const draftActiveCount = countActiveFilters(draft, filterOptions.priceRange)
+
+  // ── Draft updaters ──
+
+  const setDraftSort = (value: string) => {
+    setDraft((prev) => ({ ...prev, sort: value }))
+  }
+
+  const toggleCategory = (cat: string) => {
+    setDraft((prev) => ({
+      ...prev,
+      categories: prev.categories.includes(cat)
+        ? prev.categories.filter((c) => c !== cat)
+        : [...prev.categories, cat],
+    }))
+  }
+
+  const toggleSize = (size: string) => {
+    setDraft((prev) => ({
+      ...prev,
+      sizes: prev.sizes.includes(size)
+        ? prev.sizes.filter((s) => s !== size)
+        : [...prev.sizes, size],
+    }))
+  }
+
+  const toggleColor = (color: string) => {
+    setDraft((prev) => ({
+      ...prev,
+      colors: prev.colors.includes(color)
+        ? prev.colors.filter((c) => c !== color)
+        : [...prev.colors, color],
+    }))
+  }
+
+  const setPriceRange = (range: [number, number]) => {
+    setDraft((prev) => ({ ...prev, priceRange: range }))
+  }
+
+  const clearAll = () => {
+    setDraft({
+      ...DEFAULT_FILTERS,
+      sort: draft.sort, // keep current sort when clearing
     })
   }
 
-  const activeCount = Object.values(selected).flat().length
+  const handleApply = () => {
+    onApply(draft)
+  }
 
   return (
     <>
@@ -237,18 +353,59 @@ function FiltersDrawer({ open, onClose }: { open: boolean; onClose: () => void }
           </button>
         </div>
 
-        {/* Filter groups */}
+        {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-6 lg:px-9">
-          {filterGroups.map((group) => (
-            <div key={group.title} className="pb-6 mb-6 border-b border-[var(--color-border)]">
-              <p className="font-mono text-[11px] tracking-[0.18em] uppercase mb-4">{group.title}</p>
+
+          {/* Section: TRIER PAR */}
+          <div className="pb-6 mb-6 border-b border-[var(--color-border)]">
+            <p className="font-mono text-[11px] tracking-[0.18em] uppercase mb-4">Trier par</p>
+            <div className="flex flex-col">
+              {SORT_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setDraftSort(option.value)}
+                  className="flex items-center gap-3 py-3 border-b border-[var(--color-border)] text-[13px] cursor-pointer bg-transparent border-x-0 border-t-0 text-left"
+                >
+                  <span
+                    className="w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center shrink-0"
+                    style={{
+                      borderColor: draft.sort === option.value ? "var(--color-ink)" : "var(--color-border)",
+                    }}
+                  >
+                    {draft.sort === option.value && (
+                      <span className="w-[10px] h-[10px] rounded-full bg-[var(--color-ink)]" />
+                    )}
+                  </span>
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Section: PRIX */}
+          {filterOptions.priceRange[0] < filterOptions.priceRange[1] && (
+            <div className="pb-6 mb-6 border-b border-[var(--color-border)]">
+              <p className="font-mono text-[11px] tracking-[0.18em] uppercase mb-4">Prix</p>
+              <PriceRangeSlider
+                min={filterOptions.priceRange[0]}
+                max={filterOptions.priceRange[1]}
+                value={draft.priceRange || filterOptions.priceRange}
+                onChange={setPriceRange}
+              />
+            </div>
+          )}
+
+          {/* Section: CATÉGORIE */}
+          {filterOptions.categories.length > 0 && (
+            <div className="pb-6 mb-6 border-b border-[var(--color-border)]">
+              <p className="font-mono text-[11px] tracking-[0.18em] uppercase mb-4">Catégorie</p>
               <div className="flex flex-wrap gap-2">
-                {group.options.map((opt) => {
-                  const isActive = (selected[group.title] || []).includes(opt)
+                {filterOptions.categories.map((cat) => {
+                  const isActive = draft.categories.includes(cat)
                   return (
                     <button
-                      key={opt}
-                      onClick={() => toggle(group.title, opt)}
+                      key={cat}
+                      onClick={() => toggleCategory(cat)}
                       className="py-2.5 px-3.5 text-[13px] cursor-pointer transition-colors"
                       style={{
                         background: isActive ? "var(--color-ink)" : "transparent",
@@ -256,26 +413,91 @@ function FiltersDrawer({ open, onClose }: { open: boolean; onClose: () => void }
                         border: isActive ? "1px solid var(--color-ink)" : "1px solid var(--color-border)",
                       }}
                     >
-                      {opt}
+                      {cat}
                     </button>
                   )
                 })}
               </div>
             </div>
-          ))}
+          )}
+
+          {/* Section: TAILLE (grouped) */}
+          {filterOptions.sizeGroups.length > 0 && (
+            <div className="pb-6 mb-6 border-b border-[var(--color-border)]">
+              {filterOptions.sizeGroups.map((group) => (
+                <div key={group.label} className="mb-4 last:mb-0">
+                  <p className="font-mono text-[10px] tracking-[0.18em] uppercase mb-3 text-[var(--color-muted)]">
+                    Taille · {group.label}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {group.sizes.map((size) => {
+                      const isActive = draft.sizes.includes(size)
+                      return (
+                        <button
+                          key={size}
+                          onClick={() => toggleSize(size)}
+                          className="min-w-[42px] py-2.5 px-3 text-[13px] text-center cursor-pointer transition-colors"
+                          style={{
+                            background: isActive ? "var(--color-ink)" : "transparent",
+                            color: isActive ? "var(--color-surface)" : "var(--color-ink)",
+                            border: isActive ? "1px solid var(--color-ink)" : "1px solid var(--color-border)",
+                          }}
+                        >
+                          {size}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Section: COULEUR */}
+          {filterOptions.colors.length > 0 && (
+            <div className="pb-6 mb-6 border-b border-[var(--color-border)]">
+              <p className="font-mono text-[11px] tracking-[0.18em] uppercase mb-4">Couleur</p>
+              <div className="flex flex-wrap gap-2">
+                {filterOptions.colors.map((color) => {
+                  const isActive = draft.colors.includes(color.name)
+                  return (
+                    <button
+                      key={color.name}
+                      onClick={() => toggleColor(color.name)}
+                      className="flex items-center gap-2 py-2.5 px-3.5 text-[13px] cursor-pointer transition-colors"
+                      style={{
+                        background: isActive ? "var(--color-ink)" : "transparent",
+                        color: isActive ? "var(--color-surface)" : "var(--color-ink)",
+                        border: isActive ? "1px solid var(--color-ink)" : "1px solid var(--color-border)",
+                      }}
+                    >
+                      <span
+                        className="w-3 h-3 shrink-0"
+                        style={{
+                          backgroundColor: color.hex,
+                          border: isActive ? "1.5px solid white" : "1px solid var(--color-border)",
+                        }}
+                      />
+                      {color.name}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Bottom CTA */}
         <div className="shrink-0 px-6 lg:px-9 py-6 border-t border-[var(--color-border)]">
           <div className="grid grid-cols-[1fr_2fr] gap-2.5">
             <button
-              onClick={() => setSelected({})}
+              onClick={clearAll}
               className="bg-transparent border border-[var(--color-ink)] py-4 px-4 font-mono text-[10px] tracking-[0.22em] uppercase cursor-pointer"
             >
-              Effacer{activeCount > 0 ? ` (${activeCount})` : ""}
+              Effacer{draftActiveCount > 0 ? ` (${draftActiveCount})` : ""}
             </button>
             <button
-              onClick={onClose}
+              onClick={handleApply}
               className="border-none py-4 px-4 font-mono text-[12px] font-medium tracking-[0.22em] uppercase cursor-pointer"
               style={{ background: "var(--color-ink)", color: "var(--color-surface)" }}
             >
@@ -285,6 +507,77 @@ function FiltersDrawer({ open, onClose }: { open: boolean; onClose: () => void }
         </div>
       </div>
     </>
+  )
+}
+
+// ── Price Range Slider ──
+
+function PriceRangeSlider({
+  min,
+  max,
+  value,
+  onChange,
+}: {
+  min: number
+  max: number
+  value: [number, number]
+  onChange: (range: [number, number]) => void
+}) {
+  const step = 10
+  const [localMin, localMax] = value
+
+  const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newMin = Math.min(Number(e.target.value), localMax - step)
+    onChange([newMin, localMax])
+  }
+
+  const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newMax = Math.max(Number(e.target.value), localMin + step)
+    onChange([localMin, newMax])
+  }
+
+  const leftPercent = ((localMin - min) / (max - min)) * 100
+  const rightPercent = ((localMax - min) / (max - min)) * 100
+
+  return (
+    <div className="pt-2 pb-1">
+      {/* Track */}
+      <div className="relative h-[2px] w-full bg-[var(--color-border)] my-4">
+        {/* Active range */}
+        <div
+          className="absolute h-full bg-[var(--color-ink)]"
+          style={{ left: `${leftPercent}%`, width: `${rightPercent - leftPercent}%` }}
+        />
+      </div>
+
+      {/* Inputs stacked */}
+      <div className="relative h-4 -mt-6">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={localMin}
+          onChange={handleMinChange}
+          className="filter-range-input absolute w-full h-full appearance-none bg-transparent pointer-events-none z-[3]"
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={localMax}
+          onChange={handleMaxChange}
+          className="filter-range-input absolute w-full h-full appearance-none bg-transparent pointer-events-none z-[4]"
+        />
+      </div>
+
+      {/* Labels */}
+      <div className="flex justify-between mt-3">
+        <span className="font-mono text-[11px] text-[var(--color-muted)]">{localMin} €</span>
+        <span className="font-mono text-[11px] text-[var(--color-muted)]">{localMax} €</span>
+      </div>
+    </div>
   )
 }
 

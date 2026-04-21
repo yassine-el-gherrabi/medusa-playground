@@ -1,16 +1,21 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { useRegion } from "@/providers/RegionProvider"
 import { useProductList } from "@/hooks/useProductList"
 import { useDensity } from "@/hooks/useDensity"
-import CollectionFilterBar from "@/components/catalogue/CollectionFilterBar"
+import CollectionFilterBar, {
+  DEFAULT_FILTERS,
+  type FilterState,
+  type FilterOptions,
+} from "@/components/catalogue/CollectionFilterBar"
 import ProductGrid from "@/components/catalogue/ProductGrid"
 import MidLayout from "@/components/catalogue/MidLayout"
 import LookbookLayout from "@/components/catalogue/LookbookLayout"
 import ShopTheShoot from "@/components/catalogue/ShopTheShoot"
 import ProductCard from "@/components/product/ProductCard"
+import { COLOR_MAP } from "@/lib/product-helpers"
 import { sdk } from "@/lib/sdk"
 import { PRODUCT_FIELDS } from "@/lib/medusa/products"
 import type { Product } from "@/types"
@@ -35,6 +40,121 @@ function getLayoutMode(count: number) {
   return "special" as const
 }
 
+// ── Extract filter options from products ──
+
+function buildFilterOptions(allProducts: Product[]): FilterOptions {
+  // Categories
+  const categories = [
+    ...new Set(
+      allProducts
+        .flatMap((p) => (p.categories || []).map((c) => c.name))
+        .filter(Boolean)
+    ),
+  ]
+
+  // Size groups — group by product's primary category
+  const sizeMap: Record<string, Set<string>> = {}
+  allProducts.forEach((p) => {
+    const catName = p.categories?.[0]?.name || "Autre"
+    const sizeOpt = p.options?.find((o) =>
+      ["taille", "size", "pointure"].includes(o.title?.toLowerCase() || "")
+    )
+    if (sizeOpt?.values) {
+      if (!sizeMap[catName]) sizeMap[catName] = new Set()
+      sizeOpt.values.forEach((v) => sizeMap[catName].add(v.value))
+    }
+  })
+  const sizeGroups = Object.entries(sizeMap).map(([label, sizes]) => ({
+    label,
+    sizes: [...sizes],
+  }))
+
+  // Colors
+  const colorSet = new Set<string>()
+  allProducts.forEach((p) => {
+    const colorOpt = p.options?.find((o) =>
+      ["couleur", "color"].includes(o.title?.toLowerCase() || "")
+    )
+    colorOpt?.values?.forEach((v) => colorSet.add(v.value))
+  })
+  const colors = [...colorSet].map((name) => ({
+    name,
+    hex: COLOR_MAP[name] || "#ccc",
+  }))
+
+  // Price range
+  const prices = allProducts.flatMap((p) =>
+    (p.variants || [])
+      .map((v) => v.calculated_price?.calculated_amount)
+      .filter((x): x is number => x != null)
+  )
+  const priceRange: [number, number] =
+    prices.length > 0
+      ? [Math.floor(Math.min(...prices)), Math.ceil(Math.max(...prices))]
+      : [0, 500]
+
+  return { categories, sizeGroups, colors, priceRange }
+}
+
+// ── Client-side product filtering ──
+
+function applyClientFilters(products: Product[], filters: FilterState, defaultPriceRange: [number, number]): Product[] {
+  let result = products
+
+  // Filter by category name
+  if (filters.categories.length > 0) {
+    result = result.filter((p) =>
+      p.categories?.some((c) => filters.categories.includes(c.name))
+    )
+  }
+
+  // Filter by size
+  if (filters.sizes.length > 0) {
+    result = result.filter((p) => {
+      const sizeOpt = p.options?.find((o) =>
+        ["taille", "size", "pointure"].includes(o.title?.toLowerCase() || "")
+      )
+      return sizeOpt?.values?.some((v) => filters.sizes.includes(v.value))
+    })
+  }
+
+  // Filter by color
+  if (filters.colors.length > 0) {
+    result = result.filter((p) => {
+      const colorOpt = p.options?.find((o) =>
+        ["couleur", "color"].includes(o.title?.toLowerCase() || "")
+      )
+      return colorOpt?.values?.some((v) => filters.colors.includes(v.value))
+    })
+  }
+
+  // Filter by price range
+  if (
+    filters.priceRange &&
+    (filters.priceRange[0] !== defaultPriceRange[0] ||
+      filters.priceRange[1] !== defaultPriceRange[1])
+  ) {
+    const [min, max] = filters.priceRange
+    result = result.filter((p) => {
+      const price = p.variants?.[0]?.calculated_price?.calculated_amount
+      return price != null && price >= min && price <= max
+    })
+  }
+
+  return result
+}
+
+function hasClientFilters(filters: FilterState, defaultPriceRange: [number, number]): boolean {
+  return (
+    filters.sizes.length > 0 ||
+    filters.colors.length > 0 ||
+    filters.categories.length > 0 ||
+    (filters.priceRange != null &&
+      (filters.priceRange[0] !== defaultPriceRange[0] ||
+        filters.priceRange[1] !== defaultPriceRange[1]))
+  )
+}
+
 export default function CatalogueContent({
   initialProducts,
   initialCount,
@@ -49,6 +169,11 @@ export default function CatalogueContent({
   const [sortOrder, setSortOrder] = useState("-created_at")
   const [activeSubcategory, setActiveSubcategory] = useState("")
   const [shootProducts, setShootProducts] = useState<Product[]>([])
+  const [activeFilters, setActiveFilters] = useState<FilterState>({
+    ...DEFAULT_FILTERS,
+  })
+  // Track whether we've fetched all products for client filtering
+  const [allProducts, setAllProducts] = useState<Product[] | null>(null)
 
   // Fetch shoot products when shootData is provided
   useEffect(() => {
@@ -65,13 +190,21 @@ export default function CatalogueContent({
         if (!cancelled) setShootProducts(products as Product[])
       })
       .catch(() => {})
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [shootData, region?.id])
 
   const layoutMode = getLayoutMode(initialCount)
 
   const { products, loading, loadingMore, hasMore, fetchProducts, loadMore } =
     useProductList({ products: initialProducts, count: initialCount })
+
+  // Extract filter options from initial products
+  const filterOptions = useMemo(
+    () => buildFilterOptions(initialProducts),
+    [initialProducts]
+  )
 
   // Build fetch params
   const buildParams = useCallback(
@@ -105,6 +238,52 @@ export default function CatalogueContent({
     [region?.id, sortOrder, activeSubcategory, collectionId, categoryId]
   )
 
+  // Fetch ALL products when client filters are active
+  useEffect(() => {
+    if (!region?.id) return
+    if (!hasClientFilters(activeFilters, filterOptions.priceRange)) {
+      setAllProducts(null)
+      return
+    }
+
+    let cancelled = false
+    const fetchAll = async () => {
+      try {
+        const query: Record<string, unknown> = {
+          limit: 200,
+          offset: 0,
+          region_id: region.id,
+          fields: PRODUCT_FIELDS,
+          order: sortOrder,
+        }
+        if (collectionId) query.collection_id = [collectionId]
+        if (activeSubcategory) {
+          query.category_id = [activeSubcategory]
+        } else if (categoryId) {
+          query.category_id = [categoryId]
+        }
+
+        const { products: all } = await sdk.store.product.list(query)
+        if (!cancelled) setAllProducts((all as Product[]) || [])
+      } catch {
+        // Fall back to current products on error
+      }
+    }
+
+    fetchAll()
+    return () => {
+      cancelled = true
+    }
+  }, [
+    region?.id,
+    activeFilters,
+    sortOrder,
+    activeSubcategory,
+    collectionId,
+    categoryId,
+    filterOptions.priceRange,
+  ])
+
   // Re-fetch when sort or subcategory changes
   useEffect(() => {
     if (!region) return
@@ -112,13 +291,33 @@ export default function CatalogueContent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortOrder, activeSubcategory, region])
 
+  // Apply client-side filters
+  const displayProducts = useMemo(() => {
+    const useClientFilter = hasClientFilters(activeFilters, filterOptions.priceRange)
+    const source = useClientFilter && allProducts ? allProducts : products
+    if (!useClientFilter) return source
+    return applyClientFilters(source, activeFilters, filterOptions.priceRange)
+  }, [products, allProducts, activeFilters, filterOptions.priceRange])
+
   const handleSortChange = (order: string) => {
     setSortOrder(order)
+    setActiveFilters((prev) => ({ ...prev, sort: order }))
   }
 
   const handleSubcategoryChange = (id: string) => {
     setActiveSubcategory(id)
   }
+
+  const handleFiltersApply = useCallback(
+    (filters: FilterState) => {
+      setActiveFilters(filters)
+      // Sync sort to API-level sort
+      if (filters.sort !== sortOrder) {
+        setSortOrder(filters.sort)
+      }
+    },
+    [sortOrder]
+  )
 
   const handleLoadMore = () => {
     if (!region) return
@@ -126,6 +325,8 @@ export default function CatalogueContent({
   }
 
   const editorialInsert = editorialBlocks?.[0]
+  const displayCount = displayProducts.length
+  const isClientFiltering = hasClientFilters(activeFilters, filterOptions.priceRange)
 
   // --- Layout: 0 products ---
   if (initialCount === 0) {
@@ -180,9 +381,12 @@ export default function CatalogueContent({
           onSortChange={handleSortChange}
           density={density}
           onDensityChange={setDensity}
-          productCount={products.length}
+          productCount={displayCount}
+          filterOptions={filterOptions}
+          activeFilters={activeFilters}
+          onFiltersApply={handleFiltersApply}
         />
-        <MidLayout products={products} density={density} />
+        <MidLayout products={displayProducts} density={density} />
         {shootSection}
       </>
     )
@@ -199,19 +403,34 @@ export default function CatalogueContent({
         subcategories={subcategories}
         activeSubcategory={activeSubcategory}
         onSubcategoryChange={handleSubcategoryChange}
-        productCount={products.length}
+        productCount={displayCount}
+        filterOptions={filterOptions}
+        activeFilters={activeFilters}
+        onFiltersApply={handleFiltersApply}
       />
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="h-5 w-5 border-2 border-[var(--color-border)] border-t-[var(--color-ink)] rounded-full animate-spin" />
         </div>
+      ) : displayProducts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 px-5 text-center">
+          <p className="font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--color-muted)] mb-4">
+            Aucun produit ne correspond à ces filtres
+          </p>
+          <button
+            onClick={() => handleFiltersApply(DEFAULT_FILTERS)}
+            className="font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--color-ink)] border-b border-[var(--color-ink)] pb-0.5 hover:opacity-70 transition-opacity bg-transparent border-t-0 border-x-0 cursor-pointer"
+          >
+            Réinitialiser les filtres
+          </button>
+        </div>
       ) : (
         <ProductGrid
-          products={products}
+          products={displayProducts}
           density={density}
           editorialInsert={editorialInsert}
           loadingMore={loadingMore}
-          hasMore={hasMore}
+          hasMore={!isClientFiltering && hasMore}
           onLoadMore={handleLoadMore}
         />
       )}
