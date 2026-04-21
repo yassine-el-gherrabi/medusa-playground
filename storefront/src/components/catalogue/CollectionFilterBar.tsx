@@ -150,7 +150,7 @@ export default function CollectionFilterBar({
           <div className="flex items-center gap-3 lg:gap-4">
             <button
               onClick={() => setFiltersOpen(true)}
-              className="flex items-center gap-2.5 bg-transparent border border-[var(--color-ink)] px-3.5 py-2.5 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer hover:bg-[var(--color-ink)] hover:text-[var(--color-surface)] transition-colors"
+              className="flex items-center gap-2.5 bg-transparent border border-transparent px-3.5 py-2.5 font-mono text-[10px] tracking-[0.2em] uppercase cursor-pointer hover:border-[var(--color-ink)] transition-colors"
               aria-label="Ouvrir les filtres"
             >
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
