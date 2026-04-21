@@ -27,7 +27,7 @@ export default function ColorSwatches({
 }: ColorSwatchesProps) {
   const thumbW = variant === "default" ? "w-20" : "w-16"
   const thumbH = variant === "default" ? "h-[104px]" : "h-20"
-  const thumbSizes = variant === "default" ? "56px" : "64px"
+  const thumbSizes = variant === "default" ? "240px" : "192px"
 
   return (
     <div className="flex flex-wrap gap-2.5">
