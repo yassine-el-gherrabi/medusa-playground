@@ -133,7 +133,7 @@ export default function ProductOptions({
             Guide des tailles
           </AnimatedLink>
         </div>
-        <div className="flex bg-white/80 backdrop-blur-md rounded-[2px] border border-black/10 overflow-hidden">
+        <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${colCount}, 1fr)` }}>
           {values.map((v) => {
             const isSelected = selectedValue === v.value
             const inStock = isOptionInStock(option.id, v.value)
@@ -142,15 +142,20 @@ export default function ProductOptions({
                 key={v.id}
                 onClick={() => inStock && onOptionChange(option.id, v.value)}
                 disabled={!inStock}
-                className={`flex-1 h-[46px] text-[13px] font-medium tracking-[0.02em] transition-colors border-r border-black/10 last:border-r-0 cursor-pointer ${
+                className={`relative h-[46px] text-[13px] font-medium tracking-[0.02em] transition-all border cursor-pointer ${
                   isSelected
-                    ? "bg-black/10 text-[#0A0A0A]"
+                    ? "bg-[#0A0A0A] text-[#FAFAF8] border-[#0A0A0A]"
                     : !inStock
-                      ? "text-black/20 line-through cursor-not-allowed"
-                      : "text-black/60 hover:text-[#0A0A0A] hover:bg-black/5"
+                      ? "bg-transparent text-[#A3A19C] border-[#E3E1DC] cursor-not-allowed"
+                      : "bg-transparent text-[#0A0A0A] border-[#E3E1DC] hover:border-[#0A0A0A]"
                 }`}
               >
                 {v.value}
+                {!inStock && (
+                  <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <line x1="0" y1="100" x2="100" y2="0" stroke="#E3E1DC" strokeWidth="1" />
+                  </svg>
+                )}
               </button>
             )
           })}
