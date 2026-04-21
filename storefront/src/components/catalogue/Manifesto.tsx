@@ -14,7 +14,7 @@ export default function Manifesto({
   body,
 }: ManifestoProps) {
   return (
-    <section className="bg-[var(--color-surface)]">
+    <section>
       {/* Desktop: 2-column grid / Mobile: stacked */}
       <div className="hidden lg:grid grid-cols-[280px_1fr] gap-20 py-[120px] px-16">
         {/* Left column */}
