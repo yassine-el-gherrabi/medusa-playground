@@ -25,7 +25,7 @@ export default function CollectionHero({
   return (
     <section
       data-header-theme="dark"
-      className="relative -mt-16 overflow-hidden bg-[var(--color-ink)] h-[78vh] lg:h-[92vh] min-h-[560px] lg:min-h-[720px] max-h-[720px] lg:max-h-[1080px]"
+      className="relative -mt-16 overflow-hidden bg-[var(--color-ink)] h-[55vh] lg:h-[60vh] min-h-[400px] lg:min-h-[480px] max-h-[560px] lg:max-h-[680px]"
     >
       {/* Background */}
       {imageUrl ? (
