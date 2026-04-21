@@ -882,18 +882,12 @@ export default function ProductDetail({ product }: { product: Product }) {
               <div className="flex items-center gap-6">
                 {priceLabel && <span className="text-[14px] font-medium">{priceLabel}</span>}
                 <button
-                  onClick={handleAddToCart}
-                  disabled={!canAddToCart || addingToCart || !inStock}
+                  onClick={canAddToCart && inStock ? handleAddToCart : () => setQuickSelectOpen(true)}
                   aria-busy={addingToCart}
                   className="h-[40px] px-6 text-[10px] font-medium uppercase tracking-[0.18em] border-none cursor-pointer transition-all"
-                  style={{
-                    background: canAddToCart && inStock ? "#0A0A0A" : "#18181A",
-                    color: "#FAFAF8",
-                    opacity: canAddToCart && inStock ? 1 : 0.6,
-                    cursor: canAddToCart && inStock ? "pointer" : "not-allowed",
-                  }}
+                  style={{ background: "#0A0A0A", color: "#FAFAF8" }}
                 >
-                  {addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? "Ajouter au panier" : missingOptions.length > 0 ? `Sélectionnez ${missingOptions.join(" et ")}` : "Épuisé"}
+                  {addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? "Ajouter au panier" : "Sélectionner une taille"}
                 </button>
               </div>
             </div>
