@@ -11,13 +11,13 @@ import QuickSelectDrawer from "@/components/product/QuickSelectDrawer"
 import { InfoOverlay, MobileInfoAccordion, INFO_TABS } from "@/components/product/ProductInfo"
 import type { ProductImagesHandle } from "@/components/product/ProductImages"
 import type { EditorialBlock } from "@/components/product/ProductImages"
-import { formatPrice, getProductPrice } from "@/lib/utils"
+import { formatPrice } from "@/lib/utils"
 import { useCart } from "@/providers/CartProvider"
 import { useRegion } from "@/providers/RegionProvider"
 import { DEFAULT_REGION } from "@/lib/constants"
 import { PRODUCT_FIELDS } from "@/lib/medusa/products"
 import { sdk } from "@/lib/sdk"
-import { getColorImages, getCompareAtPrice } from "@/lib/product-helpers"
+import { getColorImages, getCompareAtPrice, isProductFullyOOS } from "@/lib/product-helpers"
 import type { Product, ProductMetadata } from "@/types"
 
 // ── Recently Viewed (localStorage — stores IDs only) ──
@@ -140,6 +140,8 @@ export default function ProductDetail({ product }: { product: Product }) {
   const categoryHandle = product.categories?.[0]?.handle
   const modelInfo = metadata?.model_info
   const editorial = metadata?.editorial as EditorialBlock[] | undefined
+
+  const allSoldOut = isProductFullyOOS(product)
 
   const price = selectedVariant?.calculated_price ?? product.variants?.[0]?.calculated_price
   const priceLabel = safeFormatPrice(price?.calculated_amount, price?.currency_code)
@@ -295,12 +297,19 @@ export default function ProductDetail({ product }: { product: Product }) {
     return "Ajouter au panier"
   }, [addingToCart, addedToCart, canAddToCart, inStock, missingOptions])
 
-  const onCtaClick = canAddToCart && inStock ? () => handleAddToCart() : () => setQuickSelectOpen(true)
+  const onCtaClick = canAddToCart && inStock
+    ? () => handleAddToCart()
+    : canAddToCart && !inStock
+      ? undefined  // Épuisé — do nothing
+      : () => setQuickSelectOpen(true)  // Missing options — open drawer
 
   // ── Inline CTA labels ──
-  const mobileCta = addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? `Ajouter · ${selectedColor || ""}` : "Sélectionner une taille"
-  const desktopCtaContent = addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? (
-    <>Ajouter<span className="opacity-40">·</span>{selectedColor || ""}<span className="opacity-40">·</span>{selectedSize}</>
+  const isEpuise = canAddToCart && !inStock
+  const mobileCta = addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : isEpuise ? "Épuisé" : canAddToCart && inStock
+    ? `Ajouter${selectedColor ? ` · ${selectedColor}` : ""}${selectedSize ? ` · ${selectedSize}` : ""}`
+    : "Sélectionner une taille"
+  const desktopCtaContent = addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : isEpuise ? "Épuisé" : canAddToCart && inStock ? (
+    <>Ajouter{selectedColor && <><span className="opacity-40">·</span>{selectedColor}</>}{selectedSize && <><span className="opacity-40">·</span>{selectedSize}</>}</>
   ) : "Sélectionner une taille"
 
   return (
@@ -341,13 +350,17 @@ export default function ProductDetail({ product }: { product: Product }) {
 
             <div className="h-px bg-[var(--color-border)] my-5" />
 
+            {allSoldOut && (
+              <p className="text-[12px] font-mono uppercase tracking-[0.14em] text-red-600 mb-4">Produit épuisé</p>
+            )}
+
             <ProductOptions product={product} selectedOptions={selectedOptions} onOptionChange={onOptionChange} selectedVariant={selectedVariant} modelInfo={modelInfo} />
 
             {/* Low stock indicator */}
             {lowStock && (
               <div className="flex items-center gap-2 mt-2.5 font-mono text-[10px] tracking-[0.14em] uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                Derniers exemplaires — Taille {selectedSize}
+                Derniers exemplaires{selectedSize ? ` — Taille ${selectedSize}` : ""}
               </div>
             )}
 
@@ -358,16 +371,16 @@ export default function ProductDetail({ product }: { product: Product }) {
 
             {/* Mobile inline CTA */}
             <div ref={mobileCtaRef} className="mt-5 lg:hidden">
-              <AddToCartButton onClick={onCtaClick} adding={addingToCart} added={addedToCart} canAdd={canAddToCart && inStock} label={mobileCta} price={priceLabel} />
+              <AddToCartButton onClick={onCtaClick} adding={addingToCart} added={addedToCart} canAdd={canAddToCart && inStock} label={mobileCta} price={priceLabel} disabled={isEpuise} />
             </div>
 
             {/* Desktop inline CTA */}
             <div ref={desktopCtaRef} className="mt-5 hidden lg:block">
               <button
-                onClick={onCtaClick}
+                onClick={onCtaClick || undefined}
                 aria-busy={addingToCart}
-                className="w-full h-[52px] flex items-center justify-between px-5 text-[11px] font-medium uppercase tracking-[0.2em] transition-all cursor-pointer border-none"
-                style={{ background: "var(--color-ink)", color: "var(--color-surface)" }}
+                className={`w-full h-[52px] flex items-center justify-between px-5 text-[11px] font-medium uppercase tracking-[0.2em] transition-all border-none ${isEpuise ? "cursor-not-allowed" : "cursor-pointer"}`}
+                style={{ background: "var(--color-ink)", color: "var(--color-surface)", opacity: isEpuise ? 0.5 : 1 }}
               >
                 <span className="flex items-center gap-2">{desktopCtaContent}</span>
                 {priceLabel && <span className="tracking-[0.04em]">{priceLabel}</span>}
@@ -461,7 +474,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             pointerEvents: showDesktopMiniCta ? "auto" : "none",
           }}
         >
-          <div className="bg-white border-b border-[var(--color-border)] py-3 px-10 flex items-center justify-between">
+          <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] py-3 px-10 flex items-center justify-between">
             <div className="flex items-center gap-6">
               <span className="text-[14px] font-medium tracking-[-0.01em]">{product.title}</span>
               <div className="flex items-center gap-2 text-[12px] text-[var(--color-muted)]">
@@ -473,12 +486,12 @@ export default function ProductDetail({ product }: { product: Product }) {
             <div className="flex items-center gap-6">
               {priceLabel && <span className="text-[14px] font-medium">{priceLabel}</span>}
               <button
-                onClick={onCtaClick}
+                onClick={onCtaClick || undefined}
                 aria-busy={addingToCart}
-                className="h-[40px] px-6 text-[10px] font-medium uppercase tracking-[0.18em] border-none cursor-pointer transition-all"
-                style={{ background: "var(--color-ink)", color: "var(--color-surface)" }}
+                className={`h-[40px] px-6 text-[10px] font-medium uppercase tracking-[0.18em] border-none transition-all ${isEpuise ? "cursor-not-allowed" : "cursor-pointer"}`}
+                style={{ background: "var(--color-ink)", color: "var(--color-surface)", opacity: isEpuise ? 0.5 : 1 }}
               >
-                {addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? "Ajouter au panier" : "Sélectionner une taille"}
+                {addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? "Ajouter au panier" : isEpuise ? "Épuisé" : "Sélectionner une taille"}
               </button>
             </div>
           </div>
@@ -505,7 +518,7 @@ export default function ProductDetail({ product }: { product: Product }) {
               padding: "12px 14px calc(12px + env(safe-area-inset-bottom, 20px))",
             }}
           >
-            <AddToCartButton onClick={onCtaClick} adding={addingToCart} added={addedToCart} canAdd={canAddToCart && inStock} label={mobileCta} price={priceLabel} />
+            <AddToCartButton onClick={onCtaClick} adding={addingToCart} added={addedToCart} canAdd={canAddToCart && inStock} label={mobileCta} price={priceLabel} disabled={isEpuise} />
           </div>
         </div>,
         document.body

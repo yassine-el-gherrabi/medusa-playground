@@ -1,10 +1,10 @@
 "use client"
 
-import Image from "next/image"
 import AnimatedLink from "@/components/ui/AnimatedLink"
 import SizeGrid from "./SizeGrid"
+import ColorSwatches from "./ColorSwatches"
 import type { Product } from "@/types"
-import { COLOR_MAP, getColorImages, getColorThumbnail } from "@/lib/product-helpers"
+import { getColorImages } from "@/lib/product-helpers"
 
 type ProductOptionsProps = {
   product: Product
@@ -52,6 +52,7 @@ export default function ProductOptions({
   const renderColorSwatches = (option: NonNullable<Product["options"]>[number]) => {
     const selectedValue = selectedOptions[option.id]
     const colorImages = getColorImages(product)
+    const colorValues = (option.values || []).map((v) => ({ value: v.value, label: v.value }))
     return (
       <div key={option.id}>
         <div className="flex items-baseline justify-between mb-3.5">
@@ -60,57 +61,14 @@ export default function ProductOptions({
             <span className="text-[13px] text-muted-foreground">{selectedValue}</span>
           )}
         </div>
-        <div className="flex flex-wrap gap-2.5">
-          {option.values?.map((v) => {
-            const isSelected = selectedValue === v.value
-            const thumbnail = getColorThumbnail(colorImages, v.value)
-            const color = COLOR_MAP[v.value] || "#cccccc"
-            const inStock = isOptionInStock(option.id, v.value)
-            return (
-              <button
-                key={v.id}
-                onClick={() => inStock && onOptionChange(option.id, v.value)}
-                disabled={!inStock}
-                title={v.value}
-                aria-label={`Couleur ${v.value}`}
-                className={`relative transition-all cursor-pointer ${
-                  thumbnail ? "w-20 h-[104px]" : "w-10 h-10"
-                } ${!inStock ? "opacity-30 cursor-not-allowed" : ""}`}
-                style={!thumbnail ? {
-                  border: isSelected ? "2px solid var(--color-ink)" : "1px solid var(--color-border)",
-                  boxShadow: isSelected ? "0 0 0 2px var(--color-surface) inset" : "none",
-                } : undefined}
-              >
-                {thumbnail ? (
-                  <Image
-                    src={thumbnail}
-                    alt={v.value}
-                    fill
-                    className="object-cover"
-                    sizes="56px"
-                  />
-                ) : (
-                  <span
-                    className="block w-full h-full"
-                    style={{ backgroundColor: color }}
-                  />
-                )}
-                {thumbnail && (
-                  <span
-                    className={`absolute -bottom-1.5 left-0 right-0 h-px transition-colors ${
-                      isSelected ? "bg-black" : "bg-transparent"
-                    }`}
-                  />
-                )}
-                {!inStock && (
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <span className="block w-[140%] h-px bg-black/40 -rotate-45" />
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
+        <ColorSwatches
+          colors={colorValues}
+          colorImages={colorImages}
+          selected={selectedValue || ""}
+          onSelect={(value) => onOptionChange(option.id, value)}
+          isInStock={(color) => isOptionInStock(option.id, color)}
+          variant="default"
+        />
       </div>
     )
   }

@@ -13,10 +13,10 @@ import {
   buildVariantMap,
   findVariantId,
   isSizeInStock,
+  isColorInStock,
   getColorImages,
-  getColorThumbnail,
-  COLOR_MAP,
 } from "@/lib/product-helpers"
+import ColorSwatches from "./ColorSwatches"
 import type { Product } from "@/types"
 
 type QuickSelectDrawerProps = {
@@ -40,6 +40,7 @@ export default function QuickSelectDrawer({
   const sizes = extractSizes(product)
   const variants = buildVariantMap(product)
   const colorImages = getColorImages(product)
+  const hasColorOption = product.options?.some((o) => ["color", "couleur"].includes(o.title?.toLowerCase() || "")) ?? false
 
   const [drawerColor, setDrawerColor] = useState(colors[0]?.value || "")
   const [drawerSize, setDrawerSize] = useState("")
@@ -77,7 +78,7 @@ export default function QuickSelectDrawer({
         role="dialog"
         aria-label="Sélection rapide"
         aria-modal={open}
-        className={`fixed top-0 right-0 h-full w-full sm:w-[420px] z-[61] bg-white flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${open ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed top-0 right-0 h-full w-full sm:w-[420px] z-[61] bg-[var(--color-surface)] flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${open ? "translate-x-0" : "translate-x-full"}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 h-16 border-b border-[var(--color-border)] shrink-0">
@@ -103,39 +104,20 @@ export default function QuickSelectDrawer({
           </div>
 
           {/* Color swatches */}
-          {colors.length > 0 && (
+          {hasColorOption && colors.length > 0 && (
             <div className="mb-6">
               <div className="flex items-baseline justify-between mb-3">
                 <p className="font-mono text-[11px] uppercase tracking-[0.16em]">Couleur</p>
                 <span className="text-[13px] text-[var(--color-muted)]">{drawerColor}</span>
               </div>
-              <div className="flex gap-2.5">
-                {colors.map((c) => {
-                  const thumb = getColorThumbnail(colorImages, c.value)
-                  const isSelected = drawerColor === c.value
-                  const color = COLOR_MAP[c.value] || "#cccccc"
-                  return (
-                    <button
-                      key={c.value}
-                      onClick={() => { setDrawerColor(c.value); setDrawerSize("") }}
-                      aria-label={`Couleur ${c.value}`}
-                      className={`relative cursor-pointer ${thumb ? "w-16 h-20" : "w-10 h-10"}`}
-                      style={!thumb ? {
-                        backgroundColor: color,
-                        border: isSelected ? "2px solid var(--color-ink)" : "1px solid var(--color-border)",
-                        boxShadow: isSelected ? "0 0 0 2px #fff inset" : "none",
-                      } : undefined}
-                    >
-                      {thumb && (
-                        <Image src={thumb} alt={c.label} fill className="object-cover" sizes="64px" />
-                      )}
-                      {thumb && (
-                        <span className={`absolute -bottom-1.5 left-0 right-0 h-px transition-colors ${isSelected ? "bg-black" : "bg-transparent"}`} />
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
+              <ColorSwatches
+                colors={colors}
+                colorImages={colorImages}
+                selected={drawerColor}
+                onSelect={(c) => { setDrawerColor(c); setDrawerSize("") }}
+                isInStock={(c) => isColorInStock(variants, c)}
+                variant="compact"
+              />
             </div>
           )}
 
@@ -169,7 +151,7 @@ export default function QuickSelectDrawer({
               cursor: canAdd && inStock ? "pointer" : "not-allowed",
             }}
           >
-            <span>{adding ? "Ajout..." : added ? "Ajouté ✓" : canAdd ? `Ajouter · ${drawerColor} · ${drawerSize}` : "Sélectionner une taille"}</span>
+            <span>{adding ? "Ajout..." : added ? "Ajouté ✓" : canAdd && !inStock ? "Épuisé" : canAdd ? `Ajouter · ${drawerColor} · ${drawerSize}` : "Sélectionner une taille"}</span>
             {price && <span className="tracking-[0.04em]">{price}</span>}
           </button>
         </div>

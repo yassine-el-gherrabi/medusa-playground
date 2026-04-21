@@ -68,6 +68,16 @@ export function isSizeInStock(variants: VariantInfo[], color: string, size: stri
   return bySize?.inStock ?? false
 }
 
+/** Returns true if at least one size is in stock for the given color */
+export function isColorInStock(variants: VariantInfo[], color: string): boolean {
+  return variants.some((v) => v.color.toLowerCase() === color.toLowerCase() && v.inStock)
+}
+
+/** Returns true if the product has zero in-stock variants */
+export function isProductFullyOOS(product: Product): boolean {
+  return product.variants?.every((v) => (v.inventory_quantity ?? 1) === 0) ?? false
+}
+
 // ── Images ──
 
 export function getColorImages(product: Product): ColorImagesMap {

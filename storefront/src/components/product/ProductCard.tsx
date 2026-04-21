@@ -13,6 +13,7 @@ import {
   buildVariantMap,
   findVariantId,
   isSizeInStock,
+  isColorInStock,
   getColorImages,
   getImageForColor,
   getSecondImage,
@@ -35,6 +36,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const variants = buildVariantMap(product)
   const colorImages = getColorImages(product)
   const hasVariants = sizes.length > 0
+  const hasColorOption = product.options?.some((o) => ["color", "couleur"].includes(o.title?.toLowerCase() || "")) ?? false
   const compareAtPrice = getCompareAtPrice(product)
 
   const [activeColor, setActiveColor] = useState(colors[0]?.value || "Noir")
@@ -54,20 +56,34 @@ export default function ProductCard({ product }: { product: Product }) {
   const compareLabel = compareAtPrice && priceData ? formatPrice(compareAtPrice, priceData.currencyCode) : null
   const productUrl = `/products/${product.handle}`
 
+  // Check if this product has any in-stock variants at all
+  const hasAnyStock = product.variants?.some((v) => (v.inventory_quantity ?? 1) > 0) ?? false
+
   const handleQuickAdd = useCallback(async () => {
     if (hasVariants) return
-    const variantId = product.variants?.[0]?.id
-    if (!variantId) return
+    const variant = product.variants?.[0]
+    if (!variant?.id) return
+    // Block adding OOS items
+    if ((variant.inventory_quantity ?? 1) <= 0) return
     setAdding(true)
-    try { await addItem(variantId, 1) } catch { /* */ } finally { setAdding(false) }
+    try { await addItem(variant.id, 1) } catch { /* */ } finally { setAdding(false) }
   }, [hasVariants, product.variants, addItem])
 
   const handleSheetAdd = useCallback(async () => {
     const color = sheetColor || colors[0]?.value || ""
-    const variantId = sizes.length > 0 ? findVariantId(variants, color, sheetSize) : product.variants?.[0]?.id || null
-    if (!variantId) return
-    setAdding(true)
-    try { await addItem(variantId, 1); setSheetOpen(false) } catch { /* */ } finally { setAdding(false) }
+    if (sizes.length > 0) {
+      // Check stock before adding
+      if (!isSizeInStock(variants, color, sheetSize)) return
+      const variantId = findVariantId(variants, color, sheetSize)
+      if (!variantId) return
+      setAdding(true)
+      try { await addItem(variantId, 1); setSheetOpen(false) } catch { /* */ } finally { setAdding(false) }
+    } else {
+      const variant = product.variants?.[0]
+      if (!variant?.id || (variant.inventory_quantity ?? 1) <= 0) return
+      setAdding(true)
+      try { await addItem(variant.id, 1); setSheetOpen(false) } catch { /* */ } finally { setAdding(false) }
+    }
   }, [sheetColor, sheetSize, colors, sizes, variants, product.variants, addItem])
 
   return (
@@ -82,7 +98,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </Link>
 
         {/* Desktop [+] */}
-        {!quickAddOpen && (
+        {!quickAddOpen && hasAnyStock && (
           <button type="button" onMouseEnter={() => { if (hasVariants) setQuickAddOpen(true) }} onClick={handleQuickAdd} className="hidden md:flex absolute bottom-3 right-3 z-10 w-8 h-8 items-center justify-center cursor-pointer group/plus" aria-label="Ajout rapide">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="transition-transform duration-200 group-hover/plus:scale-125">
               <line x1="6" y1="0.5" x2="6" y2="11.5" stroke="black" strokeWidth="0.75" />
@@ -92,12 +108,14 @@ export default function ProductCard({ product }: { product: Product }) {
         )}
 
         {/* Mobile [+] */}
-        <button type="button" onClick={() => { setSheetOpen(true); setSheetColor(activeColor); setSheetSize("") }} className="md:hidden absolute bottom-2 right-2 z-10 p-2 cursor-pointer" aria-label="Ajout rapide">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <line x1="6" y1="0.5" x2="6" y2="11.5" stroke="black" strokeWidth="0.75" />
-            <line x1="0.5" y1="6" x2="11.5" y2="6" stroke="black" strokeWidth="0.75" />
-          </svg>
-        </button>
+        {hasAnyStock && (
+          <button type="button" onClick={() => { setSheetOpen(true); setSheetColor(activeColor); setSheetSize("") }} className="md:hidden absolute bottom-2 right-2 z-10 p-2 cursor-pointer" aria-label="Ajout rapide">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <line x1="6" y1="0.5" x2="6" y2="11.5" stroke="black" strokeWidth="0.75" />
+              <line x1="0.5" y1="6" x2="11.5" y2="6" stroke="black" strokeWidth="0.75" />
+            </svg>
+          </button>
+        )}
 
         {/* Desktop glass bar sizes */}
         {quickAddOpen && hasVariants && (
@@ -133,7 +151,7 @@ export default function ProductCard({ product }: { product: Product }) {
       {sheetOpen && typeof document !== "undefined" && createPortal(
         <>
           <div className="md:hidden fixed inset-0 z-[100] bg-black/50" onClick={() => setSheetOpen(false)} />
-          <div className="md:hidden fixed inset-x-0 bottom-0 z-[101] bg-white rounded-t-2xl max-h-[85vh] overflow-y-auto animate-fade-in">
+          <div className="md:hidden fixed inset-x-0 bottom-0 z-[101] bg-[var(--color-surface)] rounded-t-2xl max-h-[85vh] overflow-y-auto animate-fade-in">
             <div className="px-6 pt-5 pb-8">
               <div className="flex justify-between items-start mb-5">
                 <div>
@@ -159,17 +177,23 @@ export default function ProductCard({ product }: { product: Product }) {
                 ) : null
               })()}
 
-              {colors.length > 1 && (
+              {colors.length > 1 && hasColorOption && (
                 <div className="mb-5">
                   <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-3">Couleur — {sheetColor}</p>
                   <div className="flex gap-2">
                     {colors.map((c) => {
                       const thumb = getColorThumbnail(colorImages, c.value)
+                      const colorHasStock = isColorInStock(variants, c.value)
                       return (
-                        <button key={c.value} onClick={() => { setSheetColor(c.value); setSheetSize("") }} className="relative shrink-0 cursor-pointer" aria-label={c.label}>
+                        <button key={c.value} onClick={() => { setSheetColor(c.value); setSheetSize("") }} className={`relative shrink-0 cursor-pointer ${!colorHasStock ? "opacity-30" : ""}`} aria-label={`${c.label}${!colorHasStock ? " (épuisé)" : ""}`}>
                           <div className={`w-12 h-16 overflow-hidden bg-[#f5f5f5] ${sheetColor === c.value ? "ring-1 ring-black ring-offset-1" : ""}`}>
                             {thumb ? <Image src={thumb} alt={c.label} fill className="object-cover" sizes="48px" /> : <div className="w-full h-full bg-[#e0e0e0]" />}
                           </div>
+                          {!colorHasStock && (
+                            <span className="absolute inset-0 flex items-center justify-center">
+                              <span className="block w-[140%] h-px bg-black/40 -rotate-45" />
+                            </span>
+                          )}
                         </button>
                       )
                     })}
@@ -195,10 +219,18 @@ export default function ProductCard({ product }: { product: Product }) {
                 </div>
               )}
 
-              <button onClick={handleSheetAdd} disabled={adding || (sizes.length > 0 && !sheetSize)}
-                className={`w-full h-[52px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all cursor-pointer ${adding || (sizes.length > 0 && !sheetSize) ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-foreground text-background"}`}>
-                {adding ? "Ajout..." : sizes.length > 0 && !sheetSize ? "Sélectionnez une taille" : "Ajouter au panier"}
-              </button>
+              {(() => {
+                const sheetInStock = sheetSize ? isSizeInStock(variants, sheetColor || colors[0]?.value || "", sheetSize) : true
+                const isDisabled = adding || (sizes.length > 0 && !sheetSize) || (sheetSize && !sheetInStock)
+                const label = adding ? "Ajout..." : sizes.length > 0 && !sheetSize ? "Sélectionnez une taille" : sheetSize && !sheetInStock ? "Épuisé" : "Ajouter au panier"
+                return (
+                  <button onClick={handleSheetAdd} disabled={!!isDisabled}
+                    className={`w-full h-[52px] text-[11px] font-medium uppercase tracking-[0.2em] transition-all cursor-pointer ${isDisabled ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-foreground text-background"}`}
+                    style={sheetSize && !sheetInStock ? { opacity: 0.5 } : undefined}>
+                    {label}
+                  </button>
+                )
+              })()}
             </div>
           </div>
         </>,
