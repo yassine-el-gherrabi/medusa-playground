@@ -20,8 +20,8 @@ const UNS = "https://images.unsplash.com"
 const heroImages = {
   lineaNebula: `${UNS}/photo-1523398002811-999ca8dec234?w=1600&q=80`,
   oscura: `${UNS}/photo-1509631179647-0177331693ae?w=1600&q=80`,
-  seamless: `${UNS}/photo-1551028719-00167b16eac5?w=1600&q=80`,
-  iceReflect: `${UNS}/photo-1576566588028-4147f3842f27?w=1600&q=80`,
+  seamless: `${UNS}/photo-1693023437961-db4fc758333e?w=1600&q=80`,
+  iceReflect: `${UNS}/photo-1558126906-c9087a0f1168?w=1600&q=80`,
   abyss: `${UNS}/photo-1578681994506-b8f463449011?w=1600&q=80`,
   shadow: `${UNS}/photo-1441986300917-64674bd600d8?w=1600&q=80`,
   concrete: `${UNS}/photo-1483985988355-763728e1935b?w=1600&q=80`,

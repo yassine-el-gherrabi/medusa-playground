@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import AnimatedLink from "@/components/ui/AnimatedLink"
+import { CookieSettingsButton } from "@/components/cookie/CookieConsent"
 
 
 const SERVICE_CLIENT_LINKS = [
@@ -306,6 +307,9 @@ export default function Footer() {
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <CookieSettingsButton />
+                </li>
               </ul>
             </FooterAccordion>
           </div>
