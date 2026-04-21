@@ -25,33 +25,17 @@ export default function CollectionHero({
   return (
     <section
       data-header-theme="dark"
-      className="relative -mt-16 overflow-hidden bg-[var(--color-ink)] h-[480px] lg:h-auto lg:grid lg:grid-rows-1"
+      className="relative -mt-16 overflow-hidden bg-[var(--color-ink)] h-[480px] lg:h-[620px]"
     >
-      {/* Background image — on desktop it's in the grid flow and gives height */}
+      {/* Background image */}
       {imageUrl ? (
-        <>
-          {/* Desktop: image in flow via grid, gives natural height */}
-          <div className="hidden lg:block lg:row-span-full lg:col-span-full">
-            <Image
-              src={imageUrl}
-              alt={title}
-              width={1920}
-              height={1080}
-              className="w-full h-auto block"
-              priority
-            />
-          </div>
-          {/* Mobile: absolute fill (height fixed at 480px) */}
-          <div className="lg:hidden absolute inset-0">
-            <Image
-              src={imageUrl}
-              alt={title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </>
+        <Image
+          src={imageUrl}
+          alt={title}
+          fill
+          className="object-cover"
+          priority
+        />
       ) : (
         <div
           className="absolute inset-0"
@@ -65,8 +49,8 @@ export default function CollectionHero({
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-ink)] via-[var(--color-ink)]/40 to-transparent" />
 
-      {/* Content overlay — positioned over the image via grid overlap */}
-      <div className="lg:row-span-full lg:col-span-full relative z-10">
+      {/* Content overlay */}
+      <div className="relative z-10">
         {/* Top-left: Breadcrumbs */}
         {breadcrumbs && breadcrumbs.length > 0 && (
           <nav
