@@ -78,7 +78,112 @@ const INFO_TABS = [
   },
 ]
 
-// ── Info overlay panel ──
+// ── Info content (shared between overlay + accordion) ──
+
+function getInfoContent(product: Product): Record<string, React.ReactNode> {
+  return {
+    details: (
+      <>
+        {product.description && <p className="mb-0">{product.description}</p>}
+        {product.material && (
+          <dl className="mt-6 lg:mt-9 grid gap-y-4 gap-x-6 text-[14px]" style={{ gridTemplateColumns: "120px 1fr" }}>
+            {[
+              ["Matière", product.material],
+              ...(product.weight ? [["Poids", `${product.weight}g`]] : []),
+            ].map(([k, v]) => (
+              <div key={k} className="contents">
+                <dt className="font-mono text-[10px] tracking-[0.16em] uppercase text-[#6F6E6A] pt-0.5">{k}</dt>
+                <dd className="m-0 leading-relaxed">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </>
+    ),
+    care: (
+      <>
+        <p>Pour préserver la matière et les finitions sur le long terme, nous recommandons un entretien doux.</p>
+        <ul className="mt-5 lg:mt-8 p-0 list-none border-t border-[#E3E1DC]">
+          {[
+            "Lavage 30°C à l'envers",
+            "Repassage doux au dos de l'impression",
+            "Ne pas sécher en machine",
+            "Ne pas nettoyer à sec",
+          ].map((t) => (
+            <li key={t} className="py-3 lg:py-4 border-b border-[#E3E1DC] flex items-center gap-4 text-[13px] lg:text-[14px]">
+              <span className="w-1 h-1 rounded-full bg-[#0A0A0A] shrink-0" />
+              {t}
+            </li>
+          ))}
+        </ul>
+      </>
+    ),
+    shipping: (
+      <>
+        <p>Expédition rapide depuis Marseille, emballage signature Ice Industry.</p>
+        <div className="mt-6 lg:mt-9 grid grid-cols-2 gap-px bg-[#E3E1DC] border border-[#E3E1DC]">
+          {[
+            ["Standard", "Offerte dès 80 €", "3–5 jours ouvrés"],
+            ["Express", "9,90 €", "J+1 en France"],
+            ["Retrait boutique", "Gratuit", "Marseille · 24h"],
+            ["International", "Dès 14,90 €", "Europe · Monde"],
+          ].map(([t, p, d]) => (
+            <div key={t} className="bg-white p-4 lg:p-5">
+              <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-[#6F6E6A]">{t}</div>
+              <div className="mt-2 lg:mt-2.5 text-[15px] lg:text-[17px] font-medium tracking-[-0.01em]">{p}</div>
+              <div className="mt-1 text-[12px] text-[#1F1F1F]">{d}</div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-5 lg:mt-7 text-[13px] text-[#1F1F1F] leading-relaxed">
+          Retours gratuits sous 30 jours. Remboursement sous 5 jours ouvrés après réception.
+        </p>
+      </>
+    ),
+  }
+}
+
+// ── Mobile accordion ──
+
+function MobileInfoAccordion({ product }: { product: Product }) {
+  const [openKey, setOpenKey] = useState<string | null>(null)
+  const content = getInfoContent(product)
+
+  return (
+    <div className="lg:hidden mt-4 border-t border-[#E3E1DC]">
+      {INFO_TABS.map((tab) => {
+        const isOpen = openKey === tab.key
+        return (
+          <div key={tab.key} className="border-b border-[#E3E1DC]">
+            <button
+              onClick={() => setOpenKey(isOpen ? null : tab.key)}
+              className="w-full py-5 px-0 flex justify-between items-center cursor-pointer bg-transparent border-none text-left"
+            >
+              <span className="font-mono text-[11px] tracking-[0.18em] uppercase">{tab.label}</span>
+              <svg
+                width="12" height="12" viewBox="0 0 12 12"
+                className="transition-transform duration-200"
+                style={{ transform: isOpen ? "rotate(45deg)" : "none" }}
+              >
+                <path d="M6 1v10M1 6h10" stroke="#0A0A0A" strokeWidth="1.2" />
+              </svg>
+            </button>
+            <div
+              className="overflow-hidden transition-all duration-300"
+              style={{ maxHeight: isOpen ? 600 : 0 }}
+            >
+              <div className="pb-5 text-[13px] leading-relaxed text-[#1F1F1F]">
+                {content[tab.key]}
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Desktop info overlay panel ──
 
 function InfoOverlay({
   activeKey,
@@ -101,66 +206,7 @@ function InfoOverlay({
     return () => window.removeEventListener("keydown", h)
   }, [isOpen, onClose])
 
-  const bodyContent: Record<string, React.ReactNode> = {
-    details: (
-      <>
-        {product.description && <p className="mb-0">{product.description}</p>}
-        {product.material && (
-          <dl className="mt-9 grid gap-y-4 gap-x-6 text-[14px]" style={{ gridTemplateColumns: "160px 1fr" }}>
-            {[
-              ["Matière", product.material],
-              ...(product.weight ? [["Poids", `${product.weight}g`]] : []),
-            ].map(([k, v]) => (
-              <div key={k} className="contents">
-                <dt className="font-mono text-[10px] tracking-[0.16em] uppercase text-[#6F6E6A] pt-0.5">{k}</dt>
-                <dd className="m-0 leading-relaxed">{v}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-      </>
-    ),
-    care: (
-      <>
-        <p>Pour préserver la matière et les finitions sur le long terme, nous recommandons un entretien doux.</p>
-        <ul className="mt-8 p-0 list-none border-t border-[#E3E1DC]">
-          {[
-            "Lavage 30°C à l'envers",
-            "Repassage doux au dos de l'impression",
-            "Ne pas sécher en machine",
-            "Ne pas nettoyer à sec",
-          ].map((t) => (
-            <li key={t} className="py-4 border-b border-[#E3E1DC] flex items-center gap-4 text-[14px]">
-              <span className="w-1 h-1 rounded-full bg-[#0A0A0A] shrink-0" />
-              {t}
-            </li>
-          ))}
-        </ul>
-      </>
-    ),
-    shipping: (
-      <>
-        <p>Expédition rapide depuis Marseille, emballage signature Ice Industry.</p>
-        <div className="mt-9 grid grid-cols-2 gap-px bg-[#E3E1DC] border border-[#E3E1DC]">
-          {[
-            ["Standard", "Offerte dès 80 €", "3–5 jours ouvrés"],
-            ["Express", "9,90 €", "J+1 en France"],
-            ["Retrait boutique", "Gratuit", "Marseille · 24h"],
-            ["International", "Dès 14,90 €", "Europe · Monde"],
-          ].map(([t, p, d]) => (
-            <div key={t} className="bg-white p-5">
-              <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-[#6F6E6A]">{t}</div>
-              <div className="mt-2.5 text-[17px] font-medium tracking-[-0.01em]">{p}</div>
-              <div className="mt-1 text-[12px] text-[#1F1F1F]">{d}</div>
-            </div>
-          ))}
-        </div>
-        <p className="mt-7 text-[13px] text-[#1F1F1F] leading-relaxed">
-          Retours gratuits sous 30 jours. Remboursement sous 5 jours ouvrés après réception.
-        </p>
-      </>
-    ),
-  }
+  const bodyContent = getInfoContent(product)
 
   return (
     <div
@@ -511,8 +557,8 @@ export default function ProductDetail({ product }: { product: Product }) {
               ))}
             </div>
 
-            {/* Info tab rows — click to open overlay */}
-            <div className="mt-6 border-t border-[#E3E1DC]">
+            {/* Desktop: Info tab rows — click to open overlay */}
+            <div className="hidden lg:block mt-6 border-t border-[#E3E1DC]">
               {INFO_TABS.map((t) => (
                 <button
                   key={t.key}
@@ -526,8 +572,11 @@ export default function ProductDetail({ product }: { product: Product }) {
               ))}
             </div>
 
-            {/* Info overlay panel */}
+            {/* Desktop: Info overlay panel */}
             <InfoOverlay activeKey={activeInfoPanel} onOpen={setActiveInfoPanel} onClose={() => setActiveInfoPanel(null)} product={product} />
+
+            {/* Mobile: Simple accordion */}
+            <MobileInfoAccordion product={product} />
           </div>
         </div>
       </div>
