@@ -51,7 +51,6 @@ export default async function BoutiquePage() {
       <CatalogueContent
         initialProducts={products}
         initialCount={count}
-        subcategories={subcategories}
         showFilters
       />
     </div>
