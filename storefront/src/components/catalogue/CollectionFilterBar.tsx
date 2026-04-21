@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import { createPortal } from "react-dom"
 import { useScrollLock } from "@/hooks/useScrollLock"
 import { useEscapeKey } from "@/hooks/useEscapeKey"
 import { COLOR_MAP } from "@/lib/product-helpers"
@@ -317,7 +318,7 @@ function FiltersDrawer({ open, onClose, filterOptions, activeFilters, onApply }:
     onApply(draft)
   }
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -501,7 +502,8 @@ function FiltersDrawer({ open, onClose, filterOptions, activeFilters, onApply }:
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   )
 }
 
