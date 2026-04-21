@@ -1,4 +1,4 @@
-import type { Product } from "@/types"
+import type { Product, ProductMetadata } from "@/types"
 
 // ── Types ──
 
@@ -71,7 +71,8 @@ export function isSizeInStock(variants: VariantInfo[], color: string, size: stri
 // ── Images ──
 
 export function getColorImages(product: Product): ColorImagesMap {
-  return ((product.metadata as Record<string, unknown> | null)?.color_images as ColorImagesMap) || {}
+  const meta = product.metadata as ProductMetadata | null
+  return meta?.color_images || {}
 }
 
 export function getImageForColor(product: Product, ci: ColorImagesMap, color: string): string {
@@ -125,7 +126,7 @@ export function getThumbnailForVariantTitle(
 // ── Metadata ──
 
 export function getCompareAtPrice(product: Product): number | null {
-  const meta = (product.metadata as Record<string, unknown> | null) ?? {}
-  const val = meta.compare_at_price
+  const meta = product.metadata as ProductMetadata | null
+  const val = meta?.compare_at_price
   return typeof val === "number" && val > 0 ? val : null
 }

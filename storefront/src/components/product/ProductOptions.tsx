@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import AnimatedLink from "@/components/ui/AnimatedLink"
+import SizeGrid from "./SizeGrid"
 import type { Product } from "@/types"
 import { COLOR_MAP, getColorImages, getColorThumbnail } from "@/lib/product-helpers"
 
@@ -71,12 +72,13 @@ export default function ProductOptions({
                 onClick={() => inStock && onOptionChange(option.id, v.value)}
                 disabled={!inStock}
                 title={v.value}
+                aria-label={`Couleur ${v.value}`}
                 className={`relative transition-all cursor-pointer ${
                   thumbnail ? "w-20 h-[104px]" : "w-10 h-10"
                 } ${!inStock ? "opacity-30 cursor-not-allowed" : ""}`}
                 style={!thumbnail ? {
-                  border: isSelected ? "2px solid #0A0A0A" : "1px solid #E3E1DC",
-                  boxShadow: isSelected ? "0 0 0 2px #FAFAF8 inset" : "none",
+                  border: isSelected ? "2px solid var(--color-ink)" : "1px solid var(--color-border)",
+                  boxShadow: isSelected ? "0 0 0 2px var(--color-surface) inset" : "none",
                 } : undefined}
               >
                 {thumbnail ? (
@@ -116,7 +118,6 @@ export default function ProductOptions({
   const renderSizeGrid = (option: NonNullable<Product["options"]>[number]) => {
     const selectedValue = selectedOptions[option.id]
     const values = option.values || []
-    const colCount = Math.min(values.length, 6)
     return (
       <div key={option.id}>
         <div className="flex items-baseline justify-between mb-3">
@@ -133,33 +134,12 @@ export default function ProductOptions({
             Guide des tailles
           </AnimatedLink>
         </div>
-        <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${colCount}, 1fr)` }}>
-          {values.map((v) => {
-            const isSelected = selectedValue === v.value
-            const inStock = isOptionInStock(option.id, v.value)
-            return (
-              <button
-                key={v.id}
-                onClick={() => inStock && onOptionChange(option.id, v.value)}
-                disabled={!inStock}
-                className={`relative h-[46px] text-[13px] font-medium tracking-[0.02em] transition-all border cursor-pointer ${
-                  isSelected
-                    ? "bg-[#0A0A0A] text-[#FAFAF8] border-[#0A0A0A]"
-                    : !inStock
-                      ? "bg-transparent text-[#A3A19C] border-[#E3E1DC] cursor-not-allowed"
-                      : "bg-transparent text-[#0A0A0A] border-[#E3E1DC] hover:border-[#0A0A0A]"
-                }`}
-              >
-                {v.value}
-                {!inStock && (
-                  <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <line x1="0" y1="100" x2="100" y2="0" stroke="#E3E1DC" strokeWidth="1" />
-                  </svg>
-                )}
-              </button>
-            )
-          })}
-        </div>
+        <SizeGrid
+          sizes={values.map((v) => ({ value: v.value, label: v.value }))}
+          selected={selectedValue || ""}
+          onSelect={(value) => onOptionChange(option.id, value)}
+          isInStock={(size) => isOptionInStock(option.id, size)}
+        />
       </div>
     )
   }
@@ -168,7 +148,7 @@ export default function ProductOptions({
     <div className="space-y-5">
       {colorOption && renderColorSwatches(colorOption)}
       {modelInfo && (
-        <p className="text-[12px] text-[#6F6E6A] leading-relaxed">{modelInfo}</p>
+        <p className="text-[12px] text-[var(--color-muted)] leading-relaxed">{modelInfo}</p>
       )}
       {sizeOption && renderSizeGrid(sizeOption)}
       {otherOptions.map((option) => {
@@ -192,6 +172,7 @@ export default function ProductOptions({
                     key={v.id}
                     onClick={() => inStock && onOptionChange(option.id, v.value)}
                     disabled={!inStock}
+                    aria-label={`${option.title} ${v.value}`}
                     className={`relative text-[14px] pb-2 transition-colors cursor-pointer ${
                       isSelected
                         ? "text-foreground font-medium"
