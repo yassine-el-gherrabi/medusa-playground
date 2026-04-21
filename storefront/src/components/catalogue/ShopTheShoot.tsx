@@ -45,9 +45,6 @@ export default function ShopTheShoot({ shootData, products }: ShopTheShootProps)
 
   return (
     <section className="bg-[var(--color-ink)] text-[var(--color-surface)] overflow-hidden">
-      {/* ── Header ── */}
-      <ShootHeader shootData={shootData} />
-
       {/* ── Image ── */}
       <ShootImage shootData={shootData} />
 
@@ -101,7 +98,7 @@ function ShootHeader({ shootData }: { shootData: ShootData }) {
 
 function ShootImage({ shootData }: { shootData: ShootData }) {
   return (
-    <div className="relative w-full aspect-[4/5] lg:aspect-[21/9] lg:max-h-[500px]">
+    <div className="relative w-full aspect-[4/5] lg:aspect-[3/2]">
       <div className="lg:hidden absolute inset-0">
         {shootData.image_url ? (
           <Image
