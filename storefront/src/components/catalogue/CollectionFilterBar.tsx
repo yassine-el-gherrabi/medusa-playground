@@ -5,6 +5,7 @@ import { createPortal } from "react-dom"
 import { useScrollLock } from "@/hooks/useScrollLock"
 import { useEscapeKey } from "@/hooks/useEscapeKey"
 import { COLOR_MAP } from "@/lib/product-helpers"
+import type { DensityLevel } from "@/hooks/useDensity"
 
 // ── Types ──
 
@@ -34,8 +35,8 @@ export const DEFAULT_FILTERS: FilterState = {
 type CollectionFilterBarProps = {
   sortOrder: string
   onSortChange: (order: string) => void
-  density: 3 | 4
-  onDensityChange: (d: 3 | 4) => void
+  density: DensityLevel
+  onDensityChange: (d: DensityLevel) => void
   subcategories?: { id: string; handle: string; name: string }[]
   activeSubcategory?: string
   onSubcategoryChange?: (id: string) => void
@@ -177,7 +178,7 @@ export default function CollectionFilterBar({
                 aria-label="Densité de la grille"
                 className="flex items-center gap-1"
               >
-                {([3, 4] as const).map((n) => (
+                {([0, 1, 2] as const).map((n) => (
                   <button
                     key={n}
                     aria-checked={density === n}
@@ -186,7 +187,7 @@ export default function CollectionFilterBar({
                       density === n ? "opacity-100" : "opacity-30 hover:opacity-60"
                     }`}
                   >
-                    <DensityIcon cols={n} />
+                    <DensityIcon level={n} />
                   </button>
                 ))}
               </div>
@@ -572,22 +573,28 @@ function PriceRangeSlider({
 
 // ── Density icon ──
 
-function DensityIcon({ cols }: { cols: 3 | 4 }) {
-  if (cols === 3) {
+function DensityIcon({ level }: { level: DensityLevel }) {
+  // 0 = sparse (1 bar), 1 = default (2 bars), 2 = dense (3 bars)
+  if (level === 0) {
     return (
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <rect x="1" y="2" width="2" height="10" fill="currentColor" />
         <rect x="6" y="2" width="2" height="10" fill="currentColor" />
-        <rect x="11" y="2" width="2" height="10" fill="currentColor" />
+      </svg>
+    )
+  }
+  if (level === 1) {
+    return (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <rect x="3" y="2" width="2" height="10" fill="currentColor" />
+        <rect x="9" y="2" width="2" height="10" fill="currentColor" />
       </svg>
     )
   }
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <rect x="1" y="2" width="1.5" height="10" fill="currentColor" />
-      <rect x="4.5" y="2" width="1.5" height="10" fill="currentColor" />
-      <rect x="8" y="2" width="1.5" height="10" fill="currentColor" />
-      <rect x="11.5" y="2" width="1.5" height="10" fill="currentColor" />
+      <rect x="1" y="2" width="2" height="10" fill="currentColor" />
+      <rect x="6" y="2" width="2" height="10" fill="currentColor" />
+      <rect x="11" y="2" width="2" height="10" fill="currentColor" />
     </svg>
   )
 }

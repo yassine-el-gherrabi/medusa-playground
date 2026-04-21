@@ -3,12 +3,13 @@
 import Image from "next/image"
 import Link from "next/link"
 import ProductCard from "@/components/product/ProductCard"
+import { getDensityClasses, type DensityLevel } from "@/hooks/useDensity"
 import { getProductPrice, formatPrice } from "@/lib/utils"
 import type { Product } from "@/types"
 
 type MidLayoutProps = {
   products: Product[]
-  density: 3 | 4
+  density: DensityLevel
 }
 
 export default function MidLayout({ products, density }: MidLayoutProps) {
@@ -24,12 +25,7 @@ export default function MidLayout({ products, density }: MidLayoutProps) {
   const categoryName = featured.categories?.[0]?.name
   const productUrl = `/products/${featured.handle}`
 
-  const colsClass =
-    density === 3 ? "grid-cols-2 lg:grid-cols-3" : "grid-cols-2 lg:grid-cols-4"
-  const gapClass =
-    density === 3
-      ? "gap-x-2 gap-y-5 lg:gap-x-14 lg:gap-y-6"
-      : "gap-x-2 gap-y-5 lg:gap-x-10 lg:gap-y-4"
+  const { cols: colsClass, gap: gapClass } = getDensityClasses(density)
 
   return (
     <section aria-label="Produits" className="px-5 lg:px-8 py-7 lg:py-12">
