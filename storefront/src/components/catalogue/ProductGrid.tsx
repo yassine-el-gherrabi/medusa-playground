@@ -70,7 +70,7 @@ export default function ProductGrid({
       : "gap-x-2 gap-y-5 lg:gap-x-10 lg:gap-y-4"
 
   const colsClass =
-    density === 3 ? "grid-cols-2 lg:grid-cols-3" : "grid-cols-2 lg:grid-cols-4"
+    density === 3 ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-2 lg:grid-cols-4"
 
   return (
     <section aria-label="Produits" className="px-5 lg:px-8 py-7 lg:py-12">
