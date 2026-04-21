@@ -274,7 +274,9 @@ export default function ProductDetail({ product }: { product: Product }) {
   const addedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isMounted = useRef(true)
   const mobileCtaRef = useRef<HTMLDivElement>(null)
+  const desktopCtaRef = useRef<HTMLDivElement>(null)
   const [showStickyMobileCta, setShowStickyMobileCta] = useState(false)
+  const [showDesktopMiniCta, setShowDesktopMiniCta] = useState(false)
 
   useEffect(() => {
     isMounted.current = true
@@ -287,6 +289,18 @@ export default function ProductDetail({ product }: { product: Product }) {
     if (!el) return
     const obs = new IntersectionObserver(
       ([entry]) => setShowStickyMobileCta(!entry.isIntersecting),
+      { threshold: 0 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  // ── Desktop mini CTA visibility ──
+  useEffect(() => {
+    const el = desktopCtaRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => setShowDesktopMiniCta(!entry.isIntersecting),
       { threshold: 0 }
     )
     obs.observe(el)
@@ -550,7 +564,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             </div>
 
             {/* Desktop CTA — split text */}
-            <div className="mt-5 hidden lg:block">
+            <div ref={desktopCtaRef} className="mt-5 hidden lg:block">
               <button
                 onClick={handleAddToCart}
                 disabled={!canAddToCart || addingToCart || !inStock}
@@ -655,6 +669,50 @@ export default function ProductDetail({ product }: { product: Product }) {
           </div>
         </section>
       )}
+
+      {/* ── Desktop mini CTA bar — appears when inline CTA scrolls out ── */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="hidden lg:block fixed top-0 left-0 right-0 z-40 transition-all duration-300 overflow-hidden"
+            style={{
+              maxHeight: showDesktopMiniCta ? 80 : 0,
+              opacity: showDesktopMiniCta ? 1 : 0,
+              pointerEvents: showDesktopMiniCta ? "auto" : "none",
+            }}
+          >
+            <div className="bg-white border-b border-[#E3E1DC] py-3 px-10 flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <span className="text-[14px] font-medium tracking-[-0.01em]">{product.title}</span>
+                <div className="flex items-center gap-2 text-[12px] text-[#6F6E6A]">
+                  {selectedColor && <span>{selectedColor}</span>}
+                  {selectedColor && selectedOptions[product.options?.find((o) => ["size", "taille", "pointure"].includes(o.title?.toLowerCase() || ""))?.id || ""] && <span className="opacity-40">·</span>}
+                  {selectedOptions[product.options?.find((o) => ["size", "taille", "pointure"].includes(o.title?.toLowerCase() || ""))?.id || ""] && (
+                    <span>{selectedOptions[product.options?.find((o) => ["size", "taille", "pointure"].includes(o.title?.toLowerCase() || ""))?.id || ""]}</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-6">
+                {priceLabel && <span className="text-[14px] font-medium">{priceLabel}</span>}
+                <button
+                  onClick={handleAddToCart}
+                  disabled={!canAddToCart || addingToCart || !inStock}
+                  aria-busy={addingToCart}
+                  className="h-[40px] px-6 text-[10px] font-medium uppercase tracking-[0.18em] border-none cursor-pointer transition-all"
+                  style={{
+                    background: canAddToCart && inStock ? "#0A0A0A" : "#18181A",
+                    color: "#FAFAF8",
+                    opacity: canAddToCart && inStock ? 1 : 0.6,
+                    cursor: canAddToCart && inStock ? "pointer" : "not-allowed",
+                  }}
+                >
+                  {addingToCart ? "Ajout..." : addedToCart ? "Ajouté ✓" : canAddToCart && inStock ? "Ajouter au panier" : missingOptions.length > 0 ? `Sélectionnez ${missingOptions.join(" et ")}` : "Épuisé"}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
 
       {/* Sticky mobile CTA — appears when inline CTA scrolls out of view */}
       {typeof document !== "undefined" &&

@@ -39,20 +39,28 @@ function EditorialImage({
   priority?: boolean
   sizes?: string
 }) {
+  const [loaded, setLoaded] = useState(false)
+
   return (
     <button
       onClick={() => onOpen(index)}
-      className="block w-full bg-[#f5f5f5] !cursor-zoom-in overflow-hidden border-none p-0"
+      className="relative block w-full bg-[#f5f5f5] !cursor-zoom-in overflow-hidden border-none p-0"
     >
+      {/* Shimmer placeholder — visible until image loads */}
+      {!loaded && (
+        <div className="absolute inset-0 animate-shimmer-bg" />
+      )}
       <Image
         src={image.url}
         alt={`${productTitle} — image ${index + 1}`}
         width={1200}
         height={1500}
-        className="w-full h-auto"
+        className="w-full h-auto transition-opacity duration-300"
+        style={{ opacity: loaded ? 1 : 0 }}
         sizes={sizes}
         priority={priority}
         loading={priority ? "eager" : "lazy"}
+        onLoad={() => setLoaded(true)}
       />
     </button>
   )
@@ -242,7 +250,7 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
 
         {/* Diptych — 2 side-by-side */}
         {diptych.length === 2 && (
-          <div className="grid grid-cols-2 gap-1">
+          <div className="grid grid-cols-2 gap-1 items-start">
             <EditorialImage
               image={diptych[0]}
               index={1}
@@ -278,7 +286,7 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
         {remainingPairs.map((pair, pi) => {
           const baseIdx = 4 + pi * 2
           return (
-            <div key={baseIdx} className="grid grid-cols-2 gap-1">
+            <div key={baseIdx} className="grid grid-cols-2 gap-1 items-start">
               <EditorialImage
                 image={pair[0]}
                 index={baseIdx}
