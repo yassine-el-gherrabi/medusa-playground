@@ -365,7 +365,7 @@ function FiltersDrawer({ open, onClose, filterOptions, activeFilters, onApply }:
                 <button
                   key={option.value}
                   onClick={() => setDraftSort(option.value)}
-                  className="flex items-center gap-3 py-3 border-b border-[var(--color-border)] text-[13px] cursor-pointer bg-transparent border-x-0 border-t-0 text-left"
+                  className="flex items-center gap-3 py-3 border-b border-[var(--color-border)] text-[13px] cursor-pointer bg-transparent border-x-0 border-t-0 text-left hover:bg-[var(--color-bg-subtle)] transition-colors px-2 -mx-2"
                 >
                   <span
                     className="w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center shrink-0"
@@ -407,12 +407,11 @@ function FiltersDrawer({ open, onClose, filterOptions, activeFilters, onApply }:
                     <button
                       key={cat}
                       onClick={() => toggleCategory(cat)}
-                      className="py-2.5 px-3.5 text-[13px] cursor-pointer transition-colors"
-                      style={{
-                        background: isActive ? "var(--color-ink)" : "transparent",
-                        color: isActive ? "var(--color-surface)" : "var(--color-ink)",
-                        border: isActive ? "1px solid var(--color-ink)" : "1px solid var(--color-border)",
-                      }}
+                      className={`py-2.5 px-3.5 text-[13px] cursor-pointer transition-colors border ${
+                        isActive
+                          ? "bg-[var(--color-ink)] text-[var(--color-surface)] border-[var(--color-ink)]"
+                          : "bg-transparent text-[var(--color-ink)] border-[var(--color-border)] hover:border-[var(--color-ink)]"
+                      }`}
                     >
                       {cat}
                     </button>
@@ -433,12 +432,11 @@ function FiltersDrawer({ open, onClose, filterOptions, activeFilters, onApply }:
                     <button
                       key={size}
                       onClick={() => toggleSize(size)}
-                      className="min-w-[42px] py-2.5 px-3 text-[13px] text-center cursor-pointer transition-colors"
-                      style={{
-                        background: isActive ? "var(--color-ink)" : "transparent",
-                        color: isActive ? "var(--color-surface)" : "var(--color-ink)",
-                        border: isActive ? "1px solid var(--color-ink)" : "1px solid var(--color-border)",
-                      }}
+                      className={`min-w-[42px] py-2.5 px-3 text-[13px] text-center cursor-pointer transition-colors border ${
+                        isActive
+                          ? "bg-[var(--color-ink)] text-[var(--color-surface)] border-[var(--color-ink)]"
+                          : "bg-transparent text-[var(--color-ink)] border-[var(--color-border)] hover:border-[var(--color-ink)]"
+                      }`}
                     >
                       {size}
                     </button>
@@ -459,12 +457,11 @@ function FiltersDrawer({ open, onClose, filterOptions, activeFilters, onApply }:
                     <button
                       key={color.name}
                       onClick={() => toggleColor(color.name)}
-                      className="flex items-center gap-2 py-2.5 px-3.5 text-[13px] cursor-pointer transition-colors"
-                      style={{
-                        background: isActive ? "var(--color-ink)" : "transparent",
-                        color: isActive ? "var(--color-surface)" : "var(--color-ink)",
-                        border: isActive ? "1px solid var(--color-ink)" : "1px solid var(--color-border)",
-                      }}
+                      className={`flex items-center gap-2 py-2.5 px-3.5 text-[13px] cursor-pointer transition-colors border ${
+                        isActive
+                          ? "bg-[var(--color-ink)] text-[var(--color-surface)] border-[var(--color-ink)]"
+                          : "bg-transparent text-[var(--color-ink)] border-[var(--color-border)] hover:border-[var(--color-ink)]"
+                      }`}
                     >
                       <span
                         className="w-3 h-3 shrink-0"
@@ -487,7 +484,7 @@ function FiltersDrawer({ open, onClose, filterOptions, activeFilters, onApply }:
           <div className="grid grid-cols-[1fr_2fr] gap-2.5">
             <button
               onClick={clearAll}
-              className="bg-transparent border border-[var(--color-ink)] py-4 px-4 font-mono text-[10px] tracking-[0.22em] uppercase cursor-pointer"
+              className="bg-transparent border border-[var(--color-ink)] py-4 px-4 font-mono text-[10px] tracking-[0.22em] uppercase cursor-pointer hover:bg-[var(--color-ink)] hover:text-[var(--color-surface)] transition-colors"
             >
               Effacer{draftActiveCount > 0 ? ` (${draftActiveCount})` : ""}
             </button>
