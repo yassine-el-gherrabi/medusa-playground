@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import type { NewsletterPayload } from "@/types/newsletter"
+import { isValidEmail, isDisposableEmail, checkRateLimit } from "@/lib/newsletter-security"
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY
 const BREVO_LIST_ID = 2
@@ -9,8 +10,35 @@ export async function POST(req: NextRequest) {
     const body: NewsletterPayload = await req.json()
     const { email, firstName, lastName, phone, birthDate, addToList = true, source } = body
 
-    if (!email || !email.includes("@")) {
-      return NextResponse.json({ error: "Email invalide" }, { status: 400 })
+    // Layer 1 — Honeypot: silent success so bots think it worked
+    if (body.honeypot) {
+      return NextResponse.json({ success: true })
+    }
+
+    // Layer 3 — Rate limiting (checked before validation to block brute-force)
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      "unknown"
+    const rateCheck = checkRateLimit(ip)
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: "Trop de tentatives. Réessayez dans quelques instants." },
+        { status: 429, headers: { "Retry-After": String(rateCheck.retryAfter) } }
+      )
+    }
+
+    // Layer 4 — Strict email validation
+    if (!isValidEmail(email)) {
+      return NextResponse.json({ error: "Adresse email invalide" }, { status: 400 })
+    }
+
+    // Layer 2 — Disposable email blocking
+    if (isDisposableEmail(email)) {
+      return NextResponse.json(
+        { error: "Les adresses email temporaires ne sont pas acceptées" },
+        { status: 400 }
+      )
     }
 
     if (!BREVO_API_KEY) {

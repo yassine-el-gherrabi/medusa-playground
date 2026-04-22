@@ -6,12 +6,13 @@ import { NewsletterSource } from "@/types/newsletter"
 
 export default function FooterNewsletter() {
   const [email, setEmail] = useState("")
+  const [honeypot, setHoneypot] = useState("")
   const { status, message, subscribe } = useNewsletter()
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email) return
-    subscribe({ email, source: NewsletterSource.Footer })
+    subscribe({ email, honeypot, source: NewsletterSource.Footer })
   }
 
   if (status === "success") {
@@ -22,7 +23,19 @@ export default function FooterNewsletter() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="relative flex gap-2">
+        {/* Honeypot — invisible to humans, attractive to bots */}
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          autoComplete="off"
+          tabIndex={-1}
+          aria-hidden="true"
+          className="absolute opacity-0 h-0 w-0 overflow-hidden pointer-events-none"
+          style={{ position: "absolute", left: "-9999px" }}
+        />
         <input
           type="email"
           value={email}

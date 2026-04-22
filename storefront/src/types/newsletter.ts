@@ -18,4 +18,6 @@ export type NewsletterPayload = {
   addToList?: boolean
   /** Where this contact interaction originated */
   source?: NewsletterSource
+  /** Honeypot field — must be empty for legitimate submissions */
+  honeypot?: string
 }
