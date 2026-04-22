@@ -57,7 +57,7 @@ export function getInfoContent(product: Product): Record<string, React.ReactNode
         <p>Expédition rapide depuis Marseille, emballage signature Ice Industry.</p>
         <div className="mt-6 lg:mt-9 grid grid-cols-2 gap-px bg-[var(--color-border)] border border-[var(--color-border)]">
           {[
-            ["Standard", "Offerte dès 80 €", "3–5 jours ouvrés"],
+            ["Standard", "Offerte dès 300 €", "3–5 jours ouvrés"],
             ["Express", "9,90 €", "J+1 en France"],
             ["Retrait boutique", "Gratuit", "Marseille · 24h"],
             ["International", "Dès 14,90 €", "Europe · Monde"],

@@ -7,6 +7,7 @@ import { useCart } from "@/providers/CartProvider"
 import CartItem from "./CartItem"
 import CartCrossSell from "./CartCrossSell"
 import { formatPrice } from "@/lib/utils"
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants"
 
 export default function CartDrawer() {
   const { cart, drawerOpen, closeDrawer, error } = useCart()
@@ -85,6 +86,26 @@ export default function CartDrawer() {
             </svg>
           </button>
         </div>
+
+        {/* ── Free shipping progress bar ── */}
+        {items.length > 0 && (() => {
+          const progress = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)
+          const reached = subtotal >= FREE_SHIPPING_THRESHOLD
+          const remaining = Math.ceil(FREE_SHIPPING_THRESHOLD - subtotal)
+          return (
+            <div className="px-6 py-3 shrink-0">
+              <div className="w-full h-[2px] bg-[var(--color-border)]">
+                <div
+                  className="h-[2px] bg-[var(--color-ink)] transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <p className="font-mono text-[10px] tracking-[0.14em] uppercase mt-2" style={{ color: reached ? "var(--color-ink)" : "var(--color-muted)" }}>
+                {reached ? "\u2713 Livraison offerte" : `Plus que ${remaining}\u202F\u20AC pour la livraison gratuite`}
+              </p>
+            </div>
+          )
+        })()}
 
         {items.length === 0 ? (
           /* ── Empty state ── */

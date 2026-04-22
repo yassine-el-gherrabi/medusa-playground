@@ -17,7 +17,8 @@ import { useRegion } from "@/providers/RegionProvider"
 import { DEFAULT_REGION } from "@/lib/constants"
 import { PRODUCT_FIELDS } from "@/lib/medusa/products"
 import { sdk } from "@/lib/sdk"
-import { getColorImages, getCompareAtPrice, isProductFullyOOS } from "@/lib/product-helpers"
+import Image from "next/image"
+import { getColorImages, getCompareAtPrice, isProductFullyOOS, getColorThumbnail, COLOR_MAP } from "@/lib/product-helpers"
 import type { Product, ProductMetadata } from "@/types"
 
 // ── Recently Viewed (localStorage — stores IDs only) ──
@@ -331,7 +332,34 @@ export default function ProductDetail({ product }: { product: Product }) {
 
       {/* Layout: images + info */}
       <div className="lg:grid lg:gap-12" style={{ gridTemplateColumns: "1.25fr 1fr" }}>
-        <ProductImages ref={imagesRef} images={displayImages} productTitle={product.title} editorialBlocks={editorial} />
+        <div className="relative">
+          <ProductImages ref={imagesRef} images={displayImages} productTitle={product.title} editorialBlocks={editorial} />
+
+          {/* Mobile color swatches overlay */}
+          {colorOpt && colorOpt.values && colorOpt.values.length > 1 && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 z-10 lg:hidden">
+              {colorOpt.values.map((v) => {
+                const thumb = getColorThumbnail(colorImagesMap, v.value)
+                const isActive = selectedColor === v.value
+                return (
+                  <button
+                    key={v.id}
+                    onClick={() => onOptionChange(colorOpt.id, v.value)}
+                    aria-label={`Couleur ${v.value}`}
+                    className={`relative w-8 h-10 shrink-0 cursor-pointer transition-opacity border-none p-0 bg-transparent ${isActive ? "opacity-100" : "opacity-50"}`}
+                  >
+                    {thumb ? (
+                      <Image src={thumb} alt={v.value} fill className="object-cover" sizes="64px" />
+                    ) : (
+                      <span className="block w-full h-full" style={{ backgroundColor: COLOR_MAP[v.value] || "#ccc" }} />
+                    )}
+                    {isActive && <span className="absolute -left-1.5 top-0 bottom-0 w-[2px] bg-white" />}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
 
         <div className="lg:sticky lg:top-24 lg:self-start">
           <div className="relative px-6 lg:pl-14 lg:pr-4 pt-5 lg:pt-1 pb-8 lg:pb-16">
@@ -390,7 +418,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             {/* Reassurance grid */}
             <div className="mt-5 grid grid-cols-3 border-t border-b border-[var(--color-border)]">
               {[
-                { t: "Livraison", d: "Offerte dès 80 €" },
+                { t: "Livraison", d: "Offerte dès 300 €" },
                 { t: "Retours", d: "30 jours gratuits" },
                 { t: "Boutique", d: "Retrait 24h · Marseille" },
               ].map((r, i) => (

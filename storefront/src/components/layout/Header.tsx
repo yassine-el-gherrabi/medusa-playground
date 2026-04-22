@@ -143,7 +143,7 @@ export default function Header({
           {/* Desktop LEFT: Nav */}
           <div className="hidden lg:flex items-center gap-12 flex-1">
             <button onMouseEnter={openMegaMenu} className="group relative text-[11px] font-normal tracking-[0.15em] uppercase">
-              Collections
+              Découvrir
               <span className={`absolute -bottom-0.5 left-0 w-full h-px bg-current transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] ${megaMenuOpen ? "scale-x-100 origin-left" : "scale-x-0 origin-right group-hover:origin-left group-hover:scale-x-100"}`} />
             </button>
             {latestCollection && (

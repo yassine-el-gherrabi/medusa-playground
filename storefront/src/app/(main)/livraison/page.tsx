@@ -47,7 +47,7 @@ export default function LivraisonPage() {
       </table>
       <p>
         <strong>Livraison offerte</strong> pour toute commande supérieure à
-        150 €.
+        300 €.
       </p>
 
       <h3>Zones de livraison</h3>

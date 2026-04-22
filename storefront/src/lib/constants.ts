@@ -6,6 +6,9 @@ export const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || ""
 export const DEFAULT_CURRENCY = "eur"
 export const DEFAULT_COUNTRY = "fr"
 
+// Shipping
+export const FREE_SHIPPING_THRESHOLD = 300 // euros
+
 // Revalidation intervals (seconds)
 export const REVALIDATE_PRODUCTS = 120
 export const REVALIDATE_COLLECTIONS = 120
