@@ -23,7 +23,7 @@ type CheckoutFormProps = {
 }
 
 export default function CheckoutForm({ onSubmit, loading }: CheckoutFormProps) {
-  const [newsletterOptIn, setNewsletterOptIn] = useState(true)
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false) // RGPD: must be unchecked by default
 
   const {
     register,
