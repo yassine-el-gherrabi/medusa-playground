@@ -1,16 +1,16 @@
 "use client"
 
 import { useState } from "react"
+import { useNewsletter } from "@/hooks/useNewsletter"
 
 export default function NewsletterPage() {
   const [email, setEmail] = useState("")
-  const [submitted, setSubmitted] = useState(false)
+  const { status, message, subscribe } = useNewsletter()
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email) return
-    // Newsletter subscription would be handled by Medusa or a third-party service
-    setSubmitted(true)
+    subscribe(email)
   }
 
   return (
@@ -22,9 +22,9 @@ export default function NewsletterPage() {
         offres exclusives et actualités de la marque.
       </p>
 
-      {submitted ? (
+      {status === "success" ? (
         <div className="py-8">
-          <p className="text-sm font-medium">Merci pour votre inscription !</p>
+          <p className="text-sm font-medium">{message}</p>
           <p className="text-sm text-muted-foreground mt-2">
             Vous recevrez bientôt nos dernières nouveautés.
           </p>
@@ -37,15 +37,21 @@ export default function NewsletterPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Votre adresse email"
             required
-            className="flex-1 border border-border bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors"
+            disabled={status === "loading"}
+            className="flex-1 border border-border bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors disabled:opacity-50"
           />
           <button
             type="submit"
-            className="px-8 py-3 bg-foreground text-background text-sm uppercase tracking-wider hover:opacity-90 transition-opacity shrink-0"
+            disabled={status === "loading"}
+            className="px-8 py-3 bg-foreground text-background text-sm uppercase tracking-wider hover:opacity-90 transition-opacity shrink-0 disabled:opacity-50"
           >
-            S&apos;inscrire
+            {status === "loading" ? "Inscription..." : "S\u2019inscrire"}
           </button>
         </form>
+      )}
+
+      {status === "error" && (
+        <p className="text-sm text-red-500 mt-3">{message}</p>
       )}
     </div>
   )

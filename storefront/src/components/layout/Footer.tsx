@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import AnimatedLink from "@/components/ui/AnimatedLink"
 import { CookieSettingsButton } from "@/components/cookie/CookieConsent"
+import FooterNewsletter from "@/components/layout/FooterNewsletter"
 
 
 const SERVICE_CLIENT_LINKS = [
@@ -103,12 +104,7 @@ export default function Footer() {
               <p className="text-xs text-black/60 leading-relaxed mb-4">
                 Recevez -10% sur votre première commande et un accès exclusif à nos nouveaux drops.
               </p>
-              <AnimatedLink
-                href="/newsletter"
-                className="text-xs text-black/70 hover:text-black transition-colors duration-200"
-              >
-                S&apos;inscrire
-              </AnimatedLink>
+              <FooterNewsletter />
             </div>
 
             {/* Conseils */}
@@ -154,12 +150,7 @@ export default function Footer() {
               <p className="text-xs text-black/60 leading-relaxed mb-4">
                 Recevez -10% sur votre première commande et un accès exclusif à nos nouveaux drops.
               </p>
-              <AnimatedLink
-                href="/newsletter"
-                className="text-xs text-black/70 hover:text-black transition-colors duration-200"
-              >
-                S&apos;inscrire
-              </AnimatedLink>
+              <FooterNewsletter />
             </div>
 
             {/* Conseils */}

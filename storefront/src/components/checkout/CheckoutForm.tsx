@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -22,6 +23,8 @@ type CheckoutFormProps = {
 }
 
 export default function CheckoutForm({ onSubmit, loading }: CheckoutFormProps) {
+  const [newsletterOptIn, setNewsletterOptIn] = useState(true)
+
   const {
     register,
     handleSubmit,
@@ -43,6 +46,18 @@ export default function CheckoutForm({ onSubmit, loading }: CheckoutFormProps) {
 
   const onValid = (data: CheckoutFormData) => {
     const { email, ...shipping_address } = data
+
+    // Fire-and-forget newsletter subscription if opted in
+    if (newsletterOptIn && email) {
+      fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      }).catch(() => {
+        // Newsletter subscription is non-blocking
+      })
+    }
+
     onSubmit({ email, shipping_address })
   }
 
@@ -168,6 +183,18 @@ export default function CheckoutForm({ onSubmit, loading }: CheckoutFormProps) {
           />
         </div>
       </div>
+
+      <label className="flex items-start gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={newsletterOptIn}
+          onChange={(e) => setNewsletterOptIn(e.target.checked)}
+          className="mt-0.5 h-4 w-4 rounded border-border text-black focus:ring-black accent-black"
+        />
+        <span className="text-xs text-muted-foreground leading-relaxed">
+          Recevoir nos nouvelles collections et offres exclusives
+        </span>
+      </label>
 
       <button
         type="submit"
