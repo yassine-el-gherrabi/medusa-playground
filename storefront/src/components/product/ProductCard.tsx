@@ -108,6 +108,31 @@ export default function ProductCard({ product, showSwatches = false }: { product
           </button>
         )}
 
+        {/* Mobile color swatches — inside image, right side */}
+        {showSwatches && colors.length > 1 && (
+          <div className="md:hidden absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-10">
+            {colors.map((c) => {
+              const thumb = getColorThumbnail(colorImages, c.value)
+              const isActive = activeColor === c.value
+              return (
+                <button
+                  key={c.value}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveColor(c.value) }}
+                  aria-label={`Couleur ${c.label}`}
+                  className={`relative w-7 h-9 shrink-0 cursor-pointer transition-opacity border-none p-0 bg-transparent ${isActive ? "opacity-100" : "opacity-50"}`}
+                >
+                  {thumb ? (
+                    <Image src={thumb} alt={c.label} fill className="object-cover" sizes="56px" />
+                  ) : (
+                    <span className="block w-full h-full" style={{ backgroundColor: COLOR_MAP[c.value] || "#ccc" }} />
+                  )}
+                  {isActive && <span className="absolute -left-1 top-0 bottom-0 w-[2px] bg-white" />}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
         {/* Mobile [+] */}
         {hasAnyStock && (
           <button type="button" onClick={() => { setSheetOpen(true); setSheetColor(activeColor); setSheetSize("") }} className="md:hidden absolute bottom-2 right-2 z-10 p-2 cursor-pointer" aria-label="Ajout rapide">
