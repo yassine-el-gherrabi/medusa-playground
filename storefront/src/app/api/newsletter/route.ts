@@ -10,12 +10,13 @@ type NewsletterBody = {
   phone?: string
   birthDate?: string
   addToList?: boolean
+  source?: string // "footer" | "checkout" | "newsletter_page" | "register" | "profile"
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body: NewsletterBody = await req.json()
-    const { email, firstName, lastName, phone, birthDate, addToList = true } = body
+    const { email, firstName, lastName, phone, birthDate, addToList = true, source } = body
 
     if (!email || !email.includes("@")) {
       return NextResponse.json({ error: "Email invalide" }, { status: 400 })
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest) {
     if (lastName) attributes.NOM = lastName
     if (phone) attributes.SMS = phone
     if (birthDate) attributes.DATE_NAISSANCE = birthDate
+    if (source) attributes.SOURCE = source
 
     const payload: Record<string, unknown> = {
       email,

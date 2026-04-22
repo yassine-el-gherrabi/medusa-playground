@@ -10,7 +10,7 @@ export default function NewsletterPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email) return
-    subscribe(email)
+    subscribe({ email, source: "newsletter_page" })
   }
 
   return (

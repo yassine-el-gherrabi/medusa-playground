@@ -73,6 +73,7 @@ export default function AccountPage() {
             phone: data.phone || undefined,
             birthDate: birth_date || undefined,
             addToList: false,
+            source: "profile",
           }),
         }).catch(() => {})
       }

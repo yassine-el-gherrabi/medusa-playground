@@ -10,7 +10,7 @@ export default function FooterNewsletter() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email) return
-    subscribe(email)
+    subscribe({ email, source: "footer" })
   }
 
   if (status === "success") {

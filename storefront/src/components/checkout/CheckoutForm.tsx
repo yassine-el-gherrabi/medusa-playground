@@ -57,6 +57,7 @@ export default function CheckoutForm({ onSubmit, loading }: CheckoutFormProps) {
           firstName: shipping_address.first_name || undefined,
           lastName: shipping_address.last_name || undefined,
           phone: shipping_address.phone || undefined,
+          source: "checkout",
         }),
       }).catch(() => {
         // Newsletter subscription is non-blocking

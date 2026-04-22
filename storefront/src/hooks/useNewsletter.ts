@@ -8,6 +8,8 @@ export type SubscribeData = {
   lastName?: string
   phone?: string
   birthDate?: string
+  source?: string
+  addToList?: boolean
 }
 
 export function useNewsletter() {

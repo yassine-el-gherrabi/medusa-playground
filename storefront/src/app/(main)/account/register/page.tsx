@@ -34,6 +34,7 @@ export default function RegisterPage() {
           firstName: data.first_name,
           lastName: data.last_name,
           addToList: false,
+          source: "register",
         }),
       }).catch(() => {})
 
