@@ -154,7 +154,7 @@ export default function MobileMenu({
                 onClick={() => toggle("collections")}
                 className="w-full flex items-center justify-between py-4 text-sm font-medium uppercase tracking-wide text-foreground"
               >
-                <span>Découvrir</span>
+                <span>Collections</span>
                 <Chevron open={expandedSection === "collections"} />
               </button>
               <div
