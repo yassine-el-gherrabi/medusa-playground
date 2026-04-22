@@ -22,6 +22,7 @@ type ProductImagesProps = {
   images: ProductImage[]
   productTitle?: string
   editorialBlocks?: EditorialBlock[]
+  mobileSwatches?: React.ReactNode
 }
 
 // ── Editorial image slot ──
@@ -88,7 +89,7 @@ function EditorialAnnotation({ blocks }: { blocks: EditorialBlock[] }) {
 
 // ── Main component ──
 
-const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(function ProductImages({ images, productTitle = "Produit", editorialBlocks }, ref) {
+const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(function ProductImages({ images, productTitle = "Produit", editorialBlocks, mobileSwatches }, ref) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
 
   useImperativeHandle(ref, () => ({
@@ -203,6 +204,9 @@ const ProductImages = forwardRef<ProductImagesHandle, ProductImagesProps>(functi
             {current + 1} / {total}
           </div>
         )}
+
+        {/* Color swatches overlay — passed from parent */}
+        {mobileSwatches}
       </div>
 
       {/* Desktop: Editorial gallery */}
