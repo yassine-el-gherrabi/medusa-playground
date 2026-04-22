@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { NewsletterSource } from "@/types/newsletter"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { registerSchema, type RegisterData } from "@/schemas/auth"
@@ -34,7 +35,7 @@ export default function RegisterPage() {
           firstName: data.first_name,
           lastName: data.last_name,
           addToList: false,
-          source: "register",
+          source: NewsletterSource.Register,
         }),
       }).catch(() => {})
 

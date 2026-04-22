@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useNewsletter } from "@/hooks/useNewsletter"
+import { NewsletterSource } from "@/types/newsletter"
 
 export default function FooterNewsletter() {
   const [email, setEmail] = useState("")
@@ -10,7 +11,7 @@ export default function FooterNewsletter() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email) return
-    subscribe({ email, source: "footer" })
+    subscribe({ email, source: NewsletterSource.Footer })
   }
 
   if (status === "success") {

@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form"
 import { getCustomer, updateCustomer, logout } from "@/lib/medusa/customer"
 import { Skeleton } from "@/components/ui/Skeleton"
 import type { Customer } from "@/types"
+import { NewsletterSource } from "@/types/newsletter"
 
 type ProfileFormData = {
   first_name: string
@@ -73,7 +74,7 @@ export default function AccountPage() {
             phone: data.phone || undefined,
             birthDate: birth_date || undefined,
             addToList: false,
-            source: "profile",
+            source: NewsletterSource.Profile,
           }),
         }).catch(() => {})
       }
