@@ -45,7 +45,6 @@ export default async function CategoryPage({ params }: Props) {
 
   const breadcrumbs = [
     { label: "Accueil", href: "/" },
-    { label: "Catégories", href: "/boutique" },
     { label: category.name, href: `/categories/${handle}` },
   ]
 

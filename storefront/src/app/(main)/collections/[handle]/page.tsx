@@ -52,7 +52,6 @@ export default async function CollectionPage({ params }: Props) {
 
   const breadcrumbs = [
     { label: "Accueil", href: "/" },
-    { label: "Collections", href: "/boutique" },
     { label: collection.title, href: `/collections/${handle}` },
   ]
 
