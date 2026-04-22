@@ -11,6 +11,7 @@ type ProfileFormData = {
   first_name: string
   last_name: string
   phone: string
+  birth_date: string
 }
 
 export default function AccountPage() {
@@ -36,10 +37,12 @@ export default function AccountPage() {
           return
         }
         setCustomer(c)
+        const metadata = (c as Customer & { metadata?: Record<string, unknown> }).metadata
         reset({
           first_name: c.first_name || "",
           last_name: c.last_name || "",
           phone: c.phone || "",
+          birth_date: (metadata?.birth_date as string) || "",
         })
       })
       .finally(() => setLoading(false))
@@ -47,13 +50,34 @@ export default function AccountPage() {
 
   async function onSubmit(data: ProfileFormData) {
     try {
-      const updated = await updateCustomer(data)
+      const { birth_date, ...profileData } = data
+      const existingMetadata = (customer as Customer & { metadata?: Record<string, unknown> })?.metadata || {}
+      const updated = await updateCustomer({
+        ...profileData,
+        metadata: { ...existingMetadata, birth_date: birth_date || null },
+      })
       setCustomer(updated)
       setEditing(false)
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
+
+      // Sync to Brevo (fire-and-forget, no list subscription)
+      if (customer?.email) {
+        fetch("/api/newsletter", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: customer.email,
+            firstName: data.first_name || undefined,
+            lastName: data.last_name || undefined,
+            phone: data.phone || undefined,
+            birthDate: birth_date || undefined,
+            addToList: false,
+          }),
+        }).catch(() => {})
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Impossible de mettre à jour le profil.")
+      setError(err instanceof Error ? err.message : "Impossible de mettre \u00e0 jour le profil.")
     }
   }
 
@@ -73,6 +97,9 @@ export default function AccountPage() {
 
   if (!customer) return null
 
+  const metadata = (customer as Customer & { metadata?: Record<string, unknown> }).metadata
+  const birthDate = (metadata?.birth_date as string) || ""
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -81,12 +108,12 @@ export default function AccountPage() {
           onClick={handleLogout}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          Se déconnecter
+          Se d&eacute;connecter
         </button>
       </div>
 
       {success && (
-        <p className="text-sm text-green-600 mb-4">Profil mis à jour avec succès.</p>
+        <p className="text-sm text-green-600 mb-4">Profil mis \u00e0 jour avec succ\u00e8s.</p>
       )}
 
       {error && (
@@ -107,8 +134,16 @@ export default function AccountPage() {
               <p className="text-sm mt-1">{customer.email}</p>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Téléphone</p>
-              <p className="text-sm mt-1">{customer.phone || "Non renseigné"}</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">T&eacute;l&eacute;phone</p>
+              <p className="text-sm mt-1">{customer.phone || "Non renseign\u00e9"}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Date de naissance</p>
+              <p className="text-sm mt-1">
+                {birthDate
+                  ? new Date(birthDate).toLocaleDateString("fr-FR")
+                  : "Non renseign\u00e9e"}
+              </p>
             </div>
           </div>
 
@@ -124,7 +159,7 @@ export default function AccountPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="first_name" className="block text-xs uppercase tracking-wider mb-2">
-                Prénom
+                Pr&eacute;nom
               </label>
               <input
                 id="first_name"
@@ -148,12 +183,24 @@ export default function AccountPage() {
 
           <div>
             <label htmlFor="phone" className="block text-xs uppercase tracking-wider mb-2">
-              Téléphone
+              T&eacute;l&eacute;phone
             </label>
             <input
               id="phone"
               type="tel"
               {...register("phone")}
+              className="w-full border border-border bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="birth_date" className="block text-xs uppercase tracking-wider mb-2">
+              Date de naissance (optionnel)
+            </label>
+            <input
+              id="birth_date"
+              type="date"
+              {...register("birth_date")}
               className="w-full border border-border bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors"
             />
           </div>
@@ -174,6 +221,7 @@ export default function AccountPage() {
                   first_name: customer.first_name || "",
                   last_name: customer.last_name || "",
                   phone: customer.phone || "",
+                  birth_date: birthDate,
                 })
               }}
               className="px-6 py-2 border border-border text-sm hover:bg-muted transition-colors"

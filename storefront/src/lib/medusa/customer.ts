@@ -45,7 +45,7 @@ export async function logout(): Promise<void> {
 }
 
 export async function updateCustomer(
-  data: { first_name?: string; last_name?: string; phone?: string }
+  data: { first_name?: string; last_name?: string; phone?: string; metadata?: Record<string, unknown> }
 ): Promise<Customer> {
   const { customer } = await sdk.store.customer.update(data)
   return customer as Customer

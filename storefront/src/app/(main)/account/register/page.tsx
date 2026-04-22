@@ -24,9 +24,22 @@ export default function RegisterPage() {
     setError(null)
     try {
       await registerCustomer(data)
+
+      // Sync profile data to Brevo (fire-and-forget, no list subscription)
+      fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: data.email,
+          firstName: data.first_name,
+          lastName: data.last_name,
+          addToList: false,
+        }),
+      }).catch(() => {})
+
       router.push("/account")
     } catch {
-      setError("Une erreur est survenue. Veuillez réessayer.")
+      setError("Une erreur est survenue. Veuillez r\u00e9essayer.")
     }
   }
 

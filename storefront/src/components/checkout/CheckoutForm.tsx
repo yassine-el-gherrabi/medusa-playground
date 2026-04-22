@@ -52,7 +52,12 @@ export default function CheckoutForm({ onSubmit, loading }: CheckoutFormProps) {
       fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({
+          email,
+          firstName: shipping_address.first_name || undefined,
+          lastName: shipping_address.last_name || undefined,
+          phone: shipping_address.phone || undefined,
+        }),
       }).catch(() => {
         // Newsletter subscription is non-blocking
       })
