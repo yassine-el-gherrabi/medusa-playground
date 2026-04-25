@@ -97,13 +97,31 @@ export default function CheckoutPage() {
     }
   }
 
-  const handleShippingSelect = async (optionId: string) => {
+  const handleShippingSelect = async (optionId: string, relayPointId?: string) => {
     setLoading(true)
     setError("")
     try {
-      await sdk.store.cart.addShippingMethod(cart.id, {
+      // If relay point selected, store its ID in shipping address metadata
+      if (relayPointId && cart.shipping_address) {
+        const existingMeta = (cart.shipping_address as unknown as { metadata?: Record<string, unknown> }).metadata || {}
+        await sdk.store.cart.update(cart.id, {
+          shipping_address: {
+            ...cart.shipping_address,
+            metadata: {
+              ...existingMeta,
+              relay_point_id: relayPointId,
+            },
+          },
+        })
+      }
+
+      const shippingPayload: { option_id: string; data?: Record<string, unknown> } = {
         option_id: optionId,
-      })
+      }
+      if (relayPointId) {
+        shippingPayload.data = { relay_point_id: relayPointId }
+      }
+      await sdk.store.cart.addShippingMethod(cart.id, shippingPayload)
       await queryClient.invalidateQueries({ queryKey: ["cart"] })
       setStep("payment")
     } catch (err: unknown) {
