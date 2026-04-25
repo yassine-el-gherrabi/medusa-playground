@@ -1,0 +1,39 @@
+# Storefront deploy is handled by Vercel Git Integration (auto-deploy on push)
+# This workflow only runs CI checks — Vercel handles the actual deployment
+#
+# To set up: Link the Vercel project to this GitHub repo in Vercel dashboard
+# Settings → Git → Connect to GitHub → select medusa-playground → root: storefront
+
+name: Storefront CI
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "storefront/**"
+  pull_request:
+    branches: [master]
+    paths:
+      - "storefront/**"
+
+defaults:
+  run:
+    working-directory: ./storefront
+
+jobs:
+  ci:
+    name: Typecheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Type check
+        run: npx tsc --noEmit

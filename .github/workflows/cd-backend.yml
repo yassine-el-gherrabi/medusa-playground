@@ -1,0 +1,25 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "backend/**"
+      - "docker-compose.yml"
+      - ".github/workflows/cd-backend.yml"
+
+jobs:
+  deploy:
+    name: Deploy to Hetzner
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script_stop: true
+          script: /opt/iceindustry-repo/deploy-backend.sh
