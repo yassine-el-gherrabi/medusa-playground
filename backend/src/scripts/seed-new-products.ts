@@ -628,7 +628,7 @@ export default async function seedNewProducts({ container }: ExecArgs) {
           status: ProductStatus.PUBLISHED,
           thumbnail,
           collection_id: colMap[p.collection],
-          categories: catMap[p.category] ? [{ id: catMap[p.category] }] : [],
+          category_ids: catMap[p.category] ? [catMap[p.category]] : [],
           images: allImages,
           weight: p.weight,
           options,
