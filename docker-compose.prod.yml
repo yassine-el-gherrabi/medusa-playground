@@ -38,4 +38,8 @@ services:
 
 volumes:
   postgres_data:
+    name: iceindustry_postgres_data
+    external: true
   redis_data:
+    name: iceindustry_redis_data
+    external: true
