@@ -598,6 +598,7 @@ export default async function seedNewProducts({ container }: ExecArgs) {
             title: `${color} / ${size}`,
             sku: `ICE-${p.handle.toUpperCase().replace(/-/g, "").slice(0, 10)}-${color.slice(0, 3).toUpperCase()}-${size}`,
             manage_inventory: true,
+            weight: p.weight,
             options: { Couleur: color, Taille: size },
             prices: [{ amount: p.price, currency_code: "eur" }],
           })
@@ -609,6 +610,7 @@ export default async function seedNewProducts({ container }: ExecArgs) {
           title: color,
           sku: `ICE-${p.handle.toUpperCase().replace(/-/g, "").slice(0, 10)}-${color.slice(0, 3).toUpperCase()}`,
           manage_inventory: true,
+          weight: p.weight,
           options: { Couleur: color },
           prices: [{ amount: p.price, currency_code: "eur" }],
         })
