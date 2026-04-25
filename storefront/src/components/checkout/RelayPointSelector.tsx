@@ -32,6 +32,7 @@ type RelayPointSelectorProps = {
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
 
 const DAYS_FR: Record<string, string> = {
   monday: "Lundi",
@@ -68,7 +69,10 @@ export default function RelayPointSelector({
     try {
       const res = await fetch(`${BACKEND_URL}/store/colissimo/relay-points`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-publishable-api-key": PUBLISHABLE_KEY,
+        },
         body: JSON.stringify({ zipCode, city, countryCode: "FR" }),
       })
 
